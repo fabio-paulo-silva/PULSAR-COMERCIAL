@@ -1,0 +1,187 @@
+{
+  "_como_usar": "Atualize a cada ciclo. 'acoes' liga cada detrator a ações curtas no formato AÇÃO + ITEM DO CICLO, em ordem de prioridade: o PULSAR mostra a 1ª vigente como principal e as 2 seguintes como alternativas. 'inicio'/'fim' (opcionais) fazem a ação valer só nessas datas. 'tipo' precisa ser um dos tipos de ação do PULSAR. Detratores: fluxo (boletos), b1, ipb, pm, bmsaud, brinde.",
+  "nome": "Ciclo 15/2026 · O Boticário",
+  "fonte": "Guia do Ciclo de Loja C15-2026 (O Boticário) · Ciclo/ciclo-15-2026-oboticario-loja.md",
+  "inicio": "2026-10-13",
+  "fim": "2026-11-01",
+  "foco": "Foco: Clash Extreme (DC 100ml a R$ 149,90). Subfoco: Cuide-se Bem Acerola e Vai (até 20% off no Combo 2+).",
+  "precos": {
+    "_nota": "Preço médio dos itens das grades do ciclo, usado para estimar a receita perdida por não penetrar BT e BP.",
+    "bt": 41.17,
+    "bp": 17.47
+  },
+  "acoes": {
+    "fluxo": [
+      {
+        "tipo": "Venda fora de loja",
+        "acao": "Venda fora de loja + kits do Dia dos Professores",
+        "detalhe": "Levar os kits (a partir de R$ 25, até 20% off) a escolas e empresas do entorno.",
+        "fim": "2026-10-18"
+      },
+      {
+        "tipo": "Conversão da Ação de Fluxo",
+        "acao": "Converter o brinde Floratta Blue Crystal em venda",
+        "detalhe": "Todo cliente do brinde sai com 1 item não-PRM + BT.",
+        "fim": "2026-10-25"
+      },
+      {
+        "tipo": "Calçada Perfumada",
+        "acao": "Calçada Perfumada + Clash Extreme e Flash Promo",
+        "detalhe": "Dia D em 21/10; registrar a origem 'Calçada Perfumada' para contar no IAF.",
+        "fim": "2026-10-28"
+      },
+      {
+        "tipo": "Conversão da Ação de Fluxo",
+        "acao": "Converter o brinde Clash Extreme em venda",
+        "detalhe": "Cliente do brinde sai com 1 item não-PRM + BT; +5% no lançamento Clash.",
+        "inicio": "2026-10-26"
+      },
+      {
+        "tipo": "Carteira no WhatsApp",
+        "acao": "WhatsApp para a carteira + cashback de setembro",
+        "detalhe": "Avisar quem tem saldo: vence em 31/10.",
+        "inicio": "2026-10-24",
+        "fim": "2026-10-31"
+      },
+      {
+        "tipo": "Redes sociais",
+        "acao": "Redes sociais + Flash Promo Leve 2 Pague 1",
+        "detalhe": "Post e stories na véspera e nos dias da promoção (19 a 21/10 e 26 a 28/10).",
+        "fim": "2026-10-28"
+      }
+    ],
+    "b1": [
+      {
+        "tipo": "BT e BP no fechamento",
+        "acao": "Penetração de BT e BP no fechamento",
+        "detalhe": "BT em todo boleto (até 3 unidades iguais, desde R$ 18,90) e 1 PRM de BP por sarrafo."
+      },
+      {
+        "tipo": "Treinamento com o time",
+        "acao": "Clash Extreme + Body Spray ou Shower Gel",
+        "detalhe": "Mesma fragrância por R$ 52,90 ou R$ 41,90: o 2º item natural do foco."
+      },
+      {
+        "tipo": "Treinamento com o time",
+        "acao": "Flash Promo Leve 2 Pague 1",
+        "detalhe": "Itens diferentes valem; móvel coringa na entrada.",
+        "inicio": "2026-10-19",
+        "fim": "2026-10-28"
+      }
+    ],
+    "ipb": [
+      {
+        "tipo": "BT e BP no fechamento",
+        "acao": "Penetração de BT e BP no fechamento",
+        "detalhe": "BT em todo boleto (até 3 unidades iguais, desde R$ 18,90) e 1 PRM de BP por sarrafo."
+      },
+      {
+        "tipo": "Treinamento com o time",
+        "acao": "Super Combos Acerola e Vai",
+        "detalhe": "2 a 4 itens com 20% off (Treino Completo R$ 198,88)."
+      },
+      {
+        "tipo": "Treinamento com o time",
+        "acao": "Flash Promo Leve 2 Pague 1",
+        "detalhe": "Itens diferentes valem; móvel coringa na entrada.",
+        "inicio": "2026-10-19",
+        "fim": "2026-10-28"
+      }
+    ],
+    "pm": [
+      {
+        "tipo": "Sarrafo do ciclo",
+        "acao": "Levar o boleto ao próximo sarrafo com o Clash Extreme",
+        "detalhe": "DC + Shower Gel = R$ 191,80 (faltam R$ 28 para o BP 220); + Body Spray e Boti.Sun = R$ 288,60 (faltam R$ 11 para o brinde de R$ 300)."
+      },
+      {
+        "tipo": "Treinamento com o time",
+        "acao": "Presente + estojos regulares e Make B Scandal",
+        "detalhe": "Floratta Flowers R$ 190,90, Liz R$ 135,90, Palette Scandal R$ 257,90."
+      },
+      {
+        "tipo": "Transferência de mercadoria",
+        "acao": "Checar estoque do Clash Extreme e Acerola e Vai",
+        "detalhe": "Pedir transferência do que faltar."
+      }
+    ],
+    "bmsaud": [
+      {
+        "tipo": "Sarrafo do ciclo",
+        "acao": "Sarrafos fechados do ciclo + Clash Extreme",
+        "detalhe": "Brinde acima de R$ 300, R$ 20 off acima de R$ 400 e R$ 40 off acima de R$ 650."
+      },
+      {
+        "tipo": "BT e BP no fechamento",
+        "acao": "Penetração de BT e BP no fechamento",
+        "detalhe": "BT em todo boleto e 1 PRM de BP por sarrafo atingido."
+      },
+      {
+        "tipo": "Treinamento com o time",
+        "acao": "Presente + estojos regulares e Make B Scandal",
+        "detalhe": "Floratta Flowers R$ 190,90, Liz R$ 135,90, Palette Scandal R$ 257,90."
+      }
+    ],
+    "brinde": [
+      {
+        "tipo": "Conversão da Ação de Fluxo",
+        "acao": "Brinde + 1 item não-PRM + BT",
+        "detalhe": "Oferecer o lançamento Floratta (+5%) ou Botik (+10%) e entregar o mimo de conversão.",
+        "fim": "2026-10-25"
+      },
+      {
+        "tipo": "Conversão da Ação de Fluxo",
+        "acao": "Brinde Clash + 1 item não-PRM + BT",
+        "detalhe": "+5% no lançamento Clash Extreme e mimo de conversão.",
+        "inicio": "2026-10-26"
+      }
+    ]
+  },
+  "agenda": [
+    {
+      "inicio": "2026-10-10",
+      "fim": "2026-10-18",
+      "texto": "Dia dos Professores: 1 item 10%, 2 itens 15%, 3 itens 20%"
+    },
+    {
+      "inicio": "2026-10-19",
+      "fim": "2026-10-21",
+      "texto": "Flash Promo Leve 2 Pague 1 (1ª rodada)"
+    },
+    {
+      "inicio": "2026-10-19",
+      "fim": "2026-10-25",
+      "texto": "Check-in da Ação de Fluxo Clash Extreme"
+    },
+    {
+      "inicio": "2026-10-21",
+      "fim": "2026-10-21",
+      "texto": "Dia D da Calçada Perfumada"
+    },
+    {
+      "inicio": "2026-10-25",
+      "fim": "2026-10-25",
+      "texto": "Último dia da Ação de Fluxo Floratta Blue Crystal"
+    },
+    {
+      "inicio": "2026-10-26",
+      "fim": "2026-10-28",
+      "texto": "Flash Promo Leve 2 Pague 1 (2ª rodada)"
+    },
+    {
+      "inicio": "2026-10-26",
+      "fim": "2026-11-19",
+      "texto": "Ação de Fluxo Clash Extreme para o consumidor"
+    },
+    {
+      "inicio": "2026-10-31",
+      "fim": "2026-10-31",
+      "texto": "Vence o cashback de setembro"
+    }
+  ],
+  "atencao": [
+    "Teto de 15% para a soma de GB Recicla, Cashback e Fidelidade.",
+    "BT: até 3 unidades da mesma opção; não pode misturar opções.",
+    "De 19 a 25/10 as Ações de Fluxo Floratta e Clash se sobrepõem: cuidado com brinde e tag."
+  ]
+}

@@ -1,0 +1,65 @@
+# Publica o PULSAR no GitHub Pages com dois ambientes no mesmo site:
+#   produção        -> branch main     -> https://fabio-paulo-silva.github.io/PULSAR-COMERCIAL/
+#   desenvolvimento -> branch develop  -> https://fabio-paulo-silva.github.io/PULSAR-COMERCIAL/dev/
+# Os dados (data/pulsar.json) e o ciclo saem da main e valem para os dois ambientes.
+name: Publicar PULSAR
+
+on:
+  push:
+    branches: [main, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  montar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Código de produção (main)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: prod
+
+      - name: Código de desenvolvimento (develop)
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          ref: develop
+          path: dev
+
+      - name: Montar o site
+        run: |
+          mkdir -p site/data site/Ciclo
+          cp prod/index.html prod/config.js site/
+          cp prod/data/pulsar.json site/data/
+          cp prod/Ciclo/ciclo_atual.json site/Ciclo/
+          if [ -f dev/index.html ]; then
+            mkdir -p site/dev/data site/dev/Ciclo
+            cp dev/index.html dev/config.js site/dev/
+            cp prod/data/pulsar.json site/dev/data/
+            if [ -f dev/Ciclo/ciclo_atual.json ]; then cp dev/Ciclo/ciclo_atual.json site/dev/Ciclo/; else cp prod/Ciclo/ciclo_atual.json site/dev/Ciclo/; fi
+          fi
+          touch site/.nojekyll
+          find site -type f
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  publicar:
+    needs: montar
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
