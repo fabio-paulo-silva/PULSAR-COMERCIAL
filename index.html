@@ -1021,7 +1021,8 @@ function avaliar(ls){
   if(m.aa.ok&&m.aa.d.rec<=-.05){const y=m.aa,ef=[['fluxo',y.eBol,'Boletos'],['ipb',y.eIpb,'IPB'],['pm',y.ePm,'Preço médio']].sort((p,q)=>p[1]-q[1])[0];
    const hj=TODAY<=DAYS?l.aa.rec[TODAY-1]:0,bh=TODAY<=DAYS?l.aa.bol[TODAY-1]:0;
    add('anoant',y.d.rec<=-.15?'crit':y.d.rec<=-.08?'alto':'medio',{loja:l,imp:y.ant.rec-y.atu.rec,impL:`abaixo de ${AAtxt()} (mesmos dias)`,cic:ef[0],
-    evid:`Receita <b>${pct(y.d.rec,0,true)}</b> contra ${AAtxt()}: boletos ${pct(y.d.bol,0,true)}, IPB ${pct(y.d.ipb,0,true)}, preço médio ${pct(y.d.pm,0,true)}. O que mais pesou: <b>${ef[2]}</b> (${kbrl(ef[1])}).`,
+    // os números de cada indicador já estão nos selos do card: aqui só o que mais pesou
+    evid:`o que mais pesou foi <b>${ef[2].toLowerCase()}</b> (${kbrl(ef[1])}).`,
     meta:hj>0?`superar ${AAtxt()} hoje: ${kbrl(hj)} e ${fx(bh)} boletos`:`${ef[2]} acima de ${AAtxt()}`})}
   const ult=acoesMes().filter(a=>a.loja===l.id&&a.dia<=LAST).sort((a,b)=>b.dia-a.dia)[0];
   if(ult){const e=efeito(m,ult.dia);if(e&&e.d>=.1)add('recup','pos',{loja:l,imp:e.inc,impL:'a mais desde a ação',
