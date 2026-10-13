@@ -383,7 +383,6 @@ td.hp{background:oklch(0.76 0.19 152 / .1)} td.hn{background:oklch(0.58 0.21 22 
 .kv span{color:var(--muted-fg)} .kv b{text-align:right;font-variant-numeric:tabular-nums}
 .chart .mb{fill:var(--muted-fg);opacity:.28} .chart .mb.on{fill:var(--chart-3);opacity:.35}
 .chart .rl{fill:none;stroke:var(--foreground);stroke-width:2.2;stroke-linejoin:round}
-.chart .mb.atip{opacity:.12;stroke:var(--muted-fg);stroke-dasharray:3 3}
 .yos{display:inline-flex;flex-wrap:wrap;gap:4px;vertical-align:middle}
 .yo{display:inline-flex;align-items:center;gap:3px;border-radius:999px;padding:1px 7px;font-size:12px;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums}
 .yo.up{background:oklch(0.76 0.19 152 / .14);color:var(--success-ink)} .yo.dn{background:oklch(0.58 0.21 22 / .12);color:var(--destructive)}
@@ -393,13 +392,7 @@ td.hp{background:oklch(0.76 0.19 152 / .1)} td.hn{background:oklch(0.58 0.21 22 
 .yrow b{font-weight:800}
 .kl.ky{margin-top:2px}
 .hnota.hy{display:flex;gap:6px;align-items:flex-start} .hnota.hy svg{width:14px;height:14px;flex:none;margin-top:2px}
-.chart .aa{fill:none;stroke:var(--accent);stroke-width:1.8;stroke-dasharray:2 4;stroke-linecap:round}
-.legend i.aa{width:18px;border-top:2.5px dotted var(--accent)}
 .lk{border:0;background:none;padding:0;font:inherit;font-weight:700;color:var(--foreground);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
-.chart .ea{fill:none;stroke:var(--chart-3);stroke-width:2;stroke-dasharray:6 4}
-.chart .gp.ok{fill:var(--success-ink);opacity:.7} .chart .gp.no{fill:var(--destructive);opacity:.7}
-.legend i.ea{width:18px;border-top:2px dashed var(--chart-3)}
-.legend i.bx.gp{background:linear-gradient(90deg,var(--success-ink) 50%,var(--destructive) 50%)}
 .chart .rd{stroke:var(--card);stroke-width:2} .chart .rd.ok{fill:var(--success-ink)} .chart .rd.no{fill:var(--destructive)} .chart .rd.na{fill:var(--muted-fg)}
 .chart .pl{font:800 11px var(--font-sans)} .chart .pl.ok{fill:var(--success-ink)} .chart .pl.no{fill:var(--destructive)} .chart .pl.na{fill:var(--muted-fg);font-weight:600;font-size:10px}
 .legend i.bx.mb{background:var(--chart-3);opacity:.45}
@@ -452,8 +445,8 @@ td.hp{background:oklch(0.76 0.19 152 / .1)} td.hn{background:oklch(0.58 0.21 22 
 /* Chips de data pintados pelo atingimento do dia (filete embaixo) */
 .dia{position:relative;overflow:hidden}
 .dia::after{content:"";position:absolute;left:0;right:0;bottom:0;height:4px;background:transparent}
-.dleg{font-size:11px;gap:10px} .dleg i{width:14px;border-top-width:4px} .dleg i.dl-ok{border-color:var(--success-ink)} .dleg i.dl-mid{border-color:var(--warning)} .dleg i.dl-no{border-color:var(--destructive)} .dleg i.dl-at{border-color:var(--muted-fg);opacity:.5}
-.dia.r-ok::after{background:var(--success-ink)} .dia.r-mid::after{background:var(--warning)} .dia.r-no::after{background:var(--destructive)} .dia.r-at::after{background:var(--muted-fg);opacity:.5}
+.dleg{font-size:11px;gap:10px} .dleg i{width:14px;border-top-width:4px} .dleg i.dl-ok{border-color:var(--success-ink)} .dleg i.dl-mid{border-color:var(--warning)} .dleg i.dl-no{border-color:var(--destructive)}
+.dia.r-ok::after{background:var(--success-ink)} .dia.r-mid::after{background:var(--warning)} .dia.r-no::after{background:var(--destructive)}
 
 
 /* Card de prioridade enxuto */
@@ -627,7 +620,7 @@ dialog .hd h3{font-size:18px}
       <div class="dh"><span class="dl"><i data-lucide="calendar-range"></i>Datas</span><span class="per" id="perTxt"></span>
         <span class="pres"><button type="button" data-pre="ontem">Ontem</button><button type="button" data-pre="7">Últimos 7 dias</button><button type="button" data-pre="mes">Mês até ontem</button></span></div>
       <div class="dias" id="fDias" role="group" aria-label="Datas selecionadas" title="Clique para marcar ou desmarcar. Shift + clique marca um intervalo."></div>
-      <div class="legend dleg"><span><i class="dl-ok"></i>Bateu a meta do dia</span><span><i class="dl-mid"></i>90 a 99%</span><span><i class="dl-no"></i>Abaixo de 90%</span><span><i class="dl-at"></i>Atípico (feriado)</span></div>
+      <div class="legend dleg"><span><i class="dl-ok"></i>Bateu a meta do dia</span><span><i class="dl-mid"></i>90 a 99%</span><span><i class="dl-no"></i>Abaixo de 90%</span></div>
     </div>
   </section>
 
@@ -893,14 +886,6 @@ function yoyCalc(y,nTot){
  y.eIpb=y.atu.bol*(y.atu.ipb-y.ant.ipb)*y.ant.pm;y.ePm=y.atu.bol*y.atu.ipb*(y.atu.pm-y.ant.pm);
  y.dAte=y.ate?y.ateC/y.ate-1:0;
 }
-// Dia atípico: meta do dia abaixo de 25% da mediana das metas diárias do mês (feriado ou loja prevista fechada).
-// Fica fora da contagem de "bateu a meta" e o rótulo do gráfico não mostra o % distorcido.
-function atipicos(a){
- const v=a.metaDays.filter(x=>x>0).sort((x,y)=>x-y),n=v.length;if(!n)return new Set();
- const med=n%2?v[(n-1)/2]:(v[n/2-1]+v[n/2])/2,s=new Set();
- a.metaDays.forEach((x,i)=>{if(x>0&&x<.25*med)s.add(i+1)});
- return s;
-}
 // Penetração de BT e BP: % dos boletos de venda com a tag na coluna Campanhas.
 // Perda = boletos que faltaram para a penetração saudável × preço médio do item.
 function btbpCalc(a){
@@ -1046,7 +1031,7 @@ function avaliar(ls){
 }
 
 /* ================= Estado e escopo ================= */
-const S={reg:'',praca:'',gvo:'',loja:'',cons:'',tab:'hoje',pfil:'',chart:'dia',hist:'dia',acSel:null,foco:null,sort:{lojas:['gapR',1],cons:['idx',1]}};
+const S={reg:'',praca:'',gvo:'',loja:'',cons:'',tab:'hoje',pfil:'',chart:'dia',acSel:null,foco:null,sort:{lojas:['gapR',1],cons:['idx',1]}};
 let FIRED=[];
 const $=id=>document.getElementById(id);
 // Hierarquia dos filtros: Regional -> Praça -> GVO -> Loja -> Consultor
@@ -1187,12 +1172,10 @@ function prioCard(t,i,n){
 }
 // Barras = meta do dia; linha = realizado do dia; rótulo = atingimento (verde se bateu).
 function drawMetaDia(a,el){
- if(S.hist==='acum')return drawAcum(a,el);
- const N=Math.min(TODAY,DAYS),cw=Math.max(34,672/N),L=58,Rr=14,T=30,B=40,W=L+Rr+cw*N,H=300,ih=H-T-B,bw=cw*.62,AT=atipicos(a);
- // escala sem o realizado de dias atípicos (o feriado não achata o resto)
- const temAA=a.aa.ok,vals=[...a.metaDays.slice(0,N),...a.days.filter((_,i)=>!AT.has(i+1)),a.hoje,...(temAA?a.aaDays.slice(0,N):[])];
+ const N=Math.min(TODAY,DAYS),cw=Math.max(34,672/N),L=58,Rr=14,T=30,B=40,W=L+Rr+cw*N,H=300,ih=H-T-B,bw=cw*.62;
+ const vals=[...a.metaDays.slice(0,N),...a.days,a.hoje];
  const MAX=Math.max(...vals)*1.18||1;
- const xc=d=>L+cw*(d-.5),y=v=>T+(1-Math.min(v,MAX*1.04)/MAX)*ih;
+ const xc=d=>L+cw*(d-.5),y=v=>T+(1-v/MAX)*ih;
  const DS=['dom','seg','ter','qua','qui','sex','sáb'];
  let g='';
  for(let i=0;i<=4;i++){const v=MAX/1.18*i/4;g+=`<line class="grid" x1="${L}" x2="${W-Rr}" y1="${y(v)}" y2="${y(v)}"/><text class="ax" x="${L-8}" y="${y(v)+4}" text-anchor="end">${kbrl(v)}</text>`}
@@ -1204,42 +1187,16 @@ function drawMetaDia(a,el){
    if(a.hoje>0)g+=`<rect class="bo" x="${xc(d)-bw/2}" y="${y(a.hoje)}" width="${bw}" height="${y(0)-y(a.hoje)}" rx="4"><title>Hoje: meta do dia ${kbrl(a.metaHoje)} + ${kbrl(a.recup)} de recuperação${a.aa.ok?` · ${AAtxt()} neste dia: ${kbrl(a.aaDays[d-1])}`:''}</title></rect><text class="bl o" x="${xc(d)}" y="${y(a.hoje)-8}" text-anchor="middle">${kbrl(a.hoje)}</text>`;
    continue;
   }
-  const rv=a.days[d-1],atip=AT.has(d);pts.push([xc(d),y(rv),d]);
-  if(mt>0)g+=`<rect class="mb ${on?'on':''} ${atip?'atip':''}" x="${xc(d)-bw/2}" y="${y(mt)}" width="${bw}" height="${y(0)-y(mt)}" rx="4"/>`;
+  const rv=a.days[d-1];pts.push([xc(d),y(rv),d]);
+  if(mt>0)g+=`<rect class="mb ${on?'on':''}" x="${xc(d)-bw/2}" y="${y(mt)}" width="${bw}" height="${y(0)-y(mt)}" rx="4"/>`;
   const at=mt>0?rv/mt:null,top=Math.min(mt>0?y(mt):y(0),y(rv))-10;
-  // dia atípico: sem % (meta quase zero distorce); acima de 150%: ✓ para não poluir
-  const rot=at==null?'s/ meta':atip?'atípico':at>1.5?'✓':pct(at);
-  g+=`<text class="pl ${at==null||atip?'na':at>=1?'ok':'no'}" x="${xc(d)}" y="${top}" text-anchor="middle">${rot}</text>`;
-  g+=`<rect x="${xc(d)-cw/2}" y="${T}" width="${cw}" height="${ih}" fill="transparent"><title>${dd(d)} (${dow}) · meta ${kbrl(mt)} · realizado ${kbrl(rv)}${a.aa.ok?` · ${AAtxt()} ${kbrl(a.aaDays[d-1])}`:''}${at!=null?' · '+pct(at,1):''}${atip?' · dia atípico: meta quase zero (feriado?), fora da contagem':''}</title></rect>`;
+  const rot=at==null?'s/ meta':pct(at);
+  g+=`<text class="pl ${at==null?'na':at>=1?'ok':'no'}" x="${xc(d)}" y="${top}" text-anchor="middle">${rot}</text>`;
+  g+=`<rect x="${xc(d)-cw/2}" y="${T}" width="${cw}" height="${ih}" fill="transparent"><title>${dd(d)} (${dow}) · meta ${kbrl(mt)} · realizado ${kbrl(rv)}${a.aa.ok?` · ${AAtxt()} ${kbrl(a.aaDays[d-1])}`:''}${at!=null?' · '+pct(at,1):''}</title></rect>`;
  }
- if(temAA)g+=`<polyline class="aa" points="${Array.from({length:N},(_,i)=>xc(i+1)+','+y(a.aaDays[i])).join(' ')}"><title>Realizado de ${AAtxt()} nos mesmos dias (lojas comparáveis)</title></polyline>`;
  if(pts.length){g+=`<polyline class="rl" points="${pts.map(p=>p[0]+','+p[1]).join(' ')}"/>`;
   pts.forEach(([x,yy,d])=>{const mt=a.metaDays[d-1];g+=`<circle class="rd ${mt>0?(a.days[d-1]>=mt?'ok':'no'):'na'}" cx="${x}" cy="${yy}" r="4.5"/>`})}
  $(el).innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="min-width:${Math.round(W*.8)}px" role="img" aria-label="Meta do dia em barras e realizado do dia em linha, com o atingimento de cada dia">${g}</svg>`;
-}
-// Acumulado: realizado acumulado × esperado acumulado (meta diarizada); barras = gap do dia em R$
-function drawAcum(a,el){
- const N=LAST,cw=Math.max(34,672/(N+1)),L=64,Rr=14,T=30,B=40,W=L+Rr+cw*N,H=300,ih=H-T-B,bw=cw*.5;
- const ra=[],ea=[],aaa=[];let r=0,e=0,q=0;for(let d=1;d<=N;d++){r+=a.days[d-1];e+=a.metaDays[d-1];q+=a.aaDays[d-1];ra.push(r);ea.push(e);aaa.push(q)}
- const temAA=a.aa.ok;
- const gaps=a.days.map((v,i)=>v-a.metaDays[i]);
- const MAX=Math.max(...ra,...ea,...(temAA?aaa:[]))*1.12||1,GM=Math.max(...gaps.map(Math.abs))||1;
- // faixa de cima (68%): linhas acumuladas; faixa de baixo: gap do dia em torno da linha tracejada
- const xc=d=>L+cw*(d-.5),y=v=>T+(1-v/MAX)*ih*.68,gy=v=>v/GM*ih*.13;
- const DS=['dom','seg','ter','qua','qui','sex','sáb'];
- let g='';
- for(let i=0;i<=4;i++){const v=MAX/1.12*i/4;g+=`<line class="grid" x1="${L}" x2="${W-Rr}" y1="${y(v)}" y2="${y(v)}"/><text class="ax" x="${L-8}" y="${y(v)+4}" text-anchor="end">${kbrl(v)}</text>`}
- const base=T+ih*.85;g+=`<text class="ax s" x="${L-8}" y="${base+4}" text-anchor="end">gap/dia</text>`;g+=`<line class="grid" x1="${L}" x2="${W-Rr}" y1="${base}" y2="${base}" stroke-dasharray="3 3"/>`;
- for(let d=1;d<=N;d++){
-  const gp=gaps[d-1],h=Math.abs(gy(gp)),dow=DS[new Date(ANO,MES,d).getDay()];
-  g+=`<rect class="gp ${gp>=0?'ok':'no'}" x="${xc(d)-bw/2}" y="${gp>=0?base-h:base}" width="${bw}" height="${Math.max(1,h)}" rx="3"><title>${dd(d)} · gap do dia ${gp>=0?'+':''}${kbrl(gp)} · acumulado ${kbrl(ra[d-1]-ea[d-1])}</title></rect>`;
-  g+=`<text class="ax" x="${xc(d)}" y="${H-22}" text-anchor="middle">${pad(d)}</text><text class="ax s" x="${xc(d)}" y="${H-8}" text-anchor="middle">${dow}</text>`;
- }
- const pl=arr=>arr.map((v,i)=>xc(i+1)+','+y(v)).join(' ');
- g+=`<polyline class="ea" points="${pl(ea)}"/>${temAA?`<polyline class="aa" points="${pl(aaa)}"><title>${AAtxt()} acumulado: ${kbrl(aaa[N-1])}</title></polyline>`:''}<polyline class="rl" points="${pl(ra)}"/>`;
- const gf=ra[N-1]-ea[N-1];
- g+=`<circle class="rd ${gf>=0?'ok':'no'}" cx="${xc(N)}" cy="${y(ra[N-1])}" r="5"/><text class="pl ${gf>=0?'ok':'no'}" x="${xc(N)-8}" y="${Math.min(y(ra[N-1]),y(ea[N-1]))-10}" text-anchor="end">${gf>=0?'+':''}${kbrl(gf)}</text>`;
- $(el).innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="min-width:${Math.round(W*.8)}px" role="img" aria-label="Realizado acumulado contra o esperado acumulado, com o gap de cada dia em barras">${g}</svg>`;
 }
 // Próximas datas do ciclo (de hoje em diante)
 function agendaHTML(){
@@ -1321,7 +1278,7 @@ function metaConsHTML(l){
 function vHoje(ls,cs,a){
  const PR=prioridades(),top=PR.slice(0,3),prox=PR.slice(3,8),ids=new Set(ls.map(l=>l.id));
  const ritmoRest=(a.metaMes-a.metaAte)*a.proj,k=ritmoRest>0?(a.metaMes-a.rec)/ritmoRest:0;
- const AT=atipicos(a),ab=[];for(let d=1;d<=LAST;d++)if(a.metaDays[d-1]>0&&!AT.has(d))ab.push(a.days[d-1]>=a.metaDays[d-1]);
+ const ab=[];for(let d=1;d<=LAST;d++)if(a.metaDays[d-1]>0)ab.push(a.days[d-1]>=a.metaDays[d-1]);
  const lj=S.loja?lojaById(S.loja):null;
  $('view').innerHTML=`<section class="sec">
   ${ontemHTML(ids)}
@@ -1341,10 +1298,9 @@ function vHoje(ls,cs,a){
   ${anoAntHTML(ls,a)}
   ${cicloCard(ls)}
   <div class="card pad">
-   <div class="crumb" style="justify-content:space-between;flex-wrap:wrap;gap:8px"><div><h2 style="font-size:18px">Histórico do mês</h2><p class="mf">${S.hist==='acum'?`Realizado acumulado × esperado (meta diarizada) · gap ${a.gapR>=0?'+':''}${kbrl(a.gapR)}`:`Bateu a meta em <b>${ab.filter(Boolean).length} de ${ab.length} dias</b>${AT.size?` · ${[...AT].map(dd).join(', ')} atípico (meta quase zero), fora da conta`:''}`}</p></div>
-    <div class="seg"><button class="${S.hist!=='acum'?'on':''}" data-hist="dia">Por dia</button><button class="${S.hist==='acum'?'on':''}" data-hist="acum">Acumulado</button></div></div>
+   <div class="crumb" style="justify-content:space-between"><div><h2 style="font-size:18px">Meta × realizado por dia</h2><p class="mf">Bateu a meta em <b>${ab.filter(Boolean).length} de ${ab.length} dias</b></p></div></div>
    <div class="tw"><div class="chart" id="chartMeta"></div></div>
-   <div class="legend">${S.hist==='acum'?`<span><i class="ln"></i>Realizado acumulado</span><span><i class="ea"></i>Esperado acumulado</span>${a.aa.ok?`<span><i class="aa"></i>${AAtxt()} acumulado</span>`:''}<span><i class="bx gp"></i>Gap do dia</span>`:`<span><i class="bx mb"></i>Meta</span><span><i class="ln"></i>Realizado</span>${a.aa.ok?`<span><i class="aa"></i>${AAtxt()}</span>`:''}<span><i class="bx o"></i>Hoje</span><span>✓ acima de 150%</span>`}</div>
+   <div class="legend"><span><i class="bx mb"></i>Meta</span><span><i class="ln"></i>Realizado</span><span><i class="bx o"></i>Hoje</span></div>
   </div>
  </section>`;
  drawMetaDia(a,'chartMeta');
@@ -1627,14 +1583,14 @@ $('fLimpar').addEventListener('click',()=>{S.reg=S.praca=S.gvo=S.loja=S.cons='';
 
 /* ---------- Filtro de datas ---------- */
 let ultDia=null;
-// Filete de cada data = atingimento do dia no filtro atual (verde ≥ 100%, amarelo ≥ 90%, vermelho abaixo; cinza = dia atípico)
+// Filete de cada data = atingimento do dia no filtro atual (verde ≥ 100%, amarelo ≥ 90%, vermelho abaixo)
 let AGG_DIAS=null;
 function fillDias(a){
  if(a)AGG_DIAS=a;a=AGG_DIAS;
- const DS=['D','S','T','Q','Q','S','S'],at=a?atipicos(a):new Set();
+ const DS=['D','S','T','Q','Q','S','S'];
  $('fDias').innerHTML=Array.from({length:LAST},(_,i)=>{const d=i+1,w=new Date(ANO,MES,d).getDay();
-  const mt=a?a.metaDays[d-1]:0,r=mt>0?a.days[d-1]/mt:null,cl=!a||r==null?'':at.has(d)?'r-at':r>=1?'r-ok':r>=.9?'r-mid':'r-no';
-  const tt=`${dd(d)}${r==null?'':at.has(d)?' · dia atípico (meta quase zero)':` · ${pct(r)} da meta do dia`}`;
+  const mt=a?a.metaDays[d-1]:0,r=mt>0?a.days[d-1]/mt:null,cl=!a||r==null?'':r>=1?'r-ok':r>=.9?'r-mid':'r-no';
+  const tt=`${dd(d)}${r==null?'':` · ${pct(r)} da meta do dia`}`;
   return `<button type="button" class="dia ${SEL.has(d)?'on':''} ${w===0?'fds':''} ${cl}" data-dia="${d}" aria-pressed="${SEL.has(d)}" title="${tt}"><b>${pad(d)}</b><small>${DS[w]}</small></button>`}).join('');
 }
 function setDias(novos){if(!novos.size)return;SEL=novos;recalc();render()}
@@ -1651,9 +1607,8 @@ document.querySelector('.datas .pres').addEventListener('click',e=>{
 });
 function irFoco(id){if(S.foco!==id)S.acSel=null;S.foco=id;S.tab='lojas';render();requestAnimationFrame(()=>$('foco')?.scrollIntoView({behavior:'smooth',block:'start'}))}
 document.addEventListener('click',e=>{
- const t=e.target.closest('[data-tab],[data-reg],[data-foco],[data-del],[data-sort],[data-novo],[data-drill],[data-verc],[data-chart],[data-acsel],[data-pfil],[data-creg],[data-hist]');if(!t)return;
+ const t=e.target.closest('[data-tab],[data-reg],[data-foco],[data-del],[data-sort],[data-novo],[data-drill],[data-verc],[data-chart],[data-acsel],[data-pfil],[data-creg]');if(!t)return;
  const d=t.dataset;
- if(d.hist){S.hist=d.hist;render();return}
  if(d.chart){S.chart=d.chart;render();return}
  if(d.verc){const l=lojaById(d.verc);S.reg=l.regional;S.praca=l.praca;S.gvo=l.gestor;S.loja=l.id;S.cons='';S.tab='consultores';fillFiltros();lembrarFiltro();render();$('view').scrollIntoView({behavior:'smooth',block:'start'});return}
  if(d.pfil!=null){S.pfil=S.pfil===d.pfil?'':d.pfil;render();return}
