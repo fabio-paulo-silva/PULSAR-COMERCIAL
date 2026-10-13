@@ -40,3 +40,12 @@ Para um novo mês: salve em `Metas/` o arquivo `METAS <MÊS> VAREJO - VD.xlsx` e
 - **Histórico:** "Por dia" (meta × realizado) ou "Acumulado" (realizado acumulado × esperado, com o gap de cada dia).
 - **Cards de prioridade:** valor em R$ = perda (ou potencial) da loja no período filtrado. Ação de fluxo da própria loja quando um canal (Calçada, VFL, WhatsApp, conversão do brinde) vale ≥ R$ 1 mil contra o cluster no ritmo; senão, a ação do ciclo.
 - **Link direto da loja:** `?loja=ID` (ou `?gvo=`, `?praca=`, `?reg=`). O último filtro fica lembrado no navegador. Com uma loja filtrada, a aba Hoje mostra a meta de hoje por consultor (pela participação na receita do período, só quem vendeu nos últimos 7 dias).
+
+## Comparação com o ano anterior
+- Fonte: o arquivo do mesmo mês do ano anterior em `Dados/` (ex.: `Dados/Outubro 2025/cupom_venda_2025-10-01_a_2025-10-31.xlsx`). Sem arquivo, a comparação some do painel.
+- Mesmas regras de cupom do mês atual (só efetivados, brinde fora, sacola descontada; em 2025 não havia a campanha da sacola nem a sacola como item).
+- Mesmo dia do calendário (12/10 com 12/10) e só lojas com venda nos dois anos.
+- Variação da receita = efeito boletos ((boletos 2026 − boletos 2025) × BM 2025) + efeito boleto médio (boletos 2026 × diferença de BM).
+
+## Boletos contra o cluster
+O indicador de boletos é **% dos boletos que a meta pede**: boletos de venda ÷ (meta do período ÷ BM alvo de venda). Compara lojas de tamanhos diferentes; a referência é a mediana das lojas do mesmo cluster no ritmo.

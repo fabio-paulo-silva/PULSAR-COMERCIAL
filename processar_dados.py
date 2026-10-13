@@ -179,6 +179,17 @@ def ler_vendas() -> pd.DataFrame:
     return v.drop_duplicates(["data", "loja", "consultor"], keep="last")
 
 
+def ler_ano_anterior(ini_mes):
+    """Mesmo mês do ano anterior (ex.: Dados/Outubro 2025/cupom_venda_2025-10-01_a_2025-10-31.xlsx).
+    Mesmas regras do mês atual (só efetivados, brinde fora, sacola descontada). None se não houver arquivo."""
+    alvo = (ini_mes.year - 1, ini_mes.month)
+    arqs = sorted(a for a in PASTA_VENDAS.rglob("*.xlsx") if not a.name.startswith("~$") and mes_do_arquivo(a) == alvo)
+    if not arqs:
+        return None, []
+    v = pd.concat([agregar_arquivo(a) for a in arqs], ignore_index=True)
+    return v.drop_duplicates(["data", "loja", "consultor"], keep="last"), arqs
+
+
 # ---------------------------------------------------------------- metas
 def ler_metas(ano: int) -> pd.DataFrame:
     m = ler_excel(ARQ_METAS, header=None)
@@ -354,6 +365,11 @@ def main():
         print(f"  Metas: {arq_mes.name} (R$ {meta_mes.sum():,.0f}), diarizadas pelo formato de {ARQ_METAS.name}"
               + (f"; pela praça: {', '.join(sem_forma)}" if sem_forma else ""))
     centros = ler_centros()
+    aa, arqs_aa = ler_ano_anterior(ini_mes)
+    if aa is not None:
+        print(f"  Ano anterior: {', '.join(a.name for a in arqs_aa)} (R$ {aa['rec'].sum():,.0f}, até {aa['data'].max():%d/%m/%Y})")
+    else:
+        print(f"  Ano anterior: sem arquivo de {ini_mes.month:02d}/{ini_mes.year - 1} em Dados/ (comparação desligada)")
     plano_lojas, plano_cons, plano_rede = ler_plano_bm()
 
     mes = vendas[vendas["data"] >= ini_mes]
@@ -375,6 +391,19 @@ def main():
                 "b1": int(df["b1"].sum()), "br": int(df["br"].sum()),
                 "bt": int(df["bt"].sum()), "bp": int(df["bp"].sum()), "dias": int(df["data"].nunique())}
 
+    def serie_aa(loja):
+        # mesmo dia do calendário do ano anterior (12/10 com 12/10): o mês inteiro, para comparar o período e o fechamento
+        if aa is None:
+            return None
+        df = aa[aa["loja"] == loja]
+        if df.empty or df["rec"].sum() <= 0:
+            return None
+        out = {}
+        for campo in ("rec", "bol", "it", "b1", "br"):
+            s = df.groupby(df["data"].dt.day)[campo].sum()
+            out[campo] = [round(float(s.get(d, 0)), 2) for d in range(1, dias_mes + 1)]
+        return out
+
     for loja in sorted(lojas_meta):
         cad = centros.loc[loja] if loja in centros.index else None
         ml = metas[metas["loja"] == loja]
@@ -395,6 +424,7 @@ def main():
             "bt": serie(vl, "bt"), "bp": serie(vl, "bp"),
             "alav": {c: serie(vl, c) for c in ALAVANCAS},
             "ref": resumo_ref(ref[ref["loja"] == loja]),
+            "aa": serie_aa(loja),
             "plano": plano_lojas.get(loja),
         })
         for consultor, vc in vl.groupby("consultor"):
@@ -418,6 +448,8 @@ def main():
                        "diasComVenda": int(ref["data"].nunique())},
         "lojasSemMeta": [{"id": l, "nome": nomes_venda.get(l, l)} for l in sem_meta],
         "planoBM": plano_rede,
+        "anoAnterior": None if aa is None else {"ano": ini_mes.year - 1, "ultimoDia": int(aa["data"].max().day),
+                                                "arquivos": [a.name for a in arqs_aa]},
         "lojas": lojas_out,
         "consultores": cons_out,
     }
@@ -432,6 +464,12 @@ def main():
         n_l = sum(1 for l in lojas_out if l["plano"])
         n_c = sum(1 for c in cons_out if c["plano"])
         print(f"Plano BM: {n_l} de {len(lojas_out)} lojas e {n_c} consultores ligados ao plano ({len(plano_cons)} no plano).")
+    if aa is not None:
+        comp = [l for l in lojas_out if l["aa"]]
+        r26 = sum(sum(l["rec"]) for l in comp)
+        r25 = sum(sum(l["aa"]["rec"][:ontem.day]) for l in comp)
+        print(f"Vs {ini_mes.year - 1}: {len(comp)} de {len(lojas_out)} lojas comparáveis | 01 a {ontem:%d/%m}: "
+              f"R$ {r26:,.0f} vs R$ {r25:,.0f} ({r26 / r25 - 1:+.1%})")
     if sem_meta:
         print(f"Atenção: {len(sem_meta)} loja(s) com venda e sem meta, fora do painel: {', '.join(sem_meta)}")
 

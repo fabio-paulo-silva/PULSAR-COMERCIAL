@@ -72,13 +72,18 @@ def indicadores(v, d):
         venda = g[g["venda"]]
         bol, rec, it = len(venda), venda["Receita liquida"].sum(), venda["Qtd itens"].sum()
         brinde_so = (g["fluxo"] & ~g["venda"]).sum()
+        rf, pl = l.get("ref") or {}, l.get("plano") or {}
+        bm_ref = rf["rec"] / rf["bol"] if rf.get("bol") else None
+        bm_alvo = pl["bmAlvo"] * (rf["bol"] + rf.get("br", 0)) / rf["bol"] if pl.get("bmAlvo") and rf.get("bol") else bm_ref
+        bol_alvo = meta_ate / bm_alvo if bm_alvo else None
         fluxo_conv = (g["fluxo"] & g["venda"]).sum()
         r = {"loja": loja, "nome": l["nome"], "praca": l["praca"], "gvo": l["gestor"],
              "cluster": (l.get("plano") or {}).get("cluster", ""),
              "ritmo": rec / meta_ate if meta_ate else None, "receita": rec, "meta_ate": meta_ate,
              "meta_mes": sum(l["meta"]),
              "boletos": bol, "bm": rec / bol if bol else None, "ipb": it / bol if bol else None,
-             "boletos_por_10mil_meta": bol / meta_ate * 1e4 if meta_ate else None,
+             # boletos feitos ÷ boletos que a meta pede com o BM alvo de venda (mesma régua do painel)
+             "pct_boletos_da_meta": bol / bol_alvo if bol_alvo else None,
              "brindes_acao_fluxo": int(brinde_so),
              "conversao_acao_fluxo": fluxo_conv / (fluxo_conv + brinde_so) if (fluxo_conv + brinde_so) else None,
              "% com CPF": venda["cpf"].mean(), "% fidelidade": venda["fidel"].mean(),
@@ -96,7 +101,7 @@ def main():
     v, d = cupons_do_mes()
     df = indicadores(v, d)
     df["grupo"] = pd.cut(df["ritmo"], [0, .96, 1.0, 9], labels=["abaixo", "atenção", "acima"], right=False)
-    alav = [c for c in df.columns if c.startswith("%") or c in ("conversao_acao_fluxo", "boletos_por_10mil_meta", "ipb", "bm")]
+    alav = [c for c in df.columns if c.startswith("%") or c in ("conversao_acao_fluxo", "pct_boletos_da_meta", "ipb", "bm")]
     comp = pd.DataFrame({
         "acima do ritmo (mediana)": df[df.grupo == "acima"][alav].median(),
         "abaixo do ritmo (mediana)": df[df.grupo == "abaixo"][alav].median(),
