@@ -51,3 +51,12 @@ O indicador de boletos é **% dos boletos que a meta pede**: boletos de venda ÷
 - **Onde está a perda:** cada caixa mostra se o indicador está maior ou menor que o mesmo período do ano passado e quanto isso vale em R$ (boletos + IPB + preço médio somam a variação da receita).
 - **Cards do topo:** % da meta mostra a variação contra o ano passado até ontem; Projeção mostra onde o mês fecha se repetir a curva do ano passado; Meta de hoje mostra quanto as mesmas lojas venderam no mesmo dia do ano passado.
 - **Gatilho "Caindo vs ano passado":** receita da loja 5% ou mais abaixo do ano passado nos mesmos dias (crítico ≤ −15%, alto ≤ −8%). A ação vai para o indicador que mais tirou receita (boletos, IPB ou preço médio) e a meta do dia é superar a venda do mesmo dia do ano passado.
+
+## Aba Hoje: uma decisão por loja
+- **Régua única:** a meta. Cluster e ano passado aparecem só como evidência ("Por quê").
+- **R$ em risco hoje** (ranking de todas as visões) = meta de hoje − venda esperada se a loja repetir o ritmo dos últimos 7 dias (realizado ÷ meta do dia). Loja sem risco contra a meta, mas 8% ou mais abaixo do ano passado: em risco = venda do mesmo dia do ano passado − esperada.
+- **Indicador a mover:** entre boletos, IPB e preço médio que estão abaixo do alvo de hoje, o que mais tira receita (contra o alvo do Plano BM, ou contra o ano passado quando essa é a régua). Boletos: alvo = meta de hoje ÷ BM alvo, contra a média dos últimos 7 dias.
+- **Como:** canal da própria loja que mais rende contra o cluster (boletos) ou o item do ciclo; IPB sempre com BT e BP.
+- **Registro:** a ação registrada pelo card leva o indicador (coluna gatilho) e a meta ("Meta: 82 boletos hoje" na descrição). O **placar de ontem** compara essa meta com o que a loja (ou o consultor) fez no dia.
+- **A tela se adapta ao filtro:** com loja = visão do gerente (1 decisão, meta por consultor, ações da loja); com GVO = as lojas do GVO; sem loja nem GVO = rede, regional ou praça, com a tabela de GVOs fora do trilho.
+- **Aba Entender:** árvore da perda, comparação com o ano passado, meta × realizado por dia, ciclo × lojas e ações do mês.
