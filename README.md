@@ -49,3 +49,6 @@ Para um novo mês: salve em `Metas/` o arquivo `METAS <MÊS> VAREJO - VD.xlsx` e
 
 ## Boletos contra o cluster
 O indicador de boletos é **% dos boletos que a meta pede**: boletos de venda ÷ (meta do período ÷ BM alvo de venda). Compara lojas de tamanhos diferentes; a referência é a mediana das lojas do mesmo cluster no ritmo.
+- **Onde está a perda:** cada caixa mostra se o indicador está maior ou menor que o mesmo período do ano passado e quanto isso vale em R$ (boletos + IPB + preço médio somam a variação da receita).
+- **Cards do topo:** % da meta mostra a variação contra o ano passado até ontem; Projeção mostra onde o mês fecha se repetir a curva do ano passado; Meta de hoje mostra quanto as mesmas lojas venderam no mesmo dia do ano passado.
+- **Gatilho "Caindo vs ano passado":** receita da loja 5% ou mais abaixo do ano passado nos mesmos dias (crítico ≤ −15%, alto ≤ −8%). A ação vai para o indicador que mais tirou receita (boletos, IPB ou preço médio) e a meta do dia é superar a venda do mesmo dia do ano passado.
