@@ -31,3 +31,12 @@ Para um novo mês: salve em `Metas/` o arquivo `METAS <MÊS> VAREJO - VD.xlsx` e
 - **BM alvo da loja:** média do BM Alvo dos consultores da aba Acompanhamento do Plano BM (ponderada por boletos); sem consultor lá, o BM do cluster. Convertido para boleto de venda pela proporção de brindes da loja em jul–set.
 - **Boletos que a meta pede** = meta ÷ BM alvo. **IPB e preço médio alvo** dividem o BM alvo na proporção de jul–set.
 - **BT e BP:** % dos boletos com a tag "BOLETO TURBINADO" / "BOLETO PROMOCIONAL" na coluna Campanhas. Saudável: 32% e 30%.
+
+## Painel do início do dia (regras de leitura)
+- **Dados D-1:** as vendas vão até ontem; não há parcial do dia.
+- **Meta de hoje (ritmo):** meta do dia da planilha + gap acumulado diluído nos dias que faltam (com meta). **Fecha o mês:** média simples por dia que falta para chegar a 100% da meta do mês.
+- **Dia atípico:** meta do dia abaixo de 25% da mediana das metas diárias do mês (ex.: feriado de 12/10). Fica fora da contagem de "bateu a meta", o gráfico não mostra o % distorcido e o chip da data fica cinza. Rótulos acima de 150% aparecem como ✓.
+- **Chips de data:** filete verde (≥ 100% da meta do dia), amarelo (90 a 99%), vermelho (< 90%), cinza (atípico).
+- **Histórico:** "Por dia" (meta × realizado) ou "Acumulado" (realizado acumulado × esperado, com o gap de cada dia).
+- **Cards de prioridade:** valor em R$ = perda (ou potencial) da loja no período filtrado. Ação de fluxo da própria loja quando um canal (Calçada, VFL, WhatsApp, conversão do brinde) vale ≥ R$ 1 mil contra o cluster no ritmo; senão, a ação do ciclo.
+- **Link direto da loja:** `?loja=ID` (ou `?gvo=`, `?praca=`, `?reg=`). O último filtro fica lembrado no navegador. Com uma loja filtrada, a aba Hoje mostra a meta de hoje por consultor (pela participação na receita do período, só quem vendeu nos últimos 7 dias).

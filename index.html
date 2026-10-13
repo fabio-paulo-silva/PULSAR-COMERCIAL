@@ -110,8 +110,9 @@ select:focus-visible,input:focus-visible,textarea:focus-visible,button:focus-vis
 .dia b{font-family:var(--font-display);font-size:14px;color:var(--foreground);font-variant-numeric:tabular-nums}
 .dia small{font-size:10px;font-weight:600}
 .dia:hover{border-color:var(--muted-fg)}
-.dia.on{background:var(--primary);border-color:var(--primary);color:var(--primary-fg)}
-.dia.on b{color:var(--primary-fg)}
+.dia{opacity:.55}
+.dia.on{opacity:1;background:var(--card);border-color:var(--foreground);color:var(--foreground);box-shadow:var(--shadow-card)}
+.dia.on b{color:var(--foreground)}
 .dia.fds{border-style:dashed}
 .dica{font-size:11px;color:var(--muted-fg)}
 .kpi{padding:20px;transition:box-shadow .2s;min-width:0}
@@ -382,6 +383,11 @@ td.hp{background:oklch(0.76 0.19 152 / .1)} td.hn{background:oklch(0.58 0.21 22 
 .kv span{color:var(--muted-fg)} .kv b{text-align:right;font-variant-numeric:tabular-nums}
 .chart .mb{fill:var(--muted-fg);opacity:.28} .chart .mb.on{fill:var(--chart-3);opacity:.35}
 .chart .rl{fill:none;stroke:var(--foreground);stroke-width:2.2;stroke-linejoin:round}
+.chart .mb.atip{opacity:.12;stroke:var(--muted-fg);stroke-dasharray:3 3}
+.chart .ea{fill:none;stroke:var(--chart-3);stroke-width:2;stroke-dasharray:6 4}
+.chart .gp.ok{fill:var(--success-ink);opacity:.7} .chart .gp.no{fill:var(--destructive);opacity:.7}
+.legend i.ea{width:18px;border-top:2px dashed var(--chart-3)}
+.legend i.bx.gp{background:linear-gradient(90deg,var(--success-ink) 50%,var(--destructive) 50%)}
 .chart .rd{stroke:var(--card);stroke-width:2} .chart .rd.ok{fill:var(--success-ink)} .chart .rd.no{fill:var(--destructive)} .chart .rd.na{fill:var(--muted-fg)}
 .chart .pl{font:800 11px var(--font-sans)} .chart .pl.ok{fill:var(--success-ink)} .chart .pl.no{fill:var(--destructive)} .chart .pl.na{fill:var(--muted-fg);font-weight:600;font-size:10px}
 .legend i.bx.mb{background:var(--chart-3);opacity:.45}
@@ -428,6 +434,66 @@ td.hp{background:oklch(0.76 0.19 152 / .1)} td.hn{background:oklch(0.58 0.21 22 
 
 .kpi .kl{font-size:12px;color:var(--muted-fg);margin-top:8px}
 .kpi.hero .top{display:flex;justify-content:space-between;align-items:center}
+.kpi.hero .hsub{font-family:var(--font-sans);font-size:15px;font-weight:700;color:oklch(1 0 0 / .75);white-space:nowrap}
+.d1{display:inline-block;margin-left:6px;border-radius:6px;padding:1px 6px;background:var(--muted);color:var(--muted-fg);font-size:11px;font-weight:800;letter-spacing:.02em;text-transform:none}
+
+/* Chips de data pintados pelo atingimento do dia (filete embaixo) */
+.dia{position:relative;overflow:hidden}
+.dia::after{content:"";position:absolute;left:0;right:0;bottom:0;height:4px;background:transparent}
+.dleg{font-size:11px;gap:10px} .dleg i{width:14px;border-top-width:4px} .dleg i.dl-ok{border-color:var(--success-ink)} .dleg i.dl-mid{border-color:var(--warning)} .dleg i.dl-no{border-color:var(--destructive)} .dleg i.dl-at{border-color:var(--muted-fg);opacity:.5}
+.dia.r-ok::after{background:var(--success-ink)} .dia.r-mid::after{background:var(--warning)} .dia.r-no::after{background:var(--destructive)} .dia.r-at::after{background:var(--muted-fg);opacity:.5}
+
+
+/* Card de prioridade enxuto */
+.act .head{font-family:var(--font-display);font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.2}
+.act .head small{display:block;font-family:var(--font-sans);font-size:12px;font-weight:600;color:var(--muted-fg);margin-top:2px}
+.act details{border-top:1px solid var(--border);padding-top:10px}
+.act details>summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--muted-fg);list-style:none;display:flex;gap:6px;align-items:center}
+.act details>summary::-webkit-details-marker{display:none}
+.act details>summary svg{width:14px;height:14px;transition:transform .2s}
+.act details[open]>summary svg{transform:rotate(90deg)}
+.act details>div{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.puxam{font-size:13px;color:var(--muted-fg)}
+.puxam b{color:var(--foreground)}
+.status-do{display:inline-flex;gap:6px;align-items:center;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-fg)}
+.status-do.ok{color:var(--success-ink)}
+
+/* Ontem você priorizou */
+.ontem{display:flex;flex-direction:column;gap:8px}
+.ontem .it{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;border-radius:12px;background:var(--muted);padding:10px 12px;font-size:14px}
+.ontem .it svg{width:18px;height:18px}
+.ontem .it .r{font-family:var(--font-display);font-weight:800;font-variant-numeric:tabular-nums;text-align:right}
+.ontem .it small{display:block;color:var(--muted-fg);font-size:12px}
+
+/* Ciclo x lojas */
+.cl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:10px;margin-top:12px}
+.cl-box{border-radius:12px;border:1px solid var(--border);padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-size:13px}
+.cl-box h4{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-fg);display:flex;gap:6px;align-items:center}
+.cl-box h4 svg{width:14px;height:14px}
+.cl-box .ln{display:flex;justify-content:space-between;gap:8px}
+.cl-box .ln button{border:0;background:none;padding:0;color:var(--foreground);font-weight:700;text-align:left;cursor:pointer}
+.cl-box .ln button:hover{text-decoration:underline}
+
+/* Meta por consultor */
+.mc td,.mc th{white-space:nowrap} .mc .r{text-align:right}
+
+/* Celular: hero primeiro e nada abaixo de 12px */
+@media (max-width:640px){
+ .kpi.hero{order:-1}
+ .kpi{padding:16px}
+ .hgrid span,.hgrid small,.alvos span,.exemplo .ex-t,.imp small,.dc .l,.dc .s,.dica,.selo,.d1,.legend,.chart .ax.s{font-size:12px}
+ .chart .pl,.chart .ax{font-size:12px}
+ .act .head{font-size:18px}
+ .kpi.hero .val{font-size:40px}
+ /* filtros recolhidos: a primeira tela mostra a meta de hoje */
+ .filter:not(.open) .row,.filter:not(.open) .datas{display:none}
+ .filter .ttl .fres{display:inline;margin-left:auto;font-weight:600;font-size:12px;color:var(--muted-fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55vw}
+ .filter .ttl .fchev{display:inline-block}
+ .filter.open .fchev{transform:rotate(180deg)}
+ .glass:has(#hBase),#hPlan{display:none}
+}
+.filter .ttl{border:0;background:none;padding:0;width:100%;text-align:left;color:inherit;font-family:inherit;cursor:pointer}
+.filter .fres,.filter .fchev{display:none}
 
 .alvos{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
 @media (max-width:480px){.alvos{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -536,7 +602,7 @@ dialog .hd h3{font-size:18px}
 
 <main class="wrap">
   <section class="card filter">
-    <div class="ttl"><i data-lucide="sliders-horizontal"></i>Filtros</div>
+    <button type="button" class="ttl" id="fToggle" aria-expanded="false"><i data-lucide="sliders-horizontal"></i>Filtros<span class="fres" id="fRes"></span><i data-lucide="chevron-down" class="fchev"></i></button>
     <div class="row">
       <div class="fld"><label for="fReg">Regional</label><select id="fReg"></select></div>
       <div class="fld"><label for="fPraca">Praça</label><select id="fPraca"></select></div>
@@ -549,6 +615,7 @@ dialog .hd h3{font-size:18px}
       <div class="dh"><span class="dl"><i data-lucide="calendar-range"></i>Datas</span><span class="per" id="perTxt"></span>
         <span class="pres"><button type="button" data-pre="ontem">Ontem</button><button type="button" data-pre="7">Últimos 7 dias</button><button type="button" data-pre="mes">Mês até ontem</button></span></div>
       <div class="dias" id="fDias" role="group" aria-label="Datas selecionadas" title="Clique para marcar ou desmarcar. Shift + clique marca um intervalo."></div>
+      <div class="legend dleg"><span><i class="dl-ok"></i>Bateu a meta do dia</span><span><i class="dl-mid"></i>90 a 99%</span><span><i class="dl-no"></i>Abaixo de 90%</span><span><i class="dl-at"></i>Atípico (feriado)</span></div>
     </div>
   </section>
 
@@ -790,6 +857,14 @@ function aggL(list){
  btbpCalc(a);
  return a;
 }
+// Dia atípico: meta do dia abaixo de 25% da mediana das metas diárias do mês (feriado ou loja prevista fechada).
+// Fica fora da contagem de "bateu a meta" e o rótulo do gráfico não mostra o % distorcido.
+function atipicos(a){
+ const v=a.metaDays.filter(x=>x>0).sort((x,y)=>x-y),n=v.length;if(!n)return new Set();
+ const med=n%2?v[(n-1)/2]:(v[n/2-1]+v[n/2])/2,s=new Set();
+ a.metaDays.forEach((x,i)=>{if(x>0&&x<.25*med)s.add(i+1)});
+ return s;
+}
 // Penetração de BT e BP: % dos boletos de venda com a tag na coluna Campanhas.
 // Perda = boletos que faltaram para a penetração saudável × preço médio do item.
 function btbpCalc(a){
@@ -918,7 +993,7 @@ function avaliar(ls){
 }
 
 /* ================= Estado e escopo ================= */
-const S={reg:'',praca:'',gvo:'',loja:'',cons:'',tab:'hoje',pfil:'',chart:'dia',acSel:null,foco:null,sort:{lojas:['gapR',1],cons:['idx',1]}};
+const S={reg:'',praca:'',gvo:'',loja:'',cons:'',tab:'hoje',pfil:'',chart:'dia',hist:'dia',acSel:null,foco:null,sort:{lojas:['gapR',1],cons:['idx',1]}};
 let FIRED=[];
 const $=id=>document.getElementById(id);
 // Hierarquia dos filtros: Regional -> Praça -> GVO -> Loja -> Consultor
@@ -930,14 +1005,18 @@ function render(){
  const ls=escopo(),ids=new Set(ls.map(l=>l.id)),a=aggL(ls);
  const cs=S.cons?cons.filter(c=>c.id===S.cons):cons.filter(c=>ids.has(c.loja)&&c.m.dias>=Math.min(2,SEL.size));
  $('perTxt').textContent=perTxt();
+ const lj=S.loja&&lojaById(S.loja);$('fRes').textContent=`${lj?lj.nome:S.gvo||S.praca||S.reg||'Rede'} · ${perTxt()}`;
  FIRED=avaliar(ls);
  if(!S.foco||!ids.has(S.foco))S.foco=[...ls].sort((x,y)=>M[x.id].gapR-M[y.id].gapR)[0].id;
  // Status do conjunto contra o "deveria estar" (meta diarizada acumulada)
  const acima=a.gapPP>=0,stA=acima?'ok':'bad',stP=a.proj>=1?'ok':a.proj>=.96?'warn':'bad';
  const chip=(st,txt,i)=>`<span class="ritmo ${st}">${ic(i)}${txt}</span>`;
  const bmH=a.bmAlvoV||a.bm,bolH=bmH?a.hoje/bmH:0;
+ // Régua do mês: média simples por dia que falta (com meta) para fechar 100%
+ const fechaDia=a.diasRest?Math.max(0,a.metaMes-a.rec)/a.diasRest:0;
+ fillDias(a);
  $('kpis').innerHTML=`
-  <div class="card kpi st-${stA} fade"><p class="lbl">% da meta</p><p class="val ${acima?'c-ok':'c-bad'}">${pct(a.at,1)}</p>
+  <div class="card kpi st-${stA} fade"><p class="lbl">% da meta <span class="d1">D-1 · até ${dd(LAST)}</span></p><p class="val ${acima?'c-ok':'c-bad'}">${pct(a.at,1)}</p>
    ${chip(stA,`${acima?'Acima':'Abaixo'} do ritmo · ${pp(a.gapPP)}`,acima?'trending-up':'trending-down')}
    <div class="prog"><i style="width:${Math.min(100,a.at*100)}%;background:${acima?'var(--primary)':'var(--destructive)'}"></i><b style="left:${a.esp*100}%"></b></div>
    <p class="kl"><b>Meta do mês ${kbrl(a.metaMes)}</b> · faltam ${kbrl(Math.max(0,a.metaMes-a.rec))}</p>
@@ -945,12 +1024,11 @@ function render(){
   <div class="card kpi st-${stP} fade"><p class="lbl">Projeção</p><p class="val ${tone(a.proj>=1,a.proj>=.96)}">${pct(a.proj)}</p>
    ${chip(stP,stP==='ok'?'Fecha acima':stP==='warn'?'No limite':'Fecha abaixo',stP==='ok'?'circle-check':'triangle-alert')}
    <p class="kl">${a.gapR>=0?'+':''}${kbrl(a.gapR)} vs. meta até ${dd(LAST)}</p></div>
-  <div class="card kpi hero fade"><div class="top"><p class="lbl">Meta de hoje</p>${chip(a.recup>0?'bad':'ok',a.recup>0?'Recuperar':'No ritmo',a.recup>0?'alarm-clock':'circle-check')}</div>
-   <p class="val">${kbrl(a.hoje)}</p>
+  <div class="card kpi hero fade"><div class="top"><p class="lbl">Meta de hoje · ${dd(Math.min(TODAY,DAYS))}</p>${chip(a.recup>0?'bad':'ok',a.recup>0?'Recuperar':'No ritmo',a.recup>0?'alarm-clock':'circle-check')}</div>
+   <p class="val">${kbrl(a.hoje)} <small class="hsub">${fx(bolH)} boletos</small></p>
+   <p class="hnota">${a.recup>0?`Meta do dia ${kbrl(a.metaHoje)} + ${kbrl(a.recup)} do gap, diluído nos ${a.diasRest} dias que faltam`:`Meta do dia da planilha: o conjunto está acima do ritmo`}</p>
    <div class="hgrid">
-    <div><span>Meta do dia</span><b>${kbrl(a.metaHoje)}</b></div>
-    <div><span>Recuperação</span><b>${a.recup>0?'+'+kbrl(a.recup):'—'}</b></div>
-    <div><span>Boletos</span><b>${fx(bolH)}</b></div>
+    <div><span>Fecha o mês</span><b>${kbrl(fechaDia)}</b><small>média/dia · ${a.diasRest} dias</small></div>
     <div><span>BM alvo</span><b>${brl(bmH)}</b></div>
     <div><span>IPB alvo</span><b>${fx(a.ipbAlvo||a.ipb,2)}</b></div>
     <div><span>BT · BP</span><b>${fx(bolH*F.bt)} · ${fx(bolH*F.bp)}</b></div>
@@ -983,7 +1061,7 @@ function node(k,a){
   pm:['Preço médio','tag',brl(a.pm,2),`alvo ${brl(a.pmAlvo,2)} · ${REFTXT} ${brl(a.pmRef,2)}`,a.dPm,a.iPm]}[k];
  const tg=e==='det'?'<span class="pill p-bad">Detrator</span>':e==='ala'?'<span class="pill p-ok">Alavanca</span>':'';
  return `<div class="node ${k==='rec'?'rootn':e}"><div class="lb"><span>${ic(icn)}${lb}</span>${tg}</div><div class="vv">${v}</div>
-  <div class="ln"><span class="delta ${d>=.005?'up':d<=-.005?'down':'flat'}">${ic(d>=0?'arrow-up-right':'arrow-down-right')}${pct(d,1,true)}</span><span>${ref}</span></div>
+  <div class="ln"><span class="delta ${d>=.005?'up':d<=-.005?'down':'flat'}">${ic(d>=0?'arrow-up-right':'arrow-down-right')}${pct(d,1,true)} vs ${k==='rec'?'meta':'alvo'}</span><span>${ref}</span></div>
   ${k==='rec'?'':`<div class="im ${imp<0?'c-bad':'c-ok'}">${imp<0?'':'+'}${kbrl(imp)}</div>`}</div>`;
 }
 const maiorDet=m=>{const k=['bol','ipb','pm'].reduce((x,y)=>m[IMPK[y]]<m[IMPK[x]]?y:x);return m[IMPK[k]]<-.01*m.metaP?k:null};
@@ -1006,29 +1084,50 @@ const curta=h=>{const i=h.search(/\.(<\/b>)?\s+[A-ZÁÉÍÓÚÂÊÔÃÕÇ<]/);re
 // Alvos de hoje: boletos = meta de hoje ÷ BM alvo; BT e BP nas penetrações saudáveis
 const alvosHoje=m=>{const bm=m.bmAlvoV||m.bm,b=bm?m.hoje/bm:0;return{b,bm,ipb:m.ipbAlvo||m.ipb,bt:b*F.bt,bp:b*F.bp}};
 const alvosHTML=m=>{const x=alvosHoje(m);return `<div class="alvos"><span>Boletos<b>${fx(x.b)}</b></span><span>BM alvo<b>${brl(x.bm)}</b></span><span>IPB alvo<b>${fx(x.ipb,2)}</b></span><span>BT · BP<b>${fx(x.bt)} · ${fx(x.bp)}</b></span></div>`};
+// Consultores que mais puxam a loja para baixo (receita por dia abaixo do time)
+function puxamBaixo(lid){
+ return cons.filter(c=>c.loja===lid&&c.m.dias>=Math.min(3,SEL.size)).map(c=>[c,perfil(c)])
+  .filter(([,p])=>['atende','item','ticket','abaixo'].includes(p.k)).sort((x,y)=>x[1].idx-y[1].idx).slice(0,2);
+}
+// Ação de fluxo da própria loja: o canal (Calçada, VFL, WhatsApp...) com mais ganho contra o cluster no ritmo
+const TIPO_CANAL={cal:'Calçada Perfumada',vfl:'Venda fora de loja',wpp:'Carteira no WhatsApp',cb:'Carteira no WhatsApp',fc:'Conversão da Ação de Fluxo'};
+function acaoFluxoLoja(t){
+ const m=M[t.loja.id],p=praticaPara(m,'fluxo'),cic=acoesCiclo('fluxo')[0];
+ if(!p||p.ganho<1000)return null;          // ganho pequeno: fica a ação do ciclo
+ const P=PRAT[p.k];
+ return `<div class="do">${ic(TIPOS[TIPO_CANAL[p.k]]||'footprints')}<div><b>${esc(P.n)}: ${pctP(p.v)} aqui × ${pctP(p.alvo)} alvo do cluster</b><span>${esc(P.como)} (+${fx(p.extra)} ${esc(P.u)} ≈ +${kbrl(p.ganho)} no período)${cic?` · Ciclo: ${esc(cic.acao)}`:''}</span></div></div>`;
+}
 function prioCard(t,i,n){
- const g=GT[t.g],s=SEV[t.sev];
+ const g=GT[t.g],s=SEV[t.sev],m=M[t.loja.id],x=alvosHoje(m),ok=feita(t),fl=['fluxo','ritmo'].includes(t.g)?acaoFluxoLoja(t):null;
+ const meta=t.meta.split(' · vender')[0],px=puxamBaixo(t.loja.id);
+ const media=(meta.match(/média atual [^)]+/)||[''])[0],soBol=/boletos hoje/.test(meta);   // fluxo: a meta de boletos já está no título
  return `<article class="card act ${t.sev} fade">
-  <div class="hd"><div class="l"><span class="num">${n}</span><span class="sev ${t.sev}">${ic(s.ic)}${s.n}</span></div><div class="imp"><b>${kbrl(t.imp)}</b><small>em jogo</small></div></div>
+  <div class="hd"><div class="l"><span class="num">${n}</span><span class="sev ${t.sev}">${ic(s.ic)}${s.n}</span><span class="status-do ${ok?'ok':''}">${ic(ok?'circle-check':'circle-dashed')}${ok?'Feita':'Pendente'}</span></div><div class="imp"><b>${kbrl(t.imp)}</b><small>${esc(t.impL||'em jogo')}</small></div></div>
   <h3>${ic(g.icon)}${esc(t.loja.nome)}</h3>
+  <p class="head">${fx(x.b)} boletos hoje · vender ${kbrl(m.hoje)}<small>Hoje · BM alvo ${brl(x.bm)} · IPB alvo ${fx(x.ipb,2)}${media?` · ${media}`:''}</small></p>
   <p class="evid"><b>${g.nome}:</b> ${curta(t.evid)}</p>
   ${semAcao(t.loja)?`<p class="flag">${ic('bell-ring')}Sem ação há 3 dias</p>`:''}
-  ${acaoBloco(t.g,{tipo:t.acao||g.acao,acao:t.acao||g.acao,detalhe:t.rot||g.roteiro[0]})}
-  <div class="goal">${ic('flag')}<span>${t.meta.split(' · vender')[0]} · <b>vender ${kbrl(M[t.loja.id].hoje)} hoje</b></span></div>
-  ${alvosHTML(M[t.loja.id])}
-  ${(()=>{const m=M[t.loja.id],k=coreDoGatilho(t.g),co=m.core||{};
+  ${fl||acaoBloco(t.g,{tipo:t.acao||g.acao,acao:t.acao||g.acao,detalhe:t.rot||g.roteiro[0]})}
+  ${soBol||/^Vender/.test(meta)?'':`<div class="goal">${ic('flag')}<span>Meta de hoje: <b>${meta}</b></span></div>`}
+  ${px.length?`<p class="puxam">${ic('user-round-x')} Puxam para baixo: ${px.map(([c,p])=>`<b>${esc(c.nome.split(' ')[0])}</b> (${pct(p.idx)} do time · ${PERFIS[p.k].n.toLowerCase()})`).join(', ')}</p>`:''}
+  <details><summary>${ic('chevron-right')}Alvos de hoje e comparação com o cluster</summary><div>
+  ${alvosHTML(m)}
+  ${(()=>{const k=coreDoGatilho(t.g),co=m.core||{};
    const ks=[k];if(k!=='pm'&&co.pm&&co.pm.gap>0)ks.push('pm');else if(k!=='ipb'&&co.ipb&&co.ipb.gap>0)ks.push('ipb');
    const linhas=ks.filter(x=>co[x]&&co[x].gap>0).map(x=>`<p>${fraseCore(x,co[x],t.loja)}</p>`);
    const p=praticaPara(m,k==='bpm'?'fluxo':'item')||praticaPara(m);if(p)linhas.push(`<p>${frasePrat(p,t.loja)}</p>`);
    return linhas.length?`<div class="exemplo">${ic('lightbulb')}<div><p class="ex-t">Comparado com as lojas ${esc(nomeCluster(t.loja.cluster).toLowerCase())} no ritmo</p>${linhas.join('')}</div></div>`:''})()}
-  <div class="ft">${feita(t)?`<span class="done">${ic('circle-check')}Registrada</span>`:`<button class="btn" data-reg="${i}">${ic('plus')}Registrar</button>`}<button class="btn ghost sm" data-foco="${t.loja.id}">Ver loja ${ic('arrow-right')}</button></div></article>`;
+  </div></details>
+  <div class="ft">${ok?`<span class="done">${ic('circle-check')}Feita hoje</span>`:`<button class="btn" data-reg="${i}">${ic('check')}Marcar como feita</button>`}<button class="btn ghost sm" data-foco="${t.loja.id}">Ver loja ${ic('arrow-right')}</button></div></article>`;
 }
 // Barras = meta do dia; linha = realizado do dia; rótulo = atingimento (verde se bateu).
 function drawMetaDia(a,el){
- const N=Math.min(TODAY,DAYS),cw=Math.max(34,672/N),L=58,Rr=14,T=30,B=40,W=L+Rr+cw*N,H=300,ih=H-T-B,bw=cw*.62;
- const vals=[...a.metaDays.slice(0,N),...a.days,a.hoje];
+ if(S.hist==='acum')return drawAcum(a,el);
+ const N=Math.min(TODAY,DAYS),cw=Math.max(34,672/N),L=58,Rr=14,T=30,B=40,W=L+Rr+cw*N,H=300,ih=H-T-B,bw=cw*.62,AT=atipicos(a);
+ // escala sem o realizado de dias atípicos (o feriado não achata o resto)
+ const vals=[...a.metaDays.slice(0,N),...a.days.filter((_,i)=>!AT.has(i+1)),a.hoje];
  const MAX=Math.max(...vals)*1.18||1;
- const xc=d=>L+cw*(d-.5),y=v=>T+(1-v/MAX)*ih;
+ const xc=d=>L+cw*(d-.5),y=v=>T+(1-Math.min(v,MAX*1.04)/MAX)*ih;
  const DS=['dom','seg','ter','qua','qui','sex','sáb'];
  let g='';
  for(let i=0;i<=4;i++){const v=MAX/1.18*i/4;g+=`<line class="grid" x1="${L}" x2="${W-Rr}" y1="${y(v)}" y2="${y(v)}"/><text class="ax" x="${L-8}" y="${y(v)+4}" text-anchor="end">${kbrl(v)}</text>`}
@@ -1040,15 +1139,40 @@ function drawMetaDia(a,el){
    if(a.hoje>0)g+=`<rect class="bo" x="${xc(d)-bw/2}" y="${y(a.hoje)}" width="${bw}" height="${y(0)-y(a.hoje)}" rx="4"><title>Hoje: meta do dia ${kbrl(a.metaHoje)} + ${kbrl(a.recup)} de recuperação</title></rect><text class="bl o" x="${xc(d)}" y="${y(a.hoje)-8}" text-anchor="middle">${kbrl(a.hoje)}</text>`;
    continue;
   }
-  const rv=a.days[d-1];pts.push([xc(d),y(rv),d]);
-  if(mt>0)g+=`<rect class="mb ${on?'on':''}" x="${xc(d)-bw/2}" y="${y(mt)}" width="${bw}" height="${y(0)-y(mt)}" rx="4"/>`;
+  const rv=a.days[d-1],atip=AT.has(d);pts.push([xc(d),y(rv),d]);
+  if(mt>0)g+=`<rect class="mb ${on?'on':''} ${atip?'atip':''}" x="${xc(d)-bw/2}" y="${y(mt)}" width="${bw}" height="${y(0)-y(mt)}" rx="4"/>`;
   const at=mt>0?rv/mt:null,top=Math.min(mt>0?y(mt):y(0),y(rv))-10;
-  g+=`<text class="pl ${at==null?'na':at>=1?'ok':'no'}" x="${xc(d)}" y="${top}" text-anchor="middle">${at==null?'s/ meta':pct(at)}</text>`;
-  g+=`<rect x="${xc(d)-cw/2}" y="${T}" width="${cw}" height="${ih}" fill="transparent"><title>${dd(d)} (${dow}) · meta ${kbrl(mt)} · realizado ${kbrl(rv)}${at!=null?' · '+pct(at,1):''}</title></rect>`;
+  // dia atípico: sem % (meta quase zero distorce); acima de 150%: ✓ para não poluir
+  const rot=at==null?'s/ meta':atip?'atípico':at>1.5?'✓':pct(at);
+  g+=`<text class="pl ${at==null||atip?'na':at>=1?'ok':'no'}" x="${xc(d)}" y="${top}" text-anchor="middle">${rot}</text>`;
+  g+=`<rect x="${xc(d)-cw/2}" y="${T}" width="${cw}" height="${ih}" fill="transparent"><title>${dd(d)} (${dow}) · meta ${kbrl(mt)} · realizado ${kbrl(rv)}${at!=null?' · '+pct(at,1):''}${atip?' · dia atípico: meta quase zero (feriado?), fora da contagem':''}</title></rect>`;
  }
  if(pts.length){g+=`<polyline class="rl" points="${pts.map(p=>p[0]+','+p[1]).join(' ')}"/>`;
   pts.forEach(([x,yy,d])=>{const mt=a.metaDays[d-1];g+=`<circle class="rd ${mt>0?(a.days[d-1]>=mt?'ok':'no'):'na'}" cx="${x}" cy="${yy}" r="4.5"/>`})}
  $(el).innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="min-width:${Math.round(W*.8)}px" role="img" aria-label="Meta do dia em barras e realizado do dia em linha, com o atingimento de cada dia">${g}</svg>`;
+}
+// Acumulado: realizado acumulado × esperado acumulado (meta diarizada); barras = gap do dia em R$
+function drawAcum(a,el){
+ const N=LAST,cw=Math.max(34,672/(N+1)),L=64,Rr=14,T=30,B=40,W=L+Rr+cw*N,H=300,ih=H-T-B,bw=cw*.5;
+ const ra=[],ea=[];let r=0,e=0;for(let d=1;d<=N;d++){r+=a.days[d-1];e+=a.metaDays[d-1];ra.push(r);ea.push(e)}
+ const gaps=a.days.map((v,i)=>v-a.metaDays[i]);
+ const MAX=Math.max(...ra,...ea)*1.12||1,GM=Math.max(...gaps.map(Math.abs))||1;
+ // faixa de cima (68%): linhas acumuladas; faixa de baixo: gap do dia em torno da linha tracejada
+ const xc=d=>L+cw*(d-.5),y=v=>T+(1-v/MAX)*ih*.68,gy=v=>v/GM*ih*.13;
+ const DS=['dom','seg','ter','qua','qui','sex','sáb'];
+ let g='';
+ for(let i=0;i<=4;i++){const v=MAX/1.12*i/4;g+=`<line class="grid" x1="${L}" x2="${W-Rr}" y1="${y(v)}" y2="${y(v)}"/><text class="ax" x="${L-8}" y="${y(v)+4}" text-anchor="end">${kbrl(v)}</text>`}
+ const base=T+ih*.85;g+=`<text class="ax s" x="${L-8}" y="${base+4}" text-anchor="end">gap/dia</text>`;g+=`<line class="grid" x1="${L}" x2="${W-Rr}" y1="${base}" y2="${base}" stroke-dasharray="3 3"/>`;
+ for(let d=1;d<=N;d++){
+  const gp=gaps[d-1],h=Math.abs(gy(gp)),dow=DS[new Date(ANO,MES,d).getDay()];
+  g+=`<rect class="gp ${gp>=0?'ok':'no'}" x="${xc(d)-bw/2}" y="${gp>=0?base-h:base}" width="${bw}" height="${Math.max(1,h)}" rx="3"><title>${dd(d)} · gap do dia ${gp>=0?'+':''}${kbrl(gp)} · acumulado ${kbrl(ra[d-1]-ea[d-1])}</title></rect>`;
+  g+=`<text class="ax" x="${xc(d)}" y="${H-22}" text-anchor="middle">${pad(d)}</text><text class="ax s" x="${xc(d)}" y="${H-8}" text-anchor="middle">${dow}</text>`;
+ }
+ const pl=arr=>arr.map((v,i)=>xc(i+1)+','+y(v)).join(' ');
+ g+=`<polyline class="ea" points="${pl(ea)}"/><polyline class="rl" points="${pl(ra)}"/>`;
+ const gf=ra[N-1]-ea[N-1];
+ g+=`<circle class="rd ${gf>=0?'ok':'no'}" cx="${xc(N)}" cy="${y(ra[N-1])}" r="5"/><text class="pl ${gf>=0?'ok':'no'}" x="${xc(N)-8}" y="${Math.min(y(ra[N-1]),y(ea[N-1]))-10}" text-anchor="end">${gf>=0?'+':''}${kbrl(gf)}</text>`;
+ $(el).innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="min-width:${Math.round(W*.8)}px" role="img" aria-label="Realizado acumulado contra o esperado acumulado, com o gap de cada dia em barras">${g}</svg>`;
 }
 // Próximas datas do ciclo (de hoje em diante)
 function agendaHTML(){
@@ -1057,33 +1181,74 @@ function agendaHTML(){
  if(!ag.length)return '';
  return `<div class="agenda">${ag.map(x=>`<div class="ag ${x.inicio<=h?'agora':''}"><b>${x.inicio===x.fim?f(x.inicio):f(x.inicio)+' a '+f(x.fim)}</b><span>${esc(x.texto)}</span>${x.inicio<=h?'<em>acontecendo</em>':''}</div>`).join('')}</div>`;
 }
-function cicloCard(){
+// Ciclo × lojas: o que está ativo hoje e onde aplicar primeiro (lojas com maior folga de boletos e de IPB)
+function cicloCard(ls){
  if(!cicloAtivo())return '';
- const ag=agendaHTML();
- return ag?`<div class="card pad"><h2 style="font-size:16px;display:flex;gap:8px;align-items:center">${ic('sparkles')} ${esc(CICLO.nome)}</h2>${ag}</div>`:'';
+ const h=`${ANO}-${pad(MES+1)}-${pad(Math.min(TODAY,DAYS))}`;
+ const ativos=[...(CICLO.agenda||[]).filter(x=>x.inicio<=h&&x.fim>=h).map(x=>x.texto),
+  ...['fluxo','ipb'].map(k=>acoesCiclo(k)[0]).filter(Boolean).map(x=>x.acao)].filter((v,i,s)=>s.indexOf(v)===i).slice(0,4);
+ const linha=(l,txt,v)=>`<div class="ln"><button data-foco="${l.id}">${esc(l.nome)}</button><span>${txt} · <b class="c-bad">${kbrl(v)}</b></span></div>`;
+ const fb=ls.length>1?ls.filter(l=>M[l.id].iBol<0&&M[l.id].bolEsp).sort((x,y)=>M[x.id].iBol-M[y.id].iBol).slice(0,3):[];
+ const fi=ls.length>1?ls.filter(l=>M[l.id].iIpb<0).sort((x,y)=>M[x.id].iIpb-M[y.id].iIpb).slice(0,3):[];
+ const cb=acoesCiclo('fluxo')[0],ci=acoesCiclo('ipb')[0];
+ const prox=(CICLO.agenda||[]).filter(x=>x.inicio>h).slice(0,2);
+ return `<div class="card pad"><h2 style="font-size:16px;display:flex;gap:8px;align-items:center">${ic('sparkles')} ${esc(CICLO.nome)} · ativo hoje</h2>
+  ${ativos.length?`<p class="mf" style="margin-top:6px">${ativos.map(esc).join(' · ')}</p>`:''}
+  <div class="cl-grid">
+   ${fb.length?`<div class="cl-box"><h4>${ic('receipt')}Mais boletos faltando${cb?` → ${esc(cb.acao)}`:''}</h4>${fb.map(l=>{const m=M[l.id];return linha(l,`−${fx((m.bolEsp-m.bol)/m.nd)} boletos/dia`,m.iBol)}).join('')}</div>`:''}
+   ${fi.length?`<div class="cl-box"><h4>${ic('shopping-bag')}Mais folga de IPB${ci?` → ${esc(ci.acao)}`:''}</h4>${fi.map(l=>{const m=M[l.id];return linha(l,`IPB ${fx(m.ipb,2)} / ${fx(m.ipbAlvo,2)} · BT ${pct(m.pBT)} · BP ${pct(m.pBP)}`,m.iIpb)}).join('')}</div>`:''}
+   ${prox.length?`<div class="cl-box"><h4>${ic('calendar-clock')}Próximas datas</h4>${prox.map(x=>`<div class="ln"><span>${esc(x.texto)}</span><b>${x.inicio.slice(8,10)}/${x.inicio.slice(5,7)}</b></div>`).join('')}</div>`:''}
+  </div></div>`;
+}
+// Fecha o ciclo: ações registradas ontem (no filtro) e o resultado da loja/consultor no dia
+function ontemHTML(ids){
+ const ac=acoesMes().filter(x=>x.dia===LAST&&ids.has(x.loja)).slice(0,4);
+ if(!ac.length)return `<p class="mf" style="display:flex;gap:6px;align-items:center">${ic('history')}Ontem (${dd(LAST)}) nenhuma ação foi registrada neste filtro.</p>`;
+ const ant=(arr,d)=>{const v=[];for(let x=d-1;x>=1&&v.length<3;x--)if(arr[x-1]>0)v.push(arr[x-1]);return v.length?avg(v):0};
+ return `<div class="card pad ontem"><h2 style="font-size:16px;display:flex;gap:8px;align-items:center">${ic('history')} Ontem (${dd(LAST)}) você priorizou</h2>
+  ${ac.map(x=>{const l=lojaById(x.loja);if(!l)return '';const c=x.cons?consById(x.cons):null,src=c||l;
+   const rv=src.rec[LAST-1],bo=src.bol[LAST-1],mt=c?0:l.meta[LAST-1],r=mt>0?rv/mt:null,bAnt=ant(src.bol,LAST);
+   const okk=r!=null?r>=1:bo>=bAnt;
+   return `<div class="it">${ic(okk?'circle-check':'circle-x',okk?'c-ok':'c-bad')}<div><b>${esc(x.tipo)}</b> · ${esc(c?c.nome+' · ':'')}${esc(l.nome)}<small>${fx(bo)} boletos (média dos 3 dias antes: ${fx(bAnt,1)})${x.desc?' · '+esc(x.desc.slice(0,80)):''}</small></div>
+    <div class="r ${okk?'c-ok':'c-bad'}">${kbrl(rv)}<small>${r!=null?pct(r)+' da meta do dia':'vendido no dia'}</small></div></div>`}).join('')}</div>`;
+}
+// Meta de hoje da loja dividida entre os consultores, pela participação de cada um na receita do período
+function metaConsHTML(l){
+ // só quem vendeu nos últimos 7 dias (fora folguistas e desligados)
+ const m=M[l.id],cs=cons.filter(c=>c.loja===l.id&&c.m.rec>0&&c.bol.slice(Math.max(0,LAST-7),LAST).some(v=>v>0)),tot=sum(cs.map(c=>c.m.rec));if(!cs.length||!tot)return '';
+ const bm=m.bmAlvoV||m.bm;
+ const rows=cs.map(c=>({c,s:c.m.rec/tot})).sort((x,y)=>y.s-x.s);
+ return `<div class="card"><div class="card-hd"><div><h2>Meta de hoje por consultor</h2><p>${esc(l.nome)} · ${kbrl(m.hoje)} divididos pela participação na receita (${perTxt()})</p></div><span class="icchip t-accent">${ic('users')}</span></div>
+  <div class="tw"><table class="mc"><thead><tr><th>Consultor</th><th class="r">Participação</th><th class="r">Meta hoje</th><th class="r">Boletos</th><th class="r">Média atual/dia</th></tr></thead><tbody>
+  ${rows.map(({c,s})=>{const mh=m.hoje*s;return `<tr><td><p class="nm">${esc(c.nome)}</p></td><td class="r tnum">${pct(s)}</td><td class="r tnum"><b>${kbrl(mh)}</b></td><td class="r tnum">${fx(bm?mh/bm:0)}</td><td class="r tnum ${c.m.recDia>=mh?'c-ok':'c-bad'}">${kbrl(c.m.recDia)} · ${fx(c.m.bolDia,1)} bol.</td></tr>`}).join('')}
+  </tbody></table></div></div>`;
 }
 function vHoje(ls,cs,a){
- const PR=prioridades(),top=PR.slice(0,3),prox=PR.slice(3,8);
+ const PR=prioridades(),top=PR.slice(0,3),prox=PR.slice(3,8),ids=new Set(ls.map(l=>l.id));
  const ritmoRest=(a.metaMes-a.metaAte)*a.proj,k=ritmoRest>0?(a.metaMes-a.rec)/ritmoRest:0;
- const ab=[];for(let d=1;d<=LAST;d++)if(a.metaDays[d-1]>0)ab.push(a.days[d-1]>=a.metaDays[d-1]);
+ const AT=atipicos(a),ab=[];for(let d=1;d<=LAST;d++)if(a.metaDays[d-1]>0&&!AT.has(d))ab.push(a.days[d-1]>=a.metaDays[d-1]);
+ const lj=S.loja?lojaById(S.loja):null;
  $('view').innerHTML=`<section class="sec">
+  ${ontemHTML(ids)}
+  <div class="plan-hd"><div><h2>Prioridades de hoje</h2><p>O valor de cada card é o que a loja perdeu (ou pode ganhar) no período ${perTxt()}</p></div></div>
+  <div class="acts3">${top.map(([t,i],n)=>prioCard(t,i,n+1)).join('')||'<p class="empty">Nenhuma prioridade: tudo no ritmo. Reconheça o time.</p>'}</div>
+  ${prox.length?`<details class="card"><summary class="card-hd" style="cursor:pointer"><div><h2>Na sequência (${prox.length})</h2></div></summary><div class="next">${prox.map(([t,i])=>`<div class="nx"><span class="sev ${t.sev}" style="padding:3px 6px">${ic(GT[t.g].icon)}</span><div><b>${esc(t.loja.nome)} · ${GT[t.g].nome}</b><span>${kbrl(t.imp)} ${esc(t.impL||'em jogo')}</span></div>${feita(t)?`<span class="done">${ic('circle-check')}</span>`:`<button class="btn sm" data-reg="${i}">Marcar feita</button>`}</div>`).join('')}</div></details>`:''}
+  ${lj?metaConsHTML(lj):''}
   <div class="card pad">
-   <div class="crumb" style="justify-content:space-between"><div><h2 style="font-size:18px">Meta × realizado por dia</h2><p class="mf">Bateu a meta em <b>${ab.filter(Boolean).length} de ${ab.length} dias</b></p></div></div>
-   <div class="tw"><div class="chart" id="chartMeta"></div></div>
-   <div class="legend"><span><i class="bx mb"></i>Meta</span><span><i class="ln"></i>Realizado</span><span><i class="bx o"></i>Hoje</span></div>
-  </div>
-  <div class="card pad">
-   <div class="crumb" style="justify-content:space-between"><div><h2 style="font-size:18px">Onde está a perda</h2></div></div>
+   <div class="crumb" style="justify-content:space-between"><div><h2 style="font-size:18px">Onde está a perda</h2><p class="mf">${perTxt()} · cada variação é contra o alvo (receita contra a meta do período)</p></div></div>
    <div class="root">${node('rec',a)}</div><div class="conn"></div>
    <div class="lvl l2"><div class="br">${node('bol',a)}</div><div class="op">×</div>
     <div class="br">${node('bm',a)}<div class="conn"></div><div class="lvl l3"><div class="br">${node('ipb',a)}</div><div class="op">×</div><div class="br">${node('pm',a)}</div></div></div></div>
-   <div class="close">${k<=1?`${ic('circle-check')}<b>No ritmo, a meta fecha.</b>`
-    :`${ic('target')}<b>Para fechar a meta:</b><span class="lv">+${pct(k-1,1)} boletos</span><span class="ou">ou</span><span class="lv">IPB ${fx(a.ipb*k,2)}</span><span class="ou">ou</span><span class="lv">PM ${brl(a.pm*k,2)}</span>`}</div>
+   <div class="close">${k<=1?`${ic('circle-check')}<b>Acumulado do mês: no ritmo atual, a meta fecha.</b>`
+    :`${ic('target')}<b>Acumulado do mês (${a.diasRest} dias que faltam), para fechar 100%:</b><span class="lv">+${pct(k-1,1)} boletos</span><span class="ou">ou</span><span class="lv">IPB ${fx(a.ipb*k,2)}</span><span class="ou">ou</span><span class="lv">PM ${brl(a.pm*k,2)}</span>`}</div>
   </div>
-  ${cicloCard()}
-  <div class="plan-hd"><div><h2>Prioridades de hoje</h2></div></div>
-  <div class="acts3">${top.map(([t,i],n)=>prioCard(t,i,n+1)).join('')||'<p class="empty">Nenhuma prioridade: tudo no ritmo. Reconheça o time.</p>'}</div>
-  ${prox.length?`<div class="card"><div class="card-hd"><div><h2>Na sequência</h2></div></div><div class="next">${prox.map(([t,i])=>`<div class="nx"><span class="sev ${t.sev}" style="padding:3px 6px">${ic(GT[t.g].icon)}</span><div><b>${esc(t.loja.nome)} · ${GT[t.g].nome}</b><span>${kbrl(t.imp)} em jogo</span></div>${feita(t)?`<span class="done">${ic('circle-check')}</span>`:`<button class="btn sm" data-reg="${i}">Registrar</button>`}</div>`).join('')}</div></div>`:''}
+  ${cicloCard(ls)}
+  <div class="card pad">
+   <div class="crumb" style="justify-content:space-between;flex-wrap:wrap;gap:8px"><div><h2 style="font-size:18px">Histórico do mês</h2><p class="mf">${S.hist==='acum'?`Realizado acumulado × esperado (meta diarizada) · gap ${a.gapR>=0?'+':''}${kbrl(a.gapR)}`:`Bateu a meta em <b>${ab.filter(Boolean).length} de ${ab.length} dias</b>${AT.size?` · ${[...AT].map(dd).join(', ')} atípico (meta quase zero), fora da conta`:''}`}</p></div>
+    <div class="seg"><button class="${S.hist!=='acum'?'on':''}" data-hist="dia">Por dia</button><button class="${S.hist==='acum'?'on':''}" data-hist="acum">Acumulado</button></div></div>
+   <div class="tw"><div class="chart" id="chartMeta"></div></div>
+   <div class="legend">${S.hist==='acum'?'<span><i class="ln"></i>Realizado acumulado</span><span><i class="ea"></i>Esperado acumulado</span><span><i class="bx gp"></i>Gap do dia</span>':'<span><i class="bx mb"></i>Meta</span><span><i class="ln"></i>Realizado</span><span><i class="bx o"></i>Hoje</span><span>✓ acima de 150%</span>'}</div>
+  </div>
  </section>`;
  drawMetaDia(a,'chartMeta');
 }
@@ -1342,22 +1507,39 @@ function fillFiltros(){
  $('fCons').innerHTML='<option value="">Todos os consultores</option>'+cs.map(c=>`<option value="${c.id}">${esc(c.nome)}${S.loja?'':' · '+esc(lojaById(c.loja).nome)}</option>`).join('');
  $('fCons').value=S.cons;
 }
-const setFiltro=(k,v)=>{S[k]=v;S.foco=S.loja||null;fillFiltros();render()};
+// Filtro lembrado neste navegador (o gerente abre direto na loja dele) e link direto: ?loja=ID (ou ?gvo=, ?praca=, ?reg=)
+const KEY_FIL='pulsar-filtro-v1';
+const lembrarFiltro=()=>{try{localStorage.setItem(KEY_FIL,JSON.stringify({reg:S.reg,praca:S.praca,gvo:S.gvo,loja:S.loja}))}catch(e){}};
+function filtroInicial(){
+ let f={};try{f=JSON.parse(localStorage.getItem(KEY_FIL))||{}}catch(e){}
+ const q=new URLSearchParams(location.search);
+ if(['loja','gvo','praca','reg'].some(k=>q.has(k)))f={reg:q.get('reg')||'',praca:q.get('praca')||'',gvo:q.get('gvo')||'',loja:q.get('loja')||''};
+ const l=f.loja&&lojaById(f.loja);
+ if(l){S.reg=l.regional;S.praca=l.praca;S.gvo=l.gestor;S.loja=l.id;S.foco=l.id}
+ else{const ok=(k,fn)=>f[k]&&lojas.some(x=>fn(x)===f[k]);if(ok('reg',x=>x.regional))S.reg=f.reg;if(ok('praca',x=>x.praca))S.praca=f.praca;if(ok('gvo',x=>x.gestor))S.gvo=f.gvo}
+}
+const setFiltro=(k,v)=>{S[k]=v;S.foco=S.loja||null;fillFiltros();lembrarFiltro();render()};
 $('fReg').addEventListener('change',e=>setFiltro('reg',e.target.value));
 $('fPraca').addEventListener('change',e=>setFiltro('praca',e.target.value));
 $('fGvo').addEventListener('change',e=>setFiltro('gvo',e.target.value));
 $('fLoja').addEventListener('change',e=>setFiltro('loja',e.target.value));
 $('fCons').addEventListener('change',e=>{S.cons=e.target.value;if(S.cons){S.tab='consultores';S.pfil=''}render()});
-$('fLimpar').addEventListener('click',()=>{S.reg=S.praca=S.gvo=S.loja=S.cons='';S.foco=null;fillFiltros();render()});
+$('fToggle').addEventListener('click',()=>{const f=$('fToggle').closest('.filter'),o=f.classList.toggle('open');$('fToggle').setAttribute('aria-expanded',o)});
+$('fLimpar').addEventListener('click',()=>{S.reg=S.praca=S.gvo=S.loja=S.cons='';S.foco=null;fillFiltros();lembrarFiltro();render()});
 
 /* ---------- Filtro de datas ---------- */
 let ultDia=null;
-function fillDias(){
- const DS=['D','S','T','Q','Q','S','S'];
+// Filete de cada data = atingimento do dia no filtro atual (verde ≥ 100%, amarelo ≥ 90%, vermelho abaixo; cinza = dia atípico)
+let AGG_DIAS=null;
+function fillDias(a){
+ if(a)AGG_DIAS=a;a=AGG_DIAS;
+ const DS=['D','S','T','Q','Q','S','S'],at=a?atipicos(a):new Set();
  $('fDias').innerHTML=Array.from({length:LAST},(_,i)=>{const d=i+1,w=new Date(ANO,MES,d).getDay();
-  return `<button type="button" class="dia ${SEL.has(d)?'on':''} ${w===0?'fds':''}" data-dia="${d}" aria-pressed="${SEL.has(d)}" title="${dd(d)}"><b>${pad(d)}</b><small>${DS[w]}</small></button>`}).join('');
+  const mt=a?a.metaDays[d-1]:0,r=mt>0?a.days[d-1]/mt:null,cl=!a||r==null?'':at.has(d)?'r-at':r>=1?'r-ok':r>=.9?'r-mid':'r-no';
+  const tt=`${dd(d)}${r==null?'':at.has(d)?' · dia atípico (meta quase zero)':` · ${pct(r)} da meta do dia`}`;
+  return `<button type="button" class="dia ${SEL.has(d)?'on':''} ${w===0?'fds':''} ${cl}" data-dia="${d}" aria-pressed="${SEL.has(d)}" title="${tt}"><b>${pad(d)}</b><small>${DS[w]}</small></button>`}).join('');
 }
-function setDias(novos){if(!novos.size)return;SEL=novos;recalc();fillDias();render()}
+function setDias(novos){if(!novos.size)return;SEL=novos;recalc();render()}
 $('fDias').addEventListener('click',e=>{
  const b=e.target.closest('[data-dia]');if(!b)return;const d=+b.dataset.dia,n=new Set(SEL);
  if(e.shiftKey&&ultDia){const[a,z]=[Math.min(ultDia,d),Math.max(ultDia,d)];for(let x=a;x<=z;x++)n.add(x)}
@@ -1371,14 +1553,15 @@ document.querySelector('.datas .pres').addEventListener('click',e=>{
 });
 function irFoco(id){if(S.foco!==id)S.acSel=null;S.foco=id;S.tab='lojas';render();requestAnimationFrame(()=>$('foco')?.scrollIntoView({behavior:'smooth',block:'start'}))}
 document.addEventListener('click',e=>{
- const t=e.target.closest('[data-tab],[data-reg],[data-foco],[data-del],[data-sort],[data-novo],[data-drill],[data-verc],[data-chart],[data-acsel],[data-pfil],[data-creg]');if(!t)return;
+ const t=e.target.closest('[data-tab],[data-reg],[data-foco],[data-del],[data-sort],[data-novo],[data-drill],[data-verc],[data-chart],[data-acsel],[data-pfil],[data-creg],[data-hist]');if(!t)return;
  const d=t.dataset;
+ if(d.hist){S.hist=d.hist;render();return}
  if(d.chart){S.chart=d.chart;render();return}
- if(d.verc){const l=lojaById(d.verc);S.reg=l.regional;S.praca=l.praca;S.gvo=l.gestor;S.loja=l.id;S.cons='';S.tab='consultores';fillFiltros();render();$('view').scrollIntoView({behavior:'smooth',block:'start'});return}
+ if(d.verc){const l=lojaById(d.verc);S.reg=l.regional;S.praca=l.praca;S.gvo=l.gestor;S.loja=l.id;S.cons='';S.tab='consultores';fillFiltros();lembrarFiltro();render();$('view').scrollIntoView({behavior:'smooth',block:'start'});return}
  if(d.pfil!=null){S.pfil=S.pfil===d.pfil?'':d.pfil;render();return}
  if(d.creg){const c=consById(d.creg),p=perfil(c),P=PERFIS[p.k];abrir(null,c.loja,c.id);$('dTipo').value=P.acao;$('dDesc').value=P.passos(c,p)[0].replace(/<[^>]+>/g,'')+(alav(p.k)?` · ${alav(p.k).acao}`:'');$('dCtx').innerHTML=`<b>Perfil:</b> ${P.n} · ${esc(c.nome)} · ${esc(lojaById(c.loja).nome)}`;return}
  if(d.acsel){S.acSel=+d.acsel;S.chart='dia';render();return}
- if(d.drill!=null){S.loja=d.drill;S.foco=S.loja||null;fillFiltros();render();$('view').scrollIntoView({behavior:'smooth',block:'start'});return}
+ if(d.drill!=null){S.loja=d.drill;S.foco=S.loja||null;fillFiltros();lembrarFiltro();render();$('view').scrollIntoView({behavior:'smooth',block:'start'});return}
  if(d.tab){S.tab=d.tab;render();return}
  if(d.reg!=null){const t=FIRED[+d.reg];abrir(t);const x=alav(t.g);if(x){if(TIPOS[x.tipo])$('dTipo').value=x.tipo;$('dDesc').value=`${x.acao}: ${x.detalhe||''}`}return}
  if(d.novo){abrir(null,d.novo);return}
@@ -1396,7 +1579,7 @@ function cabecalho(){
  $('hBase').textContent=`${lojas.length} lojas · atualizado em ${D.geradoEm.slice(8,10)}/${D.geradoEm.slice(5,7)} às ${D.geradoEm.slice(11,16)}`;
 }
 fetch('Ciclo/ciclo_atual.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null).then(c=>{CICLO=c}).then(()=>fetch('data/pulsar.json',{cache:'no-store'})).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(j=>{
- init(j);cabecalho();fillFiltros();fillDias();render();
+ init(j);cabecalho();filtroInicial();fillFiltros();render();
  sincronizar().then(render);setInterval(()=>sincronizar().then(render),120000);
 }).catch(err=>{
  $('view').innerHTML=`<div class="card pad"><h2 style="font-size:18px">Não foi possível carregar os dados</h2><p class="mf">Abra o PULSAR pelo atalho <b>Abrir PULSAR.bat</b>, que processa as planilhas e abre o painel. O arquivo <code>data/pulsar.json</code> precisa existir e a página precisa ser aberta por um servidor local (não direto do arquivo).</p></div>`;
