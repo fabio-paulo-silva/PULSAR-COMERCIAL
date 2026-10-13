@@ -933,16 +933,19 @@ function statusPlan(){
 }
 const paraPlanilha=a=>{const l=lojaById(a.loja),c=a.cons?consById(a.cons):null;
  return{id:a.id,autor:a.autor||'',mes:a.mes,dia:a.dia,loja_id:a.loja,loja:l?l.nome:'',consultor_id:a.cons||'',consultor:c?c.nome:'',tipo:a.tipo,gatilho:a.gat||'',descricao:a.desc||''}};
-const daPlanilha=r=>({id:Number(r.id),autor:r.autor,mes:r.mes,dia:Number(r.dia),loja:String(r.loja_id),cons:r.consultor_id||'',tipo:r.tipo,gat:r.gatilho||'',desc:r.descricao||''});
+// O Sheets pode devolver o mês como data ("Thu Oct 01 2026 ...") em vez de "2026-10": normaliza aqui
+const mesTxt=v=>{v=String(v||'').replace(/^'/,'');if(/^\d{4}-\d{2}$/.test(v))return v;const d=new Date(v);return isNaN(d)?v:`${d.getFullYear()}-${pad(d.getMonth()+1)}`};
+const daPlanilha=r=>({id:Number(r.id),autor:r.autor,mes:mesTxt(r.mes),dia:Number(String(r.dia).replace(/^'/,'')),loja:String(r.loja_id),cons:r.consultor_id||'',tipo:r.tipo,gat:r.gatilho||'',desc:r.descricao||''});
 // POST sem cabeçalho de conteúdo (text/plain) para o navegador não exigir pré-verificação de CORS
 const enviar=corpo=>fetch(PLANILHA.url,{method:'POST',body:JSON.stringify({chave:PLANILHA.chave,...corpo})}).then(r=>r.json()).then(j=>{if(!j.ok)throw new Error(j.erro||'erro');return j});
 async function sincronizar(){
  if(!PLANILHA.url){statusPlan();return}
  try{
   while(pendentes.length){await enviar(pendentes[0]);pendentes.shift();salvar()}
-  const j=await fetch(`${PLANILHA.url}?chave=${encodeURIComponent(PLANILHA.chave)}&mes=${ANO}-${pad(MES+1)}`).then(r=>r.json());
+  // lê todas as ações ativas e filtra o mês aqui (não depende do formato em que o Sheets guardou o mês)
+  const j=await fetch(`${PLANILHA.url}?chave=${encodeURIComponent(PLANILHA.chave)}`,{cache:'no-store'}).then(r=>r.json());
   if(!j.ok)throw new Error(j.erro);
-  const doMes=j.acoes.map(daPlanilha),outros=acoes.filter(a=>a.mes!==`${ANO}-${pad(MES+1)}`);
+  const doMes=j.acoes.map(daPlanilha).filter(a=>a.mes===`${ANO}-${pad(MES+1)}`),outros=acoes.filter(a=>a.mes!==`${ANO}-${pad(MES+1)}`);
   acoes=[...outros,...doMes];planOk=true;salvar();
  }catch(e){planOk=false}
  statusPlan();
@@ -1039,7 +1042,8 @@ function render(){
  ({hoje:vHoje,lojas:vLojas,consultores:vCons})[S.tab](ls,cs,a);
  icons();
 }
-function feita(t){return acoesMes().some(x=>x.dia===TODAY&&x.loja===t.loja.id&&x.gat===t.g)}
+// a loja já tem ação registrada hoje (por qualquer pessoa: vem da planilha)
+function feita(t){return acoesMes().some(x=>x.dia===TODAY&&x.loja===t.loja.id)}
 function sortTh(tbl,k,l,r=''){const[ak,dir]=S.sort[tbl],on=ak===k;return `<th class="s ${r} ${on?'on':''}" data-sort="${tbl}:${k}"><span class="si">${l}${ic(on?(dir>0?'chevron-up':'chevron-down'):'chevrons-up-down')}</span></th>`}
 function sorter(tbl,get){const[k,d]=S.sort[tbl];return(x,y)=>{const a=get(x,k),b=get(y,k);return(a>b?1:a<b?-1:0)*d}}
 
@@ -1102,7 +1106,7 @@ function prioCard(t,i,n){
  const meta=t.meta.split(' · vender')[0],px=puxamBaixo(t.loja.id);
  const media=(meta.match(/média atual [^)]+/)||[''])[0],soBol=/boletos hoje/.test(meta);   // fluxo: a meta de boletos já está no título
  return `<article class="card act ${t.sev} fade">
-  <div class="hd"><div class="l"><span class="num">${n}</span><span class="sev ${t.sev}">${ic(s.ic)}${s.n}</span><span class="status-do ${ok?'ok':''}">${ic(ok?'circle-check':'circle-dashed')}${ok?'Feita':'Pendente'}</span></div><div class="imp"><b>${kbrl(t.imp)}</b><small>${esc(t.impL||'em jogo')}</small></div></div>
+  <div class="hd"><div class="l"><span class="num">${n}</span><span class="sev ${t.sev}">${ic(s.ic)}${s.n}</span>${ok?`<span class="status-do ok">${ic('circle-check')}Ação registrada</span>`:''}</div><div class="imp"><b>${kbrl(t.imp)}</b><small>${esc(t.impL||'em jogo')}</small></div></div>
   <h3>${ic(g.icon)}${esc(t.loja.nome)}</h3>
   <p class="head">${fx(x.b)} boletos hoje · vender ${kbrl(m.hoje)}<small>Hoje · BM alvo ${brl(x.bm)} · IPB alvo ${fx(x.ipb,2)}${media?` · ${media}`:''}</small></p>
   <p class="evid"><b>${g.nome}:</b> ${curta(t.evid)}</p>
@@ -1118,7 +1122,7 @@ function prioCard(t,i,n){
    const p=praticaPara(m,k==='bpm'?'fluxo':'item')||praticaPara(m);if(p)linhas.push(`<p>${frasePrat(p,t.loja)}</p>`);
    return linhas.length?`<div class="exemplo">${ic('lightbulb')}<div><p class="ex-t">Comparado com as lojas ${esc(nomeCluster(t.loja.cluster).toLowerCase())} no ritmo</p>${linhas.join('')}</div></div>`:''})()}
   </div></details>
-  <div class="ft">${ok?`<span class="done">${ic('circle-check')}Feita hoje</span>`:`<button class="btn" data-reg="${i}">${ic('check')}Marcar como feita</button>`}<button class="btn ghost sm" data-foco="${t.loja.id}">Ver loja ${ic('arrow-right')}</button></div></article>`;
+  <div class="ft">${ok?`<span class="done">${ic('circle-check')}Ação registrada hoje</span>`:''}<button class="btn" data-reg="${i}">${ic('plus')}Registrar ação</button><button class="btn ghost sm" data-foco="${t.loja.id}">Ver loja ${ic('arrow-right')}</button></div></article>`;
 }
 // Barras = meta do dia; linha = realizado do dia; rótulo = atingimento (verde se bateu).
 function drawMetaDia(a,el){
@@ -1212,6 +1216,18 @@ function ontemHTML(ids){
    return `<div class="it">${ic(okk?'circle-check':'circle-x',okk?'c-ok':'c-bad')}<div><b>${esc(x.tipo)}</b> · ${esc(c?c.nome+' · ':'')}${esc(l.nome)}<small>${fx(bo)} boletos (média dos 3 dias antes: ${fx(bAnt,1)})${x.desc?' · '+esc(x.desc.slice(0,80)):''}</small></div>
     <div class="r ${okk?'c-ok':'c-bad'}">${kbrl(rv)}<small>${r!=null?pct(r)+' da meta do dia':'vendido no dia'}</small></div></div>`}).join('')}</div>`;
 }
+// Ações registradas no mês para as lojas do filtro (vêm da planilha: todo mundo vê as mesmas)
+function acoesRegHTML(ids){
+ const ac=acoesMes().filter(x=>ids.has(x.loja)).sort((a,b)=>b.dia-a.dia||b.id-a.id),lim=S.loja?20:8;
+ const fonte=!PLANILHA.url?'só neste navegador':planOk===false?'planilha fora do ar: mostrando o que está neste navegador':'da planilha compartilhada';
+ return `<div class="card"><div class="card-hd"><div><h2>Ações registradas no mês (${ac.length})</h2><p>${S.loja?esc(lojaById(S.loja).nome):'Lojas do filtro'} · ${fonte}</p></div>
+  <button class="btn sm" data-novo="${S.loja||S.foco||''}">${ic('plus')}Registrar ação</button></div>
+  ${ac.length?`<div class="ontem" style="padding:0 20px 20px">${ac.slice(0,lim).map(x=>{const l=lojaById(x.loja),c=x.cons?consById(x.cons):null,m=l?M[l.id]:null,e=m?efeito(m,x.dia):null;
+   return `<div class="it">${ic(TIPOS[x.tipo]||'circle-dot')}<div><b>${esc(x.tipo)}</b> · ${esc(l?l.nome:x.loja)}${c?' · '+esc(c.nome):''}<small>${dd(x.dia)}${x.autor?' · por '+esc(x.autor):''}${x.desc?' · '+esc(x.desc.slice(0,120)):''}</small></div>
+    <div class="r">${e?`<span class="${e.d>=0?'c-ok':'c-bad'}">${pct(e.a)} → ${pct(e.b)}</span><small>ritmo antes → depois</small>`:`<small>${x.dia>LAST?'resultado amanhã':''}</small>`}</div></div>`}).join('')}
+   ${ac.length>lim?`<p class="mf">+${ac.length-lim} ações: filtre uma loja para ver todas.</p>`:''}</div>`
+  :`<p class="empty" style="padding:0 20px 20px">Nenhuma ação registrada neste mês para este filtro.</p>`}</div>`;
+}
 // Meta de hoje da loja dividida entre os consultores, pela participação de cada um na receita do período
 function metaConsHTML(l){
  // só quem vendeu nos últimos 7 dias (fora folguistas e desligados)
@@ -1232,7 +1248,8 @@ function vHoje(ls,cs,a){
   ${ontemHTML(ids)}
   <div class="plan-hd"><div><h2>Prioridades de hoje</h2><p>O valor de cada card é o que a loja perdeu (ou pode ganhar) no período ${perTxt()}</p></div></div>
   <div class="acts3">${top.map(([t,i],n)=>prioCard(t,i,n+1)).join('')||'<p class="empty">Nenhuma prioridade: tudo no ritmo. Reconheça o time.</p>'}</div>
-  ${prox.length?`<details class="card"><summary class="card-hd" style="cursor:pointer"><div><h2>Na sequência (${prox.length})</h2></div></summary><div class="next">${prox.map(([t,i])=>`<div class="nx"><span class="sev ${t.sev}" style="padding:3px 6px">${ic(GT[t.g].icon)}</span><div><b>${esc(t.loja.nome)} · ${GT[t.g].nome}</b><span>${kbrl(t.imp)} ${esc(t.impL||'em jogo')}</span></div>${feita(t)?`<span class="done">${ic('circle-check')}</span>`:`<button class="btn sm" data-reg="${i}">Marcar feita</button>`}</div>`).join('')}</div></details>`:''}
+  ${prox.length?`<details class="card"><summary class="card-hd" style="cursor:pointer"><div><h2>Na sequência (${prox.length})</h2></div></summary><div class="next">${prox.map(([t,i])=>`<div class="nx"><span class="sev ${t.sev}" style="padding:3px 6px">${ic(GT[t.g].icon)}</span><div><b>${esc(t.loja.nome)} · ${GT[t.g].nome}</b><span>${kbrl(t.imp)} ${esc(t.impL||'em jogo')}</span></div>${feita(t)?`<span class="done">${ic('circle-check')}</span>`:`<button class="btn sm" data-reg="${i}">Registrar ação</button>`}</div>`).join('')}</div></details>`:''}
+  ${acoesRegHTML(ids)}
   ${lj?metaConsHTML(lj):''}
   <div class="card pad">
    <div class="crumb" style="justify-content:space-between"><div><h2 style="font-size:18px">Onde está a perda</h2><p class="mf">${perTxt()} · cada variação é contra o alvo (receita contra a meta do período)</p></div></div>

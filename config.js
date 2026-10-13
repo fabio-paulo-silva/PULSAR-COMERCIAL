@@ -15,9 +15,12 @@ window.PULSAR_CONFIG = (function () {
     },
     desenvolvimento: {
       nome: 'Desenvolvimento',
-      // Para testar sem misturar com produção, crie a planilha "PULSAR · Ações (dev)" e cole aqui a URL e a chave dela.
-      // Vazio = as ações ficam só no navegador.
-      planilha: { url: '', chave: '' }
+      // Usa a MESMA planilha de produção: quem abre /dev/ vê e registra as mesmas ações.
+      // Para separar, crie a planilha "PULSAR · Ações (dev)" (apps-script/PASSO_A_PASSO.md) e troque a URL e a chave aqui.
+      planilha: {
+        url: 'https://script.google.com/macros/s/AKfycbxGdHjf5dv2LXH7d5HDwDH5KVuEFTkLenMEbZqFSLT8vbtIbPtpiNaO7xPTJ6quuAOp8g/exec',
+        chave: 'pulsar-gn-2026'
+      }
     }
   };
   var amb = dev ? 'desenvolvimento' : 'producao';

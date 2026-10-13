@@ -45,7 +45,7 @@ git checkout develop
 ```
 
 ## Ambientes e planilha de ações
-O `config.js` escolhe o ambiente pelo endereço: `/dev/` e o computador local usam **desenvolvimento**; o resto usa **produção**. Cada um tem sua URL de planilha de ações. Em desenvolvimento a URL está vazia (as ações ficam no navegador); para testar gravação sem misturar com produção, crie uma segunda planilha "PULSAR · Ações (dev)" seguindo `apps-script/PASSO_A_PASSO.md` e cole a URL e a chave no bloco `desenvolvimento` do `config.js`.
+O `config.js` escolhe o ambiente pelo endereço: `/dev/` e o computador local usam **desenvolvimento**; o resto usa **produção**. Cada um tem sua URL de planilha de ações. Hoje os dois ambientes usam a mesma planilha (todo mundo vê as mesmas ações, em `/dev/` e em produção); para separar, crie uma segunda planilha "PULSAR · Ações (dev)" seguindo `apps-script/PASSO_A_PASSO.md` e cole a URL e a chave no bloco `desenvolvimento` do `config.js`.
 
 ## Atenção: o site é público
 No GitHub Pages do plano gratuito (e no Pro), o site fica aberto para qualquer pessoa com o link, mesmo com o repositório privado. Isso inclui `data/pulsar.json` (receita por loja e nomes de consultores) e a URL da planilha de ações. Para restringir a quem é da empresa, é preciso GitHub Enterprise Cloud (Pages privado) ou outra hospedagem com login, como Cloudflare Pages + Cloudflare Access.
