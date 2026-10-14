@@ -1559,8 +1559,8 @@ function drawChart(m,la,el){
 const PERFIS={
  ausente:{n:'Sem venda nos últimos 3 dias',ic:'circle-slash',sev:'alto',o:3,acao:'1:1 com consultor',
   passos:()=>['Confirmar escala, folga, férias ou afastamento até as 10h','Se estiver ativo(a): 1:1 hoje para entender o bloqueio']},
- atende:{n:'Atende pouco',ic:'users',sev:'alto',o:0,acao:'Push do time',
-  passos:(c,p)=>[`Meta de atendimentos de hoje: ${fx(p.t.bolDia)} boletos (média do time)`,'Escalar na Calçada Perfumada e no horário de pico; 10 mensagens de WhatsApp para a própria carteira de clientes; repostar a promoção do dia nas redes']},
+ atende:{n:'Poucos boletos',ic:'users',sev:'alto',o:0,acao:'Push do time',
+  passos:(c,p)=>[`Meta de boletos de hoje: ${fx(p.t.bolDia)} (média do time)`,'Escalar na Calçada Perfumada e no horário de pico; 10 mensagens de WhatsApp para a própria carteira de clientes; repostar a promoção do dia nas redes']},
  item:{n:'Pouco item por boleto',ic:'shopping-bag',sev:'alto',o:0,acao:'1:1 com consultor',
   passos:(c,p)=>[`1:1 de 15 min revisando os boletos de 1 item (B1 ${pct(c.m.pb1)}, BT ${pct(c.m.pBT)}, BP ${pct(c.m.pBP)})`,p.padrinho?`Acompanhar 2 atendimentos de ${esc(p.padrinho.nome)} (IPB ${fx(p.padrinho.m.ipb,2)})`:'Gestor acompanha 2 atendimentos e dá retorno na hora']},
  ticket:{n:'Ticket baixo',ic:'tag',sev:'medio',o:0,acao:'Treinamento com o time',
