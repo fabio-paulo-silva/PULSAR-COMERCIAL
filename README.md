@@ -55,7 +55,10 @@ O indicador de boletos é **% dos boletos que a meta pede**: boletos de venda ÷
 ## Aba Hoje: uma decisão por loja
 - **Régua única:** a meta. Cluster e ano passado aparecem só como evidência ("Por quê").
 - **R$ em risco hoje** (ranking de todas as visões) = meta de hoje − venda esperada se a loja repetir o ritmo dos últimos 7 dias (realizado ÷ meta do dia). Loja sem risco contra a meta, mas 8% ou mais abaixo do ano passado: em risco = venda do mesmo dia do ano passado − esperada.
-- **Indicador a mover:** entre boletos, IPB e preço médio que estão abaixo do alvo de hoje, o que mais tira receita (contra o alvo do Plano BM, ou contra o ano passado quando essa é a régua). Boletos: alvo = meta de hoje ÷ BM alvo, contra a média dos últimos 7 dias.
+- **Garantir (o número de hoje):** base = boletos do mesmo dia da semana da mesma semana do ano passado (364 dias antes: 14/10/2026, quarta = 15/10/2025, quarta). Boletos que a meta pede = meta de hoje ÷ BM alvo.
+  - Se a meta pede até **+13%** de boletos sobre essa base: garantir esses boletos (no mínimo o mesmo do ano passado). Ação de fluxo: canal da loja ou item do ciclo.
+  - Se pede mais de +13%: boletos ficam em +13% e o resto vem do **boleto médio** (BM = meta de hoje ÷ boletos com +13%, dividido entre IPB e PM na proporção atual). Ação: BT e BP no fechamento, combos presenteáveis e sarrafos do Compre e Ganhe do ciclo.
+  - Sem base do ano passado (loja nova ou fim do mês): o indicador abaixo do alvo que mais tira receita.
 - **Como:** canal da própria loja que mais rende contra o cluster (boletos) ou o item do ciclo; IPB sempre com BT e BP.
 - **Registro:** a ação registrada pelo card leva o indicador (coluna gatilho) e a meta ("Meta: 82 boletos hoje" na descrição). O **placar de ontem** compara essa meta com o que a loja (ou o consultor) fez no dia.
 - **A tela se adapta ao filtro:** com loja = visão do gerente (1 decisão, meta por consultor, ações da loja); com GVO = as lojas do GVO; sem loja nem GVO = rede, regional ou praça, com a tabela de GVOs fora do trilho.

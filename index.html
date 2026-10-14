@@ -470,6 +470,9 @@ td.hp{background:oklch(0.76 0.19 152 / .1)} td.hn{background:oklch(0.58 0.21 22 
 .mover span{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-fg)}
 .mover b{font-family:var(--font-display);font-size:18px;font-variant-numeric:tabular-nums}
 .mover small{width:100%;font-size:12px;color:var(--muted-fg)}
+.do .blt{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--muted-fg)}
+.do .blt .t{font-weight:700;color:var(--foreground)}
+.mover small b{display:inline;font-family:inherit;font-size:inherit;font-weight:800;color:var(--foreground)}
 .resp{display:flex;gap:6px;align-items:flex-start;font-size:13px;color:var(--muted-fg)} .resp svg{width:15px;height:15px;flex:none;margin-top:1px}
 .placar-hd{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;justify-content:space-between}
 .placar-hd h2{font-size:16px;display:flex;gap:8px;align-items:center}
@@ -1210,7 +1213,7 @@ function cicloCard(ls){
 // Placar de ontem: quantas lojas bateram a meta do dia e, para cada ação registrada ontem,
 // o indicador combinado (gravado em "Meta: ..." na descrição) contra o que a loja fez.
 const numMeta=t=>{const x=(t||'').match(/Meta:\D*?(\d[\d.]*(?:,\d+)?)/);return x?parseFloat(x[1].replace(/\./g,'').replace(',','.')):null};
-const KDOGAT={fluxo:'bol',ritmo:'bol',ipb:'ipb',b1:'ipb',btbp:'ipb',pm:'pm',bmsaud:'pm'};
+const KDOGAT={fluxo:'bol',ritmo:'bol',ipb:'ipb',b1:'ipb',btbp:'ipb',pm:'pm',bmsaud:'bm'};
 function placarHTML(ls){
  const d=LAST,ids=new Set(ls.map(l=>l.id));
  const comMeta=ls.filter(l=>l.meta[d-1]>0),bat=comMeta.filter(l=>l.rec[d-1]>=l.meta[d-1]);
@@ -1218,7 +1221,7 @@ function placarHTML(ls){
  const linhas=ac.slice(0,6).map(x=>{
   const l=lojaById(x.loja);if(!l)return '';const c=x.cons?consById(x.cons):null,src=c||l;
   const b=src.bol[d-1],it=src.it[d-1],r=src.rec[d-1],k=KDOGAT[x.gat],alvo=numMeta(x.desc);
-  const real={bol:b,ipb:b?it/b:0,pm:it?r/it:0}[k],f={bol:v=>`${fx(v)} boletos`,ipb:v=>`IPB ${fx(v,2)}`,pm:v=>`PM ${brl(v,2)}`}[k];
+  const real={bol:b,ipb:b?it/b:0,pm:it?r/it:0,bm:b?r/b:0}[k],f=FMT[k];
   let ok,txt;
   if(k&&alvo!=null){ok=real>=alvo;txt=`${f(real)} de ${f(alvo)} combinados`}
   else{const mt=c?0:l.meta[d-1];ok=mt>0?r>=mt:null;txt=mt>0?`${kbrl(r)} de ${kbrl(mt)} (${pct(r/mt)} da meta do dia)`:`${kbrl(r)} vendidos`}
@@ -1275,28 +1278,57 @@ function metaConsHTML(l){
 // Loja sem risco contra a meta, mas 8% ou mais abaixo do ano passado: em risco = venda do mesmo dia do ano passado − esperada.
 function ritmoRecente(l){let r=0,mt=0,n=0;for(let d=LAST;d>=1&&n<7;d--)if(l.meta[d-1]>0){r+=l.rec[d-1];mt+=l.meta[d-1];n++}return mt?r/mt:1}
 function bolRecente(l){let b=0,n=0;for(let d=LAST;d>=1&&n<7;d--)if(l.meta[d-1]>0&&l.rec[d-1]>0){b+=l.bol[d-1];n++}return n?b/n:0}
-const IND={bol:{n:'Boletos',g:'fluxo'},ipb:{n:'IPB',g:'ipb'},pm:{n:'Preço médio',g:'pm'}};
-const FMT={bol:v=>`${fx(v)} boletos`,ipb:v=>`IPB ${fx(v,2)}`,pm:v=>`PM ${brl(v,2)}`};
+const IND={bol:{n:'Boletos',g:'fluxo'},ipb:{n:'IPB',g:'ipb'},pm:{n:'Preço médio',g:'pm'},bm:{n:'Boleto médio',g:'bmsaud'}};
+const FMT={bol:v=>`${fx(v)} boletos`,ipb:v=>`IPB ${fx(v,2)}`,pm:v=>`PM ${brl(v,2)}`,bm:v=>`BM ${brl(v)}`};
+// Crescimento máximo de boletos contra o mesmo dia da semana do ano passado. Acima disso, o que falta vem do boleto médio.
+const CRESC_MAX_BOL=.13;
+// Mesmo dia da semana da mesma semana do ano passado: 364 dias antes (14/10/2026, quarta = 15/10/2025, quarta).
+// Sem 29/02 no meio, é o dia seguinte do calendário do ano passado. Fora do mês do arquivo do ano passado: sem base.
+const diaAA=()=>TODAY+1<=DAYS?TODAY+1:null;
+const dataAA=()=>{const d=diaAA();if(!d)return '';const x=new Date(ANO-1,MES,d);return `${['dom','seg','ter','qua','qui','sex','sáb'][x.getDay()]} ${pad(d)}/${pad(MES+1)}/${String(ANO-1).slice(2)}`};
 let DEC=[];
 function decisao(l){
  const m=M[l.id],mh=TODAY<=DAYS?l.meta[TODAY-1]:0;if(!(mh>0))return null;
- const rr=ritmoRecente(l),esp=mh*rr;let valor=m.hoje-esp,ref='meta',k;
+ const rr=ritmoRecente(l),esp=mh*rr;let valor=m.hoje-esp,ref='meta';
  if(valor<=0&&m.aa.ok&&m.aa.d.rec<=-.08&&l.aa){const v=l.aa.rec[TODAY-1]||0;if(v>esp){valor=v-esp;ref='aa'}}
  if(valor<=0)return null;
- // indicador a mover: o que mais tira receita contra o alvo (ou contra o ano passado, quando a régua é o ano passado)
- // só entra quem está abaixo do alvo hoje; entre eles, o que mais tira receita. Se nenhum está abaixo, o mais perto de cair.
- const ALVO={bol:alvosHoje(m).b,ipb:m.ipbAlvo,pm:m.pmAlvo},ATU={bol:bolRecente(l),ipb:m.ipb,pm:m.pm};
- const peso=ref==='aa'?{bol:m.aa.eBol,ipb:m.aa.eIpb,pm:m.aa.ePm}:{bol:m.iBol,ipb:m.iIpb,pm:m.iPm};
+ const bm=m.bmAlvoV||m.bm,need=bm?m.hoje/bm:0,dA=diaAA(),bolAA=dA&&l.aa?l.aa.bol[dA-1]:0;
+ const base={loja:l,valor,ref,esp,rr,bolAA,bol7:bolRecente(l)};
+ // Com base do ano passado: boletos crescem até 13% sobre o mesmo dia da semana; o resto vem do boleto médio (IPB e PM)
+ if(bolAA>0){
+  const teto=bolAA*(1+CRESC_MAX_BOL),cresc=need/bolAA-1;
+  if(need<=teto){const alvo=Math.max(need,bolAA);
+   return{...base,k:'bol',g:'fluxo',alvo,atual:base.bol7,cresc:alvo/bolAA-1,meta:`Meta: ${FMT.bol(alvo)} hoje`}}
+  const bmN=m.hoje/teto,kk=m.ipb&&m.pm?Math.sqrt(bmN/(m.ipb*m.pm)):1;
+  return{...base,k:'bm',g:'bmsaud',alvo:bmN,bolTeto:teto,cresc,ipbN:m.ipb*kk,pmN:m.pm*kk,atual:m.bm,
+   meta:`Meta: BM ${brl(bmN)} hoje (${fx(teto)} boletos, IPB ${fx(m.ipb*kk,2)}, PM ${brl(m.pm*kk,2)})`};
+ }
+ // Sem ano passado (loja nova ou fim do mês): o indicador abaixo do alvo que mais tira receita
+ const ALVO={bol:alvosHoje(m).b,ipb:m.ipbAlvo,pm:m.pmAlvo},ATU={bol:base.bol7,ipb:m.ipb,pm:m.pm},peso={bol:m.iBol,ipb:m.iIpb,pm:m.iPm};
  const abaixo=['bol','ipb','pm'].filter(x=>ALVO[x]>0&&ATU[x]<ALVO[x]);
- k=abaixo.length?abaixo.sort((p,q)=>peso[p]-peso[q])[0]:['bol','ipb','pm'].sort((p,q)=>ATU[p]/ALVO[p]-ATU[q]/ALVO[q])[0];
- const alvo=ALVO[k],atual=ATU[k];
- return{loja:l,k,g:IND[k].g,valor,ref,esp,rr,alvo,atual,meta:`Meta: ${FMT[k](alvo)} hoje`};
+ const k=abaixo.length?abaixo.sort((p,q)=>peso[p]-peso[q])[0]:['bol','ipb','pm'].sort((p,q)=>ATU[p]/ALVO[p]-ATU[q]/ALVO[q])[0];
+ return{...base,k,g:IND[k].g,alvo:ALVO[k],atual:ATU[k],meta:`Meta: ${FMT[k](ALVO[k])} hoje`};
+}
+// Bloco "Garantir": o número de hoje e a base de comparação
+function garantirHTML(d){
+ const m=M[d.loja.id],aa=d.bolAA>0?` vs ${fx(d.bolAA)} na ${dataAA()}`:'';
+ if(d.k==='bol')return `<div class="mover"><span>Garantir</span><b>${FMT.bol(d.alvo)}</b><small>${d.bolAA>0?(d.cresc>.005?`${pct(d.cresc,0,true)}${aa}`:`no mínimo o mesmo da ${dataAA()} (a meta de hoje pede menos)`):`alvo pela meta e o BM alvo`} · média dos últimos 7 dias: ${fx(d.bol7)}</small></div>`;
+ if(d.k==='bm')return `<div class="mover"><span>Garantir</span><b>${FMT.bol(d.bolTeto)} · BM ${brl(d.alvo)}</b><small>A meta pede ${pct(d.cresc,0,true)} de boletos${aa}. Boletos até +${pct(CRESC_MAX_BOL)}; o resto vem do boleto médio: <b>IPB ${fx(d.ipbN,2)}</b> (hoje ${fx(m.ipb,2)}) e <b>PM ${brl(d.pmN,2)}</b> (hoje ${brl(m.pm,2)}).</small></div>`;
+ return `<div class="mover"><span>Garantir</span><b>${FMT[d.k](d.alvo)}</b><small>no período: ${FMT[d.k](d.atual)}</small></div>`;
 }
 // Como fazer: canal da própria loja (boletos) ou o item do ciclo para o indicador; IPB sempre cita BT e BP
 function comoDecisao(d){
  const m=M[d.loja.id];
  if(d.k==='bol'){const fl=acaoFluxoLoja({loja:d.loja}),pr=praticaPara(m,'fluxo');
   if(fl&&pr)return{html:fl,tipo:TIPO_CANAL[pr.k]||'Calçada Perfumada',txt:`${PRAT[pr.k].n}: ${PRAT[pr.k].como}`}}
+ if(d.k==='bm'){
+  const it=[acoesCiclo('ipb')[0]||{tipo:'BT e BP no fechamento',acao:'BT e BP no fechamento',detalhe:'BT em todo boleto e BP por sarrafo'},
+   ...acoesCiclo('pm').filter(x=>x.tipo!=='Transferência de mercadoria').slice(0,2)];
+  return{html:`<div class="do">${ic('shopping-bag')}<div><b>Boleto médio: BT e BP, combos presenteáveis e sarrafos do Compre e Ganhe</b>
+   <span>BT em ${pct(m.pBT)} dos boletos (saudável ${pct(F.bt)}) e BP em ${pct(m.pBP)} (saudável ${pct(F.bp)}).</span>
+   <ul class="blt">${it.map(x=>`<li><span class="t">${esc(x.acao)}</span>${x.detalhe?': '+esc(x.detalhe):''}</li>`).join('')}</ul></div></div>`,
+   tipo:'Sarrafo do ciclo',txt:it.map(x=>x.acao).join(' · ')};
+ }
  const c=acoesCiclo(d.g)[0],G=GT[d.g],p=c||{tipo:G.acao,acao:G.acao,detalhe:G.roteiro[0]};
  const extra=d.k==='ipb'?` BT em ${pct(m.pBT)} (saudável ${pct(F.bt)}) e BP em ${pct(m.pBP)} (saudável ${pct(F.bp)}): oferecer no fechamento de todo boleto.`:'';
  return{html:`<div class="do">${ic(TIPOS[p.tipo]||'circle-dot')}<div><b>${esc(p.acao)}</b><span>${esc(p.detalhe||'')}${extra}</span></div></div>`,tipo:TIPOS[p.tipo]?p.tipo:G.acao,txt:`${p.acao}${p.detalhe?': '+p.detalhe:''}`};
@@ -1305,14 +1337,14 @@ const sevDec=d=>{const r=d.valor/(M[d.loja.id].hoje||1);return r>=.25?'crit':r>=
 const acaoHoje=l=>acoesMes().some(x=>x.dia===TODAY&&x.loja===l.id);
 function decCard(d,n){
  const l=d.loja,m=M[l.id],ok=acaoHoje(l),px=puxamBaixo(l.id),cm=comoDecisao(d),i=DEC.indexOf(d);
- const co=m.core||{},kc=d.k==='bol'?'bol':d.k,linhas=co[kc]&&co[kc].gap>0?[`<p>${fraseCore(kc,co[kc],l)}</p>`]:[];
+ const co=m.core||{},kc=d.k==='bm'?'ipb':d.k,linhas=co[kc]&&co[kc].gap>0?[`<p>${fraseCore(kc,co[kc],l)}</p>`]:[];
  const pr=praticaPara(m,d.k==='bol'?'fluxo':'item');if(pr)linhas.push(`<p>${frasePrat(pr,l)}</p>`);
  return `<article class="card act ${sevDec(d)} fade dec">
   <div class="hd"><div class="l"><span class="num">${n}</span><span class="tag">${esc(l.gestor)}</span>${ok?`<span class="status-do ok">${ic('circle-check')}Ação registrada hoje</span>`:''}</div>
    <div class="imp"><b>${kbrl(d.valor)}</b><small>em risco hoje</small></div></div>
   <h3>${ic('store')}${esc(l.nome)}</h3>
   <p class="head">Vender ${kbrl(m.hoje)} hoje</p>
-  <div class="mover"><span>Mover</span><b>${IND[d.k].n} → ${FMT[d.k](d.alvo)}</b><small>${d.k==='bol'?'média dos últimos 7 dias':'no período'}: ${FMT[d.k](d.atual)}</small></div>
+  ${garantirHTML(d)}
   ${cm.html}
   <p class="resp">${ic('user-check')}<span>Responsável: gerente da loja · conferir às 14h e às 18h${d.ref==='aa'?` · <b class="c-bad">abaixo de ${AAtxt()}</b>`:''}</span></p>
   <details><summary>${ic('chevron-right')}Por quê</summary><div>
@@ -1335,7 +1367,7 @@ function okCard(l){
 }
 // Linha compacta (lojas além das 3 primeiras)
 const decLinha=d=>{const l=d.loja,i=DEC.indexOf(d);
- return `<div class="nx"><span class="sev ${sevDec(d)}" style="padding:3px 6px">${ic(IND[d.k].g==='fluxo'?'receipt':d.k==='ipb'?'shopping-bag':'tag')}</span><div><b>${esc(l.nome)} · ${IND[d.k].n} → ${FMT[d.k](d.alvo)}</b><span>${kbrl(d.valor)} em risco hoje · vender ${kbrl(M[l.id].hoje)}${l.gestor?' · '+esc(l.gestor):''}</span></div>${acaoHoje(l)?`<span class="done">${ic('circle-check')}</span>`:`<button class="btn sm" data-dec="${i}">Registrar ação</button>`}</div>`};
+ return `<div class="nx"><span class="sev ${sevDec(d)}" style="padding:3px 6px">${ic(d.k==='bol'?'receipt':d.k==='pm'?'tag':'shopping-bag')}</span><div><b>${esc(l.nome)} · garantir ${d.k==='bm'?`${FMT.bol(d.bolTeto)} e BM ${brl(d.alvo)}`:FMT[d.k](d.alvo)}</b><span>${kbrl(d.valor)} em risco hoje · vender ${kbrl(M[l.id].hoje)}${l.gestor?' · '+esc(l.gestor):''}</span></div>${acaoHoje(l)?`<span class="done">${ic('circle-check')}</span>`:`<button class="btn sm" data-dec="${i}">Registrar ação</button>`}</div>`};
 // Rede, regional ou praça: quais GVOs estão fora do trilho
 function gvoHTML(ls){
  const g={};ls.forEach(l=>{const k=l.gestor||'Sem gestor',m=M[l.id],x=g[k]=g[k]||{n:0,rec:0,ate:0,risco:0,nr:0,hoje:0,ontem:0,sem:0};
