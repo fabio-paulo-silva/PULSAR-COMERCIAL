@@ -791,6 +791,9 @@ function praticasCluster(){
    const top=[...vals].sort((x,y)=>y[1]-x[1])[0];
    b.core[k]={med:med(vals.map(([,v])=>v)),ref:top?{loja:top[0],v:top[1]}:null};
   }
+  // %B1: o melhor valor (menor) do cluster, entre as lojas com pelo menos 200 boletos no período (QDB fora; poucas vendas distorcem)
+  const vb=porC[c].filter(l=>M[l.id].bol>=200&&!/^qdb/i.test(l.nome)).sort((x,y)=>M[x.id].pb1-M[y.id].pb1)[0];
+  b.b1best=vb?{loja:vb,v:M[vb.id].pb1}:null;
   CLU[c]=b;
  }
  lojas.forEach(l=>{
@@ -812,6 +815,9 @@ function praticasCluster(){
    m.prat.push({k,v,alvo,ref:r.ref,uso:r.uso,med:r.med,medUso:r.medUso,extra,ganho:extra*val});
   }
   m.prat.sort((x,y)=>y.ganho-x.ganho);
+  // %B1 contra o melhor do cluster: cada boleto de 1 item que vira 2 com o BT vale o preço do item de BT
+  if(b&&b.b1best){const bb=b.b1best,gap=Math.max(0,m.pb1-bb.v),extra=gap*m.bol;
+   m.b1c={v:m.pb1,best:bb,gap,extra,ganho:extra*((CICLO&&CICLO.precos)||PRECO).bt,porDia:extra/m.nd}}
   if(semCluster)return;
   // indicadores principais: quanto falta para a mediana do cluster no ritmo e quanto vale
   for(const k in CORE){
@@ -835,6 +841,13 @@ function fraseCore(k,c,l){
  const C=CORE[k],cl=nomeCluster(l.cluster).toLowerCase();
  const falta=k==='bol'?`faltam ≈ ${fx(c.porDia)} boletos por dia`:k==='ipb'?`+${fx(c.gap,2)} item por boleto`:k==='pm'?`+${brl(c.gap,2)} por item`:`+${brl(c.gap,2)} por boleto`;
  return `<b>${C.n}:</b> ${C.f(c.v)}${C.u?' '+C.u:''} aqui × ${C.f(c.med)} nas lojas ${cl} no ritmo${c.ref?` (melhor: ${esc(c.ref.loja.nome)}, ${C.f(c.ref.v)})`:''}.`+(c.gap>0?` Para chegar lá: ${falta} ≈ <b>+${kbrl(c.ganho)}</b> no período.`:' No nível do cluster.');
+}
+// Frase do %B1: aqui × melhor do cluster, quanto vale e como (BT no boleto de 1 item)
+function fraseB1(c,l){
+ const cl=nomeCluster(l.cluster).toLowerCase();
+ if(c.best.loja.id===l.id)return `<b>%B1:</b> ${pct(c.v,1)} dos boletos com 1 item, o melhor do cluster ${esc(cl)}.`;
+ return `<b>%B1:</b> ${pct(c.v,1)} dos boletos com 1 item aqui × ${pct(c.best.v,1)} na ${esc(c.best.loja.nome)} (melhor do cluster ${esc(cl)}).`+
+  (c.gap>0?` Chegar lá = ${fx(c.porDia)} boletos de 1 item por dia virando 2 com o BT ≈ <b>+${kbrl(c.ganho)}</b> no período. <b>Como:</b> em todo boleto de 1 item, oferecer o BT da mesma fragrância no fechamento.`:'');
 }
 const pctP=v=>v==null?'—':pct(v,v<.1?1:0);
 // melhor prática a copiar para um grupo de alavancas ('fluxo' = boletos, 'item' = item a mais)
@@ -1328,6 +1341,12 @@ function necessarioHoje(ls,a){
  const bm=bol?soma/bol:(a.bmAlvoV||a.bm),kk=a.ipb&&a.pm?Math.sqrt(bm/(a.ipb*a.pm)):1;
  return{bol:bm?a.hoje/bm:0,bm,ipb:a.ipb*kk,pm:a.pm*kk};
 }
+// Item de "Como" para o %B1: o BT como 2º item do boleto de 1 item (2º item natural do ciclo, quando houver)
+function b1Item(m,l){
+ const c=m.b1c;if(!c||c.gap<=.01)return '';
+ const nat=acoesCiclo('b1').find(x=>/Body Spray|Shower|2º item/i.test(`${x.acao} ${x.detalhe||''}`));
+ return `<li><span class="t">Baixar o %B1 de ${pct(c.v)} para ${pct(c.best.v)}</span> (${esc(c.best.loja.nome)}, melhor do cluster): em todo boleto de 1 item, BT no fechamento${nat?`; 2º item natural: ${esc(nat.acao)}`:''}.</li>`;
+}
 // Bloco "Garantir": o número de hoje e a base de comparação
 function garantirHTML(d){
  const m=M[d.loja.id],aa=d.bolAA>0?` vs ${fx(d.bolAA)} na ${dataAA()}`:'';
@@ -1345,11 +1364,12 @@ function comoDecisao(d){
    ...acoesCiclo('pm').filter(x=>x.tipo!=='Transferência de mercadoria').slice(0,2)];
   return{html:`<div class="do">${ic('shopping-bag')}<div><b>Boleto médio: BT e BP, combos presenteáveis e sarrafos do Compre e Ganhe</b>
    <span>BT em ${pct(m.pBT)} dos boletos (saudável ${pct(F.bt)}) e BP em ${pct(m.pBP)} dos boletos a partir de R$ 120 (saudável ${pct(F.bp)}).</span>
-   <ul class="blt">${it.map(x=>`<li><span class="t">${esc(x.acao)}</span>${x.detalhe?': '+esc(x.detalhe):''}</li>`).join('')}</ul></div></div>`,
+   <ul class="blt">${b1Item(m,d.loja)}${it.map(x=>`<li><span class="t">${esc(x.acao)}</span>${x.detalhe?': '+esc(x.detalhe):''}</li>`).join('')}</ul></div></div>`,
    tipo:'Sarrafo do ciclo',txt:it.map(x=>x.acao).join(' · ')};
  }
  const c=acoesCiclo(d.g)[0],G=GT[d.g],p=c||{tipo:G.acao,acao:G.acao,detalhe:G.roteiro[0]};
- const extra=d.k==='ipb'?` BT em ${pct(m.pBT)} dos boletos (saudável ${pct(F.bt)}) e BP em ${pct(m.pBP)} dos boletos a partir de R$ 120 (saudável ${pct(F.bp)}): oferecer no fechamento de todo boleto.`:'';
+ const b1=d.k==='ipb'&&m.b1c&&m.b1c.gap>.01?` Baixar o %B1 de ${pct(m.b1c.v)} para ${pct(m.b1c.best.v)} (${esc(m.b1c.best.loja.nome)}) com o BT no boleto de 1 item.`:'';
+ const extra=d.k==='ipb'?`${b1} BT em ${pct(m.pBT)} dos boletos (saudável ${pct(F.bt)}) e BP em ${pct(m.pBP)} dos boletos a partir de R$ 120 (saudável ${pct(F.bp)}): oferecer no fechamento de todo boleto.`:'';
  return{html:`<div class="do">${ic(TIPOS[p.tipo]||'circle-dot')}<div><b>${esc(p.acao)}</b><span>${esc(p.detalhe||'')}${extra}</span></div></div>`,tipo:TIPOS[p.tipo]?p.tipo:G.acao,txt:`${p.acao}${p.detalhe?': '+p.detalhe:''}`};
 }
 const sevDec=d=>{const r=d.valor/(M[d.loja.id].hoje||1);return r>=.25?'crit':r>=.1?'alto':'medio'};
@@ -1358,6 +1378,7 @@ function decCard(d,n){
  const l=d.loja,m=M[l.id],ok=acaoHoje(l),px=puxamBaixo(l.id),cm=comoDecisao(d),i=DEC.indexOf(d);
  const co=m.core||{},kc=d.k==='bm'?'ipb':d.k,linhas=co[kc]&&co[kc].gap>0?[`<p>${fraseCore(kc,co[kc],l)}</p>`]:[];
  const pr=praticaPara(m,d.k==='bol'?'fluxo':'item');if(pr)linhas.push(`<p>${frasePrat(pr,l)}</p>`);
+ if(m.b1c&&m.b1c.gap>.01)linhas.push(`<p>${fraseB1(m.b1c,l)}</p>`);
  return `<article class="card act ${sevDec(d)} fade dec">
   <div class="hd"><div class="l"><span class="num">${n}</span><span class="tag">${esc(l.gestor)}</span>${ok?`<span class="status-do ok">${ic('circle-check')}Ação registrada hoje</span>`:''}</div>
    <div class="imp"><b>${kbrl(d.valor)}</b><small>em risco hoje</small></div></div>
@@ -1452,7 +1473,7 @@ function vLojas(ls){
  const rows=[...ls].sort(sorter('lojas',(l,k)=>k==='nome'?l.nome:M[l.id][k]));
  $('view').innerHTML=`<section class="sec">
   <div class="card"><div class="card-hd"><div><h2>Lojas</h2><p>${ls.length} lojas · ${perTxt()}</p></div><span class="icchip t-accent">${ic('store')}</span></div>
-  <div class="tw tall"><table><thead><tr>${sortTh('lojas','nome','Loja')}${sortTh('lojas','atP','% meta')}${sortTh('lojas','yoy','vs '+AAtxt(),'r')}${sortTh('lojas','hoje','Meta hoje','r')}${sortTh('lojas','dBM','BM / alvo','r')}${sortTh('lojas','dIpb','IPB / alvo','r')}${sortTh('lojas','perdaBTBP','BT / BP','r')}<th>Maior perda</th><th>Maior oportunidade</th><th>Ação</th></tr></thead><tbody>
+  <div class="tw tall"><table><thead><tr>${sortTh('lojas','nome','Loja')}${sortTh('lojas','atP','% meta')}${sortTh('lojas','yoy','vs '+AAtxt(),'r')}${sortTh('lojas','hoje','Meta hoje','r')}${sortTh('lojas','dBM','BM / alvo','r')}${sortTh('lojas','dIpb','IPB / alvo','r')}${sortTh('lojas','pb1','%B1','r')}${sortTh('lojas','perdaBTBP','BT / BP','r')}<th>Maior perda</th><th>Maior oportunidade</th><th>Ação</th></tr></thead><tbody>
   ${rows.map(l=>{const m=M[l.id],dt=maiorDet(m),ua=acoesMes().filter(x=>x.loja===l.id).sort((a,b)=>b.dia-a.dia)[0],ef=ua?efeito(m,ua.dia):null;
    return `<tr class="click ${l.id===S.foco?'sel':''}" data-foco="${l.id}" tabindex="0"><td><p class="nm">${esc(l.nome)}</p><p class="sub">${esc(l.gestor)}</p></td>
    <td><div class="minibar"><span class="b"><i style="width:${Math.min(100,m.atP*80)}%;background:${m.atP>=1?'var(--primary)':m.atP>=.92?'var(--warning)':'var(--destructive)'}"></i></span><b class="tnum">${pct(m.atP)}</b></div></td>
@@ -1460,6 +1481,7 @@ function vLojas(ls){
    <td class="r tnum"><b>${kbrl(m.hoje)}</b><p class="sub">${fx(alvosHoje(m).b)} boletos${m.recup>0?` · +${kbrl(m.recup)} gap`:''}</p></td>
    <td class="r tnum"><b class="${m.bm>=m.bmAlvoV?'c-ok':m.bm>=m.bmAlvoV*.97?'c-warn':'c-bad'}">${brl(m.bm)}</b><p class="sub">alvo ${brl(m.bmAlvoV)}</p></td>
    <td class="r tnum"><b class="${m.ipb>=m.ipbAlvo?'c-ok':m.ipb>=m.ipbAlvo*.97?'c-warn':'c-bad'}">${fx(m.ipb,2)}</b><p class="sub">alvo ${fx(m.ipbAlvo,2)}</p></td>
+   <td class="r tnum">${m.b1c?`<b class="${m.b1c.gap<=.01?'c-ok':m.b1c.gap<=.05?'c-warn':'c-bad'}">${pct(m.pb1)}</b><p class="sub">melhor ${pct(m.b1c.best.v)}</p>`:`<b>${pct(m.pb1)}</b>`}</td>
    <td class="r tnum"><b class="${m.pBT>=F.bt?'c-ok':'c-bad'}">${pct(m.pBT)}</b> / <b class="${m.pBP>=F.bp?'c-ok':'c-bad'}">${pct(m.pBP)}</b></td>
    <td>${dt?`<span class="pill p-bad">${DN[dt]} ${kbrl(m[IMPK[dt]])}</span>`:'<span class="pill p-ok">Sem detrator</span>'}</td>
    <td>${(()=>{const p=praticaPara(m);return p?`<b>${PRAT[p.k].n}: ${pctP(p.v)} → ${pctP(p.alvo)}</b><p class="sub">+${kbrl(p.ganho)} · ${p.meta?'meta da rede':`ex.: ${esc(p.ref.loja.nome)} ${pctP(p.ref.v)}`}</p>`:'<span class="mf">—</span>'})()}</td>
@@ -1490,6 +1512,9 @@ function clusterHTML(l,m){
  const linhas=(m.prat||[]).filter(p=>p.v>0||p.alvo>0).sort((x,y)=>y.ganho-x.ganho||(y.alvo-x.alvo));
  return `<div class="card"><div class="card-hd"><div><h2>Comparação com as lojas ${esc(cl)} no ritmo</h2><p>${b.nOk} de ${b.n} lojas do cluster estão no ritmo · ${perTxt()}</p></div><span class="icchip t-primary">${ic('lightbulb')}</span></div>
   <div class="tw"><table><thead><tr><th>Indicador</th><th class="r">Esta loja</th><th class="r">Lojas no ritmo</th><th>Melhor do cluster</th><th>O que falta</th><th class="r">Vale no período</th></tr></thead><tbody>
+  ${m.b1c?(()=>{const c=m.b1c;return `<tr><td class="nm">%B1<p class="sub">boletos com 1 item (menor é melhor)</p></td><td class="r tnum ${c.gap>.01?'c-bad':'c-ok'}"><b>${pct(c.v,1)}</b></td><td class="r tnum">${pct(c.best.v,1)}<p class="sub">melhor do cluster</p></td>
+   <td>${esc(c.best.loja.nome)} <span class="sub">${pct(c.best.v,1)}</span></td><td style="white-space:normal;min-width:200px">${c.gap>.01?`≈ ${fx(c.porDia)} boletos de 1 item por dia virando 2 com o BT`:'<span class="mf">no nível do melhor</span>'}</td>
+   <td class="r tnum">${c.gap>.01?`<b class="c-ok">+${kbrl(c.ganho)}</b>`:'—'}</td></tr>`})():''}
   ${core.map(k=>{const c=m.core[k],C=CORE[k];return `<tr><td class="nm">${C.n}${C.u?`<p class="sub">${C.u}</p>`:''}</td><td class="r tnum ${c.gap>0?'c-bad':'c-ok'}"><b>${C.f(c.v)}</b></td><td class="r tnum">${C.f(c.med)}</td>
    <td>${c.ref?`${esc(c.ref.loja.nome)} <span class="sub">${C.f(c.ref.v)}</span>`:'—'}</td>
    <td>${c.gap>0?(k==='bol'?`≈ ${fx(c.porDia)} boletos por dia`:k==='ipb'?`+${fx(c.gap,2)} item por boleto`:k==='pm'?`+${brl(c.gap,2)} por item`:`+${brl(c.gap,2)} por boleto`):'<span class="mf">no nível</span>'}</td>
@@ -1609,7 +1634,7 @@ function perfil(c){
  return c._p={k,t,idx,iBol,iIpb,iPm,lim,padrinho};
 }
 const ultAcao=c=>acoesMes().filter(x=>x.cons===c.id).sort((a,b)=>b.dia-a.dia)[0];
-const btbpLinha=m=>`<p class="btbp">${ic('ticket')}BT <b class="${m.pBT>=F.bt?'c-ok':'c-bad'}">${pct(m.pBT)}</b> / ${pct(F.bt)} · BP <b class="${m.pBP>=F.bp?'c-ok':'c-bad'}">${pct(m.pBP)}</b> / ${pct(F.bp)}${m.perdaBTBP>0?` · <span class="c-bad">−${kbrl(m.perdaBTBP)}</span> no período`:''}</p>`;
+const btbpLinha=m=>`<p class="btbp">${ic('ticket')}B1 <b>${pct(m.pb1)}</b> · BT <b class="${m.pBT>=F.bt?'c-ok':'c-bad'}">${pct(m.pBT)}</b> / ${pct(F.bt)} · BP <b class="${m.pBP>=F.bp?'c-ok':'c-bad'}">${pct(m.pBP)}</b> / ${pct(F.bp)}${m.perdaBTBP>0?` · <span class="c-bad">−${kbrl(m.perdaBTBP)}</span> no período`:''}</p>`;
 function drvChip(lb,v,ref,imp,lim,ic_){
  const cl=imp<lim?'dn':imp>-lim?'up':'eq';
  return `<div class="dc ${cl}"><span class="l">${ic(ic_)}${lb}</span><span class="v">${v}</span><span class="s">time: ${ref}</span><span class="i">${imp<0?'':'+'}${kbrl(imp)}/dia</span></div>`;
