@@ -63,3 +63,12 @@ O indicador de boletos é **% dos boletos que a meta pede**: boletos de venda ÷
 - **Registro:** a ação registrada pelo card leva o indicador (coluna gatilho) e a meta ("Meta: 82 boletos hoje" na descrição). O **placar de ontem** compara essa meta com o que a loja (ou o consultor) fez no dia.
 - **A tela se adapta ao filtro:** com loja = visão do gerente (1 decisão, meta por consultor, ações da loja); com GVO = as lojas do GVO; sem loja nem GVO = rede, regional ou praça, com a tabela de GVOs fora do trilho.
 - **Aba Entender:** árvore da perda, comparação com o ano passado, meta × realizado por dia, ciclo × lojas e ações do mês.
+
+## Penetração de BT e BP
+- **BT** = boletos com a tag Boleto Turbinado ÷ boletos com item pago (o brinde da Ação de Fluxo sem compra fica fora). Saudável: 32%.
+- **BP** = boletos com a tag Boleto Promocional ÷ boletos elegíveis, a partir de R$ 120 (sarrafo). Saudável: 30%. O `processar_dados.py` grava os elegíveis por dia em `bpe`.
+
+## Cards do topo
+- **% da meta:** atingimento do mês, balão "Deveria estar" (verde acima, vermelho abaixo), meta do mês e variação contra o ano anterior.
+- **Projeção:** % de fechamento e se fecha acima ou abaixo.
+- **Meta de hoje = meta diarizada + gap**, com os boletos, BM e IPB necessários (mesma regra do "Garantir": boletos até +13% sobre o mesmo dia da semana do ano passado) e BT/BP necessários (32% e 30%) contra o atual.

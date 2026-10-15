@@ -38,6 +38,7 @@ CANAIS = {"cal": ["24"], "vfl": ["20"], "wpp": ["3", "4"], "exp": ["13", "14", "
           "par": ["11"], "vic": ["10", "25"]}
 ALAVANCAS = list(CANAIS) + ["cl", "cb", "fc"]
 RECEITA = "Receita liquida"   # mesma base da meta (receita líquida dos cupons efetivados)
+SARRAFO_BP = 120.0            # boleto elegível ao Boleto Promocional: receita do cupom a partir de R$ 120
 LIMITE_BRINDE = 1.0           # cupom com receita abaixo disso é brinde (ex.: Ação de Fluxo), não venda
 MESES_REFERENCIA = 3          # IPB e preço médio "normais" de cada loja = média dos 3 meses anteriores
 
@@ -123,7 +124,7 @@ def ler_cupons(arq: Path) -> pd.DataFrame:
 
 def agregar_arquivo(arq: Path) -> pd.DataFrame:
     """Cupons efetivados -> loja x consultor x dia. Guarda em cache até o arquivo mudar."""
-    cache = PASTA_CACHE / f"{arq.stem}_v5.pkl"   # v5: + canais de venda, Compre e Leve, Cashback e conversão da Ação de Fluxo
+    cache = PASTA_CACHE / f"{arq.stem}_v6.pkl"   # v6: + boletos elegíveis ao BP (a partir de R$ 120)
     if cache.exists() and cache.stat().st_mtime >= arq.stat().st_mtime:
         return pd.read_pickle(cache)
     print(f"  lendo {arq.relative_to(BASE)} ...", flush=True)
@@ -142,6 +143,9 @@ def agregar_arquivo(arq: Path) -> pd.DataFrame:
     camp = v["Campanhas"].fillna("").astype(str).str.upper()
     v["bt"] = (venda & camp.str.contains("BOLETO TURBINADO")).astype(int)
     v["bp"] = (venda & camp.str.contains("BOLETO PROMOCIONAL")).astype(int)
+    # Penetração = boletos com a tag ÷ boletos elegíveis. BT: todo boleto com item pago (o "bol").
+    # BP: só o boleto que chegou ao sarrafo (receita a partir de R$ 120).
+    v["bpe"] = (venda & (v["receita"] >= SARRAFO_BP)).astype(int)
     # Alavancas comparadas entre lojas do mesmo cluster (só cupons de venda)
     canal = v["Canal de vendas"].astype(str).str.extract(r"^(\d+)")[0]
     for col, codigos in CANAIS.items():
@@ -151,7 +155,7 @@ def agregar_arquivo(arq: Path) -> pd.DataFrame:
     v["fc"] = (venda & camp.str.contains("FLUXO")).astype(int)        # cliente da Ação de Fluxo que comprou
     g = (v.groupby(["data", "loja", "loja_nome", "consultor"])
            .agg(rec=("receita", "sum"), bol=("bol", "sum"), it=("it", "sum"), b1=("b1", "sum"), br=("br", "sum"),
-                bt=("bt", "sum"), bp=("bp", "sum"), **{c: (c, "sum") for c in ALAVANCAS})
+                bt=("bt", "sum"), bp=("bp", "sum"), bpe=("bpe", "sum"), **{c: (c, "sum") for c in ALAVANCAS})
            .reset_index())
     PASTA_CACHE.mkdir(exist_ok=True)
     g.to_pickle(cache)
@@ -389,7 +393,7 @@ def main():
             return None
         return {"rec": round(float(df["rec"].sum()), 2), "bol": int(df["bol"].sum()), "it": int(df["it"].sum()),
                 "b1": int(df["b1"].sum()), "br": int(df["br"].sum()),
-                "bt": int(df["bt"].sum()), "bp": int(df["bp"].sum()), "dias": int(df["data"].nunique())}
+                "bt": int(df["bt"].sum()), "bp": int(df["bp"].sum()), "bpe": int(df["bpe"].sum()), "dias": int(df["data"].nunique())}
 
     def serie_aa(loja):
         # mesmo dia do calendário do ano anterior (12/10 com 12/10): o mês inteiro, para comparar o período e o fechamento
@@ -421,7 +425,7 @@ def main():
             "cluster": str(cad["CLUSTER"]) if cad is not None else "",
             "meta": [round(float(mt.get(d, 0)), 2) for d in range(1, dias_mes + 1)],
             "rec": serie(vl, "rec"), "bol": serie(vl, "bol"), "it": serie(vl, "it"), "b1": serie(vl, "b1"), "br": serie(vl, "br"),
-            "bt": serie(vl, "bt"), "bp": serie(vl, "bp"),
+            "bt": serie(vl, "bt"), "bp": serie(vl, "bp"), "bpe": serie(vl, "bpe"),
             "alav": {c: serie(vl, c) for c in ALAVANCAS},
             "ref": resumo_ref(ref[ref["loja"] == loja]),
             "aa": serie_aa(loja),
@@ -435,7 +439,7 @@ def main():
             cons_out.append({
                 "id": f"{codigo.strip()}@{loja}", "nome": nome_curto(nome_c or consultor), "loja": loja,
                 "rec": serie(vc, "rec"), "bol": serie(vc, "bol"), "it": serie(vc, "it"), "b1": serie(vc, "b1"), "br": serie(vc, "br"),
-                "bt": serie(vc, "bt"), "bp": serie(vc, "bp"),
+                "bt": serie(vc, "bt"), "bp": serie(vc, "bp"), "bpe": serie(vc, "bpe"),
                 "ref": resumo_ref(rc),
                 "plano": achar_plano(plano_cons, loja, nome_c),
             })

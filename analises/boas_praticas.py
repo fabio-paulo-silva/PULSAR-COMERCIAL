@@ -92,7 +92,9 @@ def indicadores(v, d):
             r[f"% {canal}"] = (venda["canal"] == canal).mean()
         r["% fora do balcão"] = (venda["canal"] != "Loja").mean()
         for rot, t in TAGS.items():
-            r[f"% {rot}"] = venda["camp"].str.contains(t, regex=False).mean()
+            # BP: elegível = boleto a partir de R$ 120 (sarrafo); demais tags: todo boleto com item pago
+            base = venda[venda["Receita liquida"] >= p.SARRAFO_BP] if rot == "Boleto Promocional" else venda
+            r[f"% {rot}"] = base["camp"].str.contains(t, regex=False).mean() if len(base) else None
         linhas.append(r)
     return pd.DataFrame(linhas)
 
