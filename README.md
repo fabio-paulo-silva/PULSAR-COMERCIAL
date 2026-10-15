@@ -72,3 +72,4 @@ O indicador de boletos é **% dos boletos que a meta pede**: boletos de venda ÷
 - **% da meta:** atingimento do mês, balão "Deveria estar" (verde acima, vermelho abaixo), meta do mês e variação contra o ano anterior.
 - **Projeção:** % de fechamento e se fecha acima ou abaixo.
 - **Meta de hoje = meta diarizada + gap**, com os boletos, BM e IPB necessários (mesma regra do "Garantir": boletos até +13% sobre o mesmo dia da semana do ano passado) e BT/BP necessários (32% e 30%) contra o atual.
+- **BT e BP são sempre comparados com a meta de penetração** (32% e 30%), nunca com o cluster: card da loja, tabela de alavancas da loja e coluna "Maior oportunidade" da aba Lojas. Valor de chegar à meta = boletos que faltam × preço médio do item de BT ou BP do ciclo.
