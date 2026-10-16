@@ -74,3 +74,12 @@ O indicador de boletos é **% dos boletos que a meta pede**: boletos de venda ÷
 - **Meta de hoje = meta diarizada + gap**, com os boletos, BM e IPB necessários (mesma regra do "Garantir": boletos até +13% sobre o mesmo dia da semana do ano passado) e BT/BP necessários (32% e 30%) contra o atual.
 - **BT e BP são sempre comparados com a meta de penetração** (32% e 30%), nunca com o cluster: card da loja, tabela de alavancas da loja e coluna "Maior oportunidade" da aba Lojas. Valor de chegar à meta = boletos que faltam × preço médio do item de BT ou BP do ciclo.
 - **%B1 contra o melhor do cluster:** referência = menor %B1 entre as lojas do mesmo cluster com pelo menos 200 boletos no período (QDB fora). Valor de chegar lá = boletos de 1 item que viram 2 com o BT × preço do item de BT do ciclo. Aparece no "Por quê" e no "Como" do card da loja, na coluna %B1 e na comparação da loja (aba Lojas) e na linha de BT/BP dos consultores.
+
+## Acompanhamento do dia (hoje.html)
+- **Fonte:** o export de cupons de hoje, salvo em `Dados/Hoje` (pode ser trocado ao longo do dia). `processar_hoje.py` (ou `Atualizar hoje.bat`) grava `data/hoje.json`. A pasta `Dados/Hoje` fica fora do fechamento D-1 do `processar_dados.py`.
+- **Meta de hoje** = meta diarizada + gap até ontem ÷ dias que faltam (a mesma do painel do mês); por isso o `data/pulsar.json` precisa estar fechado até ontem.
+- **Esperado até agora** = meta de hoje × parte do dia que costuma estar vendida até a hora do último cupom. A curva por hora vem dos cupons do mês no mesmo dia da semana (metade a curva da loja, metade a da rede).
+- **Ritmo agora** = vendido ÷ esperado (verde ≥ 100%, amarelo ≥ 90%, vermelho abaixo). **Projeção do dia** = vendido ÷ parte do dia já passada, comparada com o mesmo dia da semana do ano passado.
+- **Boletos, BM, IPB e PM necessários:** regra do "Garantir" (boletos até +13% sobre o mesmo dia da semana do ano passado). BT e BP com as mesmas regras de elegibilidade do painel.
+- **Consultores:** meta individual = meta de hoje da loja × participação na receita do mês (quem vendeu nos últimos 7 dias e tem pelo menos 3% da loja).
+- A página busca o `data/hoje.json` de novo a cada 5 minutos. Filtros e `?loja=ID` iguais aos do painel do mês.

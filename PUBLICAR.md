@@ -32,6 +32,18 @@ O que vai para o GitHub: `index.html`, `config.js`, `data/pulsar.json`, `Ciclo/`
    git push
    ```
 
+**Atualizar o acompanhamento do dia (hoje.html), quantas vezes quiser ao longo do dia:**
+1. Salve o export de cupons de hoje em `Dados/Hoje` (substitua o anterior).
+2. Rode `Atualizar hoje.bat` (ou `python processar_hoje.py`).
+3. Envie para a `main`:
+   ```
+   git checkout main
+   git add data/hoje.json
+   git commit -m "Venda de hoje até HH:MM"
+   git push
+   git checkout develop
+   ```
+
 **Testar uma mudança no painel:**
 1. `git checkout develop`, faça a mudança, `git commit` e `git push`.
 2. Confira em `/dev/` (aparece o selo amarelo **Desenvolvimento**).

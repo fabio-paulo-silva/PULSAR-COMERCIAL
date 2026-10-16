@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pulsar · Hoje</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<style>
+/* Mesmo sistema visual do painel do mês (index.html) */
+:root{
+  --background:oklch(0.97 0.005 220); --foreground:oklch(0.17 0.04 240); --card:oklch(1 0 0);
+  --primary:oklch(0.76 0.19 152); --primary-fg:oklch(0.13 0.05 240);
+  --muted:oklch(0.94 0.008 220); --muted-fg:oklch(0.50 0.025 230);
+  --accent:oklch(0.72 0.17 210); --accent-ink:oklch(0.52 0.14 220);
+  --destructive:oklch(0.58 0.21 22); --warning:oklch(0.78 0.16 70); --warning-ink:oklch(0.56 0.14 60);
+  --success-ink:oklch(0.52 0.15 152); --border:oklch(0.90 0.01 220); --chart-3:oklch(0.55 0.22 264);
+  --gradient-primary:linear-gradient(135deg,oklch(0.17 0.06 242) 0%,oklch(0.22 0.06 238) 100%);
+  --shadow-card:0 1px 2px oklch(0.17 0.04 240 / .05),0 8px 24px -12px oklch(0.17 0.04 240 / .12);
+  --font-display:"Sora",ui-sans-serif,system-ui,sans-serif; --font-sans:"Manrope",ui-sans-serif,system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --background:oklch(0.15 0.03 240); --foreground:oklch(0.96 0.01 200); --card:oklch(0.19 0.04 238);
+  --muted:oklch(0.26 0.04 238); --muted-fg:oklch(0.68 0.02 220); --accent-ink:oklch(0.78 0.14 210);
+  --destructive:oklch(0.65 0.2 22); --warning:oklch(0.80 0.15 75); --warning-ink:oklch(0.82 0.14 75);
+  --success-ink:oklch(0.78 0.18 152); --border:oklch(1 0 0 / 10%); --chart-3:oklch(0.68 0.2 264);
+  --gradient-primary:linear-gradient(135deg,oklch(0.13 0.06 242) 0%,oklch(0.19 0.06 238) 100%);
+  --shadow-card:0 1px 2px oklch(0 0 0 / .3),0 8px 24px -12px oklch(0 0 0 / .5); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --background:oklch(0.15 0.03 240); --foreground:oklch(0.96 0.01 200); --card:oklch(0.19 0.04 238);
+  --muted:oklch(0.26 0.04 238); --muted-fg:oklch(0.68 0.02 220); --accent-ink:oklch(0.78 0.14 210);
+  --destructive:oklch(0.65 0.2 22); --warning:oklch(0.80 0.15 75); --warning-ink:oklch(0.82 0.14 75);
+  --success-ink:oklch(0.78 0.18 152); --border:oklch(1 0 0 / 10%); --chart-3:oklch(0.68 0.2 264);
+  --gradient-primary:linear-gradient(135deg,oklch(0.13 0.06 242) 0%,oklch(0.19 0.06 238) 100%);
+  --shadow-card:0 1px 2px oklch(0 0 0 / .3),0 8px 24px -12px oklch(0 0 0 / .5); color-scheme:dark}
+*{box-sizing:border-box;border-color:var(--border)}
+[hidden]{display:none!important}
+body{margin:0;background:var(--background);color:var(--foreground);font-family:var(--font-sans);-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.5;padding-bottom:64px}
+h1,h2,h3{font-family:var(--font-display);margin:0}
+p{margin:0}
+button,select{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:inherit}
+svg.lucide{width:16px;height:16px;flex:none}
+.tnum{font-variant-numeric:tabular-nums}
+.mf{color:var(--muted-fg)}
+.c-ok{color:var(--success-ink)} .c-warn{color:var(--warning-ink)} .c-bad{color:var(--destructive)}
+.wrap{max-width:80rem;margin:0 auto;padding-inline:16px;display:flex;flex-direction:column;gap:20px}
+@media (min-width:640px){.wrap{padding-inline:24px}}
+@media (min-width:1024px){.wrap{padding-inline:32px}}
+
+/* Header */
+.hero{position:relative;overflow:hidden;background:var(--gradient-primary);margin-bottom:20px}
+.hero .blob{position:absolute;right:-80px;top:-80px;width:256px;height:256px;border-radius:50%;background:oklch(0.76 0.19 152 / .2);filter:blur(64px)}
+.hero .in{position:relative;padding-block:24px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between}
+.brand{display:flex;gap:12px;align-items:center}
+.brand .ic{width:44px;height:44px;border-radius:12px;background:var(--primary);color:var(--primary-fg);display:flex;align-items:center;justify-content:center}
+.brand .ic svg{width:24px;height:24px}
+.eyebrow{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:oklch(1 0 0 / .6)}
+.hero h1{font-size:clamp(24px,3vw,30px);font-weight:800;color:#fff;letter-spacing:.02em}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.glass{display:flex;align-items:center;gap:8px;border-radius:12px;background:oklch(1 0 0 / .1);padding:8px 16px;font-size:14px;color:#fff;font-weight:500;text-decoration:none}
+.glass svg{color:var(--primary)}
+a.glass:hover{background:oklch(1 0 0 / .18)}
+.glass.amb{background:var(--warning);color:oklch(0.25 0.06 70);font-weight:800} .glass.amb svg{color:oklch(0.25 0.06 70)}
+
+/* Cards, filtros */
+.card{border:1px solid var(--border);background:var(--card);border-radius:20px;box-shadow:var(--shadow-card)}
+.pad{padding:20px}
+.card-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--border);padding:16px 20px}
+.card-hd h2{font-size:18px}
+.card-hd p{color:var(--muted-fg)}
+.filter{padding:16px 20px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.fld{display:flex;flex-direction:column;gap:6px;min-width:0}
+.fld label{font-size:12px;font-weight:600;color:var(--muted-fg)}
+select{height:36px;border:1px solid var(--border);border-radius:10px;background:var(--background);padding:0 12px;min-width:170px;max-width:100%}
+.btn{display:inline-flex;align-items:center;gap:6px;border:0;border-radius:10px;padding:8px 12px;font-weight:700;background:transparent;color:var(--muted-fg)}
+.btn:hover{color:var(--foreground)}
+.aviso{display:flex;gap:10px;align-items:flex-start;border-radius:14px;padding:12px 16px;background:oklch(0.78 0.16 70 / .15);color:var(--warning-ink);font-weight:600}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (min-width:1024px){.kpis{grid-template-columns:1.4fr 1fr 1fr 1fr}}
+.kpi{padding:18px 20px;min-width:0;display:flex;flex-direction:column;gap:6px}
+.kpi .lbl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-fg)}
+.kpi .val{white-space:nowrap;font-family:var(--font-display);font-size:clamp(20px,2.3vw,28px);font-weight:800;font-variant-numeric:tabular-nums;line-height:1.15}
+.kpi .val small{font-family:var(--font-sans);font-size:14px;font-weight:700;color:var(--muted-fg);margin-left:6px}
+.kpi .kl{font-size:13px;color:var(--muted-fg)}
+.kpi .kl b{color:var(--foreground)}
+.kpi.hero2{background:var(--gradient-primary);border:0;color:#fff}
+.kpi.hero2 .lbl,.kpi.hero2 .kl{color:oklch(1 0 0 / .7)} .kpi.hero2 .kl b{color:#fff}
+.kpi.hero2 .val{font-size:clamp(26px,3vw,38px)}
+.kpi.hero2 .val small{color:oklch(1 0 0 / .75)}
+@media (max-width:1023px){.kpi.hero2{grid-column:span 2}}
+.prog{position:relative;height:10px;border-radius:999px;background:var(--muted);margin-top:4px}
+.prog i{position:absolute;left:0;top:0;bottom:0;border-radius:999px}
+.prog b{position:absolute;top:-4px;bottom:-4px;width:3px;border-radius:2px;background:var(--foreground)}
+.ritmo{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;width:max-content}
+.ritmo.ok{background:var(--primary);color:var(--primary-fg)} .ritmo.warn{background:var(--warning);color:oklch(0.25 0.06 70)} .ritmo.bad{background:var(--destructive);color:#fff}
+.ind{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.ind div{border-radius:14px;background:var(--card);border:1px solid var(--border);padding:10px 14px;display:flex;flex-direction:column}
+.ind span{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-fg)}
+.ind b{font-family:var(--font-display);font-size:20px;font-variant-numeric:tabular-nums}
+.ind small{font-size:12px;color:var(--muted-fg)}
+
+/* Gráfico */
+.tw{overflow-x:auto}
+.chart svg{display:block;width:100%;height:auto}
+.chart .grid{stroke:var(--border)} .chart .ax{fill:var(--muted-fg);font:600 11px var(--font-sans)}
+.chart .hb{fill:var(--chart-3);opacity:.35} .chart .hb.now{opacity:.6}
+.chart .esp{fill:none;stroke:var(--muted-fg);stroke-width:2;stroke-dasharray:6 4}
+.chart .rl{fill:none;stroke:var(--foreground);stroke-width:2.4;stroke-linejoin:round}
+.chart .mt{stroke:var(--success-ink);stroke-width:1.5;stroke-dasharray:3 4}
+.chart .mtl{fill:var(--success-ink);font:800 11px var(--font-sans)}
+.chart .agora{stroke:var(--warning);stroke-width:2}
+.chart .rd{stroke:var(--card);stroke-width:2} .chart .rd.ok{fill:var(--success-ink)} .chart .rd.no{fill:var(--destructive)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--muted-fg);font-weight:600;margin-top:8px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:18px}
+.legend .l-rl{border-top:2.5px solid var(--foreground)} .legend .l-esp{border-top:2px dashed var(--muted-fg)}
+.legend .l-hb{height:10px;width:12px;border-radius:3px;background:var(--chart-3);opacity:.45} .legend .l-mt{border-top:1.5px dashed var(--success-ink)}
+
+/* Tabelas */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{position:sticky;top:0;background:var(--card);text-align:left;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-fg);padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap}
+th.s{cursor:pointer;user-select:none} th.s:hover{color:var(--foreground)} th.on{color:var(--foreground)}
+td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle;white-space:nowrap}
+.r{text-align:right}
+tr.click{cursor:pointer} tr.click:hover td{background:var(--muted)}
+.nm{font-weight:700} .sub{font-size:12px;color:var(--muted-fg)}
+.tall{max-height:620px;overflow:auto}
+.bar{display:flex;align-items:center;gap:8px;min-width:120px}
+.bar span{flex:1;height:6px;border-radius:999px;background:var(--muted);position:relative;overflow:hidden}
+.bar span i{position:absolute;left:0;top:0;bottom:0;border-radius:999px}
+.mais{padding:12px 20px}
+.lk{border:0;background:none;padding:0;font-weight:700;color:var(--foreground);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+@media (max-width:640px){.filter select{min-width:0;width:100%}.fld{flex:1 1 140px}}
+</style>
+</head>
+<body>
+<header class="hero"><div class="blob"></div>
+  <div class="wrap"><div class="in">
+    <div class="brand"><div class="ic"><i data-lucide="activity"></i></div>
+      <div><p class="eyebrow">Acompanhamento do dia</p><h1>PULSAR · HOJE</h1></div></div>
+    <div class="chips">
+      <div class="glass"><i data-lucide="clock"></i><span id="hData">Carregando…</span></div>
+      <div class="glass amb" id="hAmb" hidden><i data-lucide="flask-conical"></i><span>Desenvolvimento</span></div>
+      <a class="glass" href="index.html" id="lkMes"><i data-lucide="calendar-days"></i><span>Painel do mês</span></a>
+    </div>
+  </div></div>
+</header>
+
+<main class="wrap">
+  <section class="card filter">
+    <div class="fld"><label for="fReg">Regional</label><select id="fReg"></select></div>
+    <div class="fld"><label for="fPraca">Praça</label><select id="fPraca"></select></div>
+    <div class="fld"><label for="fGvo">GVO</label><select id="fGvo"></select></div>
+    <div class="fld"><label for="fLoja">Loja</label><select id="fLoja"></select></div>
+    <button class="btn" type="button" id="fLimpar"><i data-lucide="rotate-ccw"></i>Limpar</button>
+  </section>
+  <div id="aviso"></div>
+  <section class="kpis" id="kpis"></section>
+  <section class="ind" id="ind"></section>
+  <div class="card pad">
+    <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><h2 style="font-size:18px">Vendido × esperado por hora</h2><p class="mf" id="curvaTxt"></p></div></div>
+    <div class="tw"><div class="chart" id="chart"></div></div>
+    <div class="legend"><span><i class="l-rl"></i>Vendido acumulado</span><span><i class="l-esp"></i>Esperado acumulado</span><span><i class="l-hb"></i>Vendido na hora</span><span><i class="l-mt"></i>Meta de hoje</span></div>
+  </div>
+  <div class="card" id="cardLojas"></div>
+  <div class="card" id="cardCons"></div>
+</main>
+
+<script src="config.js"></script>
+<script>
+/* ================= PULSAR · HOJE =================
+   Meta de hoje (mesma conta do painel do mês): meta diarizada + gap até ontem ÷ dias que faltam com meta, contando hoje.
+   Esperado até agora: meta de hoje × parte do dia que a loja costuma ter vendido até esta hora (curva por hora do mês,
+   no mesmo dia da semana; metade da curva da loja e metade da curva da rede, para não depender de poucos dias).
+   Boletos necessários: regra do "Garantir" (até +13% sobre o mesmo dia da semana do ano passado; o resto no boleto médio).
+   BT: boletos com Boleto Turbinado ÷ boletos com item pago. BP: boletos com Boleto Promocional ÷ boletos a partir de R$ 120. */
+const CONF=window.PULSAR_CONFIG||{ambiente:'desenvolvimento'};
+const F={bt:.32,bp:.30},CRESC_MAX_BOL=.13,ATUALIZA_MIN=5;
+const MESES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const SEMANA=['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+const $=id=>document.getElementById(id);
+const nf=d=>new Intl.NumberFormat('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fx=(v,d=0)=>nf(d).format(v||0);
+const brl=(v,d=0)=>'R$ '+fx(v,d);
+const kbrl=v=>{const a=Math.abs(v||0);return(v<0?'−':'')+(a>=1e6?'R$ '+fx(a/1e6,2)+' mi':a>=1e3?'R$ '+fx(a/1e3,1)+' mil':'R$ '+fx(a))};
+const pct=(v,d=0)=>(v<0?'−':'')+fx(Math.abs(v||0)*100,d)+'%';
+const pad=n=>String(n).padStart(2,'0');
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ic=n=>`<i data-lucide="${n}"></i>`;
+const sum=a=>a.reduce((s,x)=>s+(x||0),0);
+const icons=()=>{try{window.lucide&&lucide.createIcons()}catch(e){}};
+
+let P=null,H=null,ANO,MES,LAST,TODAY,DAYS,LJ=[],X={},CS=[],CURVA_REDE=null;
+const S={reg:'',praca:'',gvo:'',loja:'',sortL:['ritmo',1],sortC:['ritmo',1],todosC:false};
+const NIVEIS=[['reg',l=>l.regional],['praca',l=>l.praca],['gvo',l=>l.gestor],['loja',l=>l.id]];
+const filtra=ate=>LJ.filter(l=>NIVEIS.slice(0,ate).every(([k,f])=>!S[k]||f(l)===S[k]));
+
+// Parte do dia vendida até "hh:mm" segundo a curva (24 participações por hora)
+function fracAte(c,ate){
+ if(!c)return null;const[h,m]=ate.split(':').map(Number);let f=0;
+ for(let i=0;i<h;i++)f+=c[i]||0;return Math.min(1,f+(c[h]||0)*(m||0)/60);
+}
+const misturar=(a,b)=>a&&b?a.map((x,i)=>.5*x+.5*b[i]):a||b;
+const linear=()=>Array.from({length:24},(_,i)=>i>=9&&i<22?1/13:0);    // sem histórico: 9h às 22h por igual
+
+function preparar(){
+ const[y,mo,d]=P.ontem.split('-').map(Number);ANO=y;MES=mo-1;LAST=d;TODAY=d+1;DAYS=P.diasMes;
+ LJ=P.lojas.filter(l=>sum(l.meta)>0);CURVA_REDE=H.curvaRede||linear();
+ const th={};H.lojas.forEach(t=>th[t.id]=t);
+ X={};
+ LJ.forEach(l=>{
+  const mt=l.meta,ate=sum(mt.slice(0,LAST)),rec=sum(l.rec),mh=TODAY<=DAYS?mt[TODAY-1]:0;
+  const rest=mt.slice(TODAY-1).filter(v=>v>0).length,gap=Math.max(0,ate-rec),recup=mh>0&&rest?gap/rest:0,hoje=mh+recup;
+  // BM alvo de venda (como no painel): BM Alvo do Plano BM convertido pela proporção de brindes de jul–set; sem plano, BM de jul–set
+  const bolM=sum(l.bol),itM=sum(l.it),refBM=l.ref&&l.ref.bol?l.ref.rec/l.ref.bol:(bolM?rec/bolM:0);
+  const fr=l.ref&&l.ref.bol?(l.ref.bol+(l.ref.br||0))/l.ref.bol:1,bmA=l.plano&&l.plano.bmAlvo?l.plano.bmAlvo*fr:refBM;
+  const dA=TODAY+1<=DAYS?TODAY+1:null,bolAA=dA&&l.aa?l.aa.bol[dA-1]:0,recAA=dA&&l.aa?l.aa.rec[dA-1]:0;
+  const need=bmA?hoje/bmA:0,bolNec=bolAA>0?Math.min(Math.max(need,bolAA),bolAA*(1+CRESC_MAX_BOL)):need;
+  const t=th[l.id]||{rec:0,bol:0,it:0,b1:0,br:0,bt:0,bp:0,bpe:0,h:Array(24).fill(0),curva:null};
+  const curva=misturar(t.curva,CURVA_REDE);
+  X[l.id]={l,mh,recup,hoje,ate,rec,bolNec,bmNec:bolNec?hoje/bolNec:0,ipbM:bolM?itM/bolM:0,pmM:itM?rec/itM:0,recAA,bolAA,t,curva,
+   frac:fracAte(curva,H.ate)??0};
+ });
+ // consultores: meta de hoje da loja dividida pela participação na receita do mês (quem vendeu nos últimos 7 dias)
+ const tc={};H.consultores.forEach(c=>tc[c.id]=c);
+ CS=[];const vistos=new Set();
+ LJ.forEach(l=>{
+  const cs=P.consultores.filter(c=>c.loja===l.id&&sum(c.rec)>0&&c.bol.slice(Math.max(0,LAST-7),LAST).some(v=>v>0)),tot=sum(cs.map(c=>sum(c.rec)));
+  // participação abaixo de 3% (folguista, apoio de outra loja) fica sem meta individual
+  cs.forEach(c=>{vistos.add(c.id);const sh=tot?sum(c.rec)/tot:0;CS.push({id:c.id,nome:c.nome,loja:l.id,meta:sh>=.03?X[l.id].hoje*sh:0,t:tc[c.id]||null})});
+ });
+ H.consultores.filter(c=>!vistos.has(c.id)&&X[c.loja]).forEach(c=>CS.push({id:c.id,nome:c.nome,loja:c.loja,meta:0,t:c}));
+}
+
+// Soma do conjunto filtrado. Meta de hoje do conjunto = meta diarizada + gap do conjunto (como no painel do mês).
+function agregar(ls){
+ const a={mh:0,ate:0,rec:0,hojeL:0,espL:0,bolNec:0,recAA:0,v:{rec:0,bol:0,it:0,b1:0,br:0,bt:0,bp:0,bpe:0},h:Array(24).fill(0),cum:Array(24).fill(0)};
+ const metaD=Array(DAYS).fill(0);
+ ls.forEach(l=>{const x=X[l.id];a.mh+=x.mh;a.ate+=x.ate;a.rec+=x.rec;a.hojeL+=x.hoje;a.espL+=x.hoje*x.frac;a.bolNec+=x.bolNec;a.recAA+=x.recAA;
+  for(const k in a.v)a.v[k]+=x.t[k]||0;(x.t.h||[]).forEach((v,i)=>a.h[i]+=v);
+  let c=0;x.curva.forEach((v,i)=>{c+=v;a.cum[i]+=x.hoje*c});l.meta.forEach((v,i)=>metaD[i]+=v)});
+ const rest=metaD.slice(TODAY-1).filter(v=>v>0).length,gap=Math.max(0,a.ate-a.rec);
+ a.recup=a.mh>0&&rest?gap/rest:0;a.hoje=a.mh+a.recup;
+ const k=a.hojeL?a.hoje/a.hojeL:1;a.cum=a.cum.map(v=>v*k);   // curva esperada na escala da meta do conjunto
+ a.frac=a.hojeL?a.espL/a.hojeL:0;a.esp=a.hoje*a.frac;
+ a.bmNec=a.bolNec?a.hojeL/a.bolNec:0;a.bolNecC=a.bmNec?a.hoje/a.bmNec:0;
+ const v=a.v;a.bm=v.bol?v.rec/v.bol:0;a.ipb=v.bol?v.it/v.bol:0;a.pm=v.it?v.rec/v.it:0;a.pb1=v.bol?v.b1/v.bol:0;a.pBT=v.bol?v.bt/v.bol:0;a.pBP=v.bpe?Math.min(1,v.bp/v.bpe):0;
+ // IPB e PM necessários: o BM necessário dividido na proporção do mês
+ let it=0,bo=0,re=0;ls.forEach(l=>{it+=sum(l.it);bo+=sum(l.bol);re+=sum(l.rec)});
+ const ipbM=bo?it/bo:0,pmM=it?re/it:0,kk=ipbM&&pmM?Math.sqrt(a.bmNec/(ipbM*pmM)):1;a.ipbNec=ipbM*kk;a.pmNec=pmM*kk;
+ a.ritmo=a.esp?v.rec/a.esp:0;a.proj=a.frac>0?v.rec/a.frac:0;a.at=a.hoje?v.rec/a.hoje:0;
+ return a;
+}
+const st=r=>r>=1?['ok','No ritmo','circle-check']:r>=.9?['warn','Atenção','triangle-alert']:['bad','Abaixo','trending-down'];
+const chip=r=>{const[c,t,i]=st(r);return `<span class="ritmo ${c}">${ic(i)}${t} · ${pct(r)}</span>`};
+const cor=r=>r>=1?'var(--primary)':r>=.9?'var(--warning)':'var(--destructive)';
+
+function render(){
+ const ls=filtra(4),a=agregar(ls),v=a.v,dA=TODAY+1<=DAYS?new Date(ANO-1,MES,TODAY+1):null;
+ const lj=S.loja?LJ.find(l=>l.id===S.loja):null;
+ $('kpis').innerHTML=`
+  <div class="card kpi hero2"><p class="lbl">Meta de hoje · ${pad(TODAY)}/${pad(MES+1)}${lj?' · '+esc(lj.nome):''}</p>
+   <p class="val">${kbrl(a.hoje)}<small>${fx(a.bolNecC)} boletos</small></p>
+   <p class="kl">Meta de hoje = meta diarizada + gap: <b>${brl(a.hoje)} = ${brl(a.mh)} + ${brl(a.recup)}</b></p></div>
+  <div class="card kpi"><p class="lbl">Vendido até ${esc(H.ate)}</p><p class="val">${kbrl(v.rec)}<small>${pct(a.at)} da meta</small></p>
+   <div class="prog"><i style="width:${Math.min(100,a.at*100)}%;background:${cor(a.ritmo)}"></i><b style="left:calc(${Math.min(100,a.frac*100)}% - 1px)" title="Esperado até agora"></b></div>
+   <p class="kl">Faltam <b>${kbrl(Math.max(0,a.hoje-v.rec))}</b></p></div>
+  <div class="card kpi"><p class="lbl">Ritmo agora</p>${chip(a.ritmo)}
+   <p class="kl">Esperado até ${esc(H.ate)}: <b>${kbrl(a.esp)}</b> (${pct(a.frac)} do dia)</p>
+   <p class="kl">${v.rec>=a.esp?'Acima':'Abaixo'} do esperado: <b class="${v.rec>=a.esp?'c-ok':'c-bad'}">${v.rec>=a.esp?'+':'−'}${kbrl(Math.abs(v.rec-a.esp))}</b></p></div>
+  <div class="card kpi"><p class="lbl">Projeção do dia</p><p class="val ${a.proj>=a.hoje?'c-ok':'c-bad'}">${kbrl(a.proj)}<small>${pct(a.hoje?a.proj/a.hoje:0)} da meta</small></p>
+   ${a.recAA>0&&dA?`<p class="kl">${SEMANA[dA.getDay()].slice(0,3)} ${pad(dA.getDate())}/${pad(MES+1)}/${String(ANO-1).slice(2)}: <b>${kbrl(a.recAA)}</b> · <b class="${a.proj>=a.recAA?'c-ok':'c-bad'}">${a.proj>=a.recAA?'+':'−'}${pct(Math.abs(a.proj/a.recAA-1))}</b></p>`:''}</div>`;
+ const bolEsp=a.bolNecC*a.frac,bmOk=a.bm>=a.bmNec,ipbOk=a.ipb>=a.ipbNec;
+ $('ind').innerHTML=`
+  <div><span>Boletos</span><b class="${v.bol>=bolEsp?'c-ok':'c-bad'}">${fx(v.bol)}</b><small>esperado até agora ${fx(bolEsp)} · dia ${fx(a.bolNecC)}</small></div>
+  <div><span>Boleto médio</span><b class="${bmOk?'c-ok':'c-bad'}">${brl(a.bm)}</b><small>necessário ${brl(a.bmNec)}</small></div>
+  <div><span>IPB</span><b class="${ipbOk?'c-ok':'c-bad'}">${fx(a.ipb,2)}</b><small>necessário ${fx(a.ipbNec,2)}</small></div>
+  <div><span>Preço médio</span><b class="${a.pm>=a.pmNec?'c-ok':'c-bad'}">${brl(a.pm,2)}</b><small>necessário ${brl(a.pmNec,2)}</small></div>
+  <div><span>%B1</span><b>${pct(a.pb1,1)}</b><small>boletos com 1 item</small></div>
+  <div><span>BT</span><b class="${a.pBT>=F.bt?'c-ok':'c-bad'}">${pct(a.pBT)}</b><small>meta ${pct(F.bt)} dos boletos</small></div>
+  <div><span>BP</span><b class="${a.pBP>=F.bp?'c-ok':'c-bad'}">${pct(a.pBP)}</b><small>meta ${pct(F.bp)} dos boletos ≥ R$ 120</small></div>`;
+ desenhar(a);
+ tabelaLojas(ls);tabelaCons(ls);
+ icons();
+}
+
+// Gráfico por hora: barras = vendido na hora; linhas = vendido acumulado × esperado acumulado; tracejado = meta de hoje
+function desenhar(a){
+ const h0=8,h1=22,N=h1-h0+1,cw=Math.max(40,720/N),L=64,R=16,T=24,B=30,W=L+R+cw*N,HH=280,ih=HH-T-B;
+ const[hA,mA]=H.ate.split(':').map(Number);
+ const MAX=Math.max(a.hoje,...a.cum,sum(a.h))*1.08||1,MH=Math.max(...a.h)||1;
+ const xc=i=>L+cw*(i+.5),y=v=>T+(1-v/MAX)*ih,yb=v=>T+ih-(v/MH)*ih*.35;
+ let g='';
+ for(let i=0;i<=4;i++){const v=MAX/1.08*i/4;g+=`<line class="grid" x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}"/><text class="ax" x="${L-8}" y="${y(v)+4}" text-anchor="end">${kbrl(v)}</text>`}
+ g+=`<line class="mt" x1="${L}" x2="${W-R}" y1="${y(a.hoje)}" y2="${y(a.hoje)}"/><text class="mtl" x="${W-R}" y="${y(a.hoje)-6}" text-anchor="end">meta ${kbrl(a.hoje)}</text>`;
+ const pE=[],pR=[];let acc=0;for(let h=0;h<h0;h++)acc+=a.h[h];
+ for(let i=0;i<N;i++){const h=h0+i;
+  g+=`<text class="ax" x="${xc(i)}" y="${HH-10}" text-anchor="middle">${h}h</text>`;
+  pE.push(`${xc(i)},${y(a.cum[h])}`);
+  if(h<=hA){acc+=a.h[h];pR.push([xc(i),y(acc)]);
+   if(a.h[h]>0)g+=`<rect class="hb ${h===hA?'now':''}" x="${xc(i)-cw*.3}" y="${yb(a.h[h])}" width="${cw*.6}" height="${T+ih-yb(a.h[h])}" rx="3"><title>${h}h: ${kbrl(a.h[h])} vendidos na hora</title></rect>`}
+ }
+ g+=`<polyline class="esp" points="${pE.join(' ')}"/>`;
+ if(pR.length){g+=`<polyline class="rl" points="${pR.map(p=>p[0]+','+p[1]).join(' ')}"/>`;
+  const u=pR[pR.length-1];g+=`<circle class="rd ${a.ritmo>=1?'ok':'no'}" cx="${u[0]}" cy="${u[1]}" r="5"><title>Vendido até ${H.ate}: ${kbrl(a.v.rec)}</title></circle>`}
+ if(hA>=h0&&hA<=h1){const x=L+cw*(hA-h0+(mA||0)/60);g+=`<line class="agora" x1="${x}" x2="${x}" y1="${T}" y2="${T+ih}"/><text class="ax" x="${x+4}" y="${T+10}">${esc(H.ate)}</text>`}
+ $('chart').innerHTML=`<svg viewBox="0 0 ${W} ${HH}" style="min-width:${Math.round(W*.75)}px" role="img" aria-label="Venda acumulada de hoje contra a esperada por hora">${g}</svg>`;
+ $('curvaTxt').textContent=`Esperado = meta de hoje × curva de venda por hora das ${SEMANA[new Date(ANO,MES,TODAY).getDay()]}s do mês`;
+}
+
+const sortTh=(tb,k,l,r='')=>{const[ak,d]=S[tb],on=ak===k;return `<th class="s ${r} ${on?'on':''}" data-sort="${tb}:${k}">${l}${on?(d>0?' ▲':' ▼'):''}</th>`};
+const ordenar=(tb,arr,get)=>{const[k,d]=S[tb];return arr.sort((x,y)=>{const a=get(x,k),b=get(y,k);return(a>b?1:a<b?-1:0)*d})};
+
+function tabelaLojas(ls){
+ const rows=ls.map(l=>{const x=X[l.id],t=x.t,esp=x.hoje*x.frac;
+  return{l,x,t,esp,ritmo:esp?t.rec/esp:0,at:x.hoje?t.rec/x.hoje:0,proj:x.frac?t.rec/x.frac:0,bolEsp:x.bolNec*x.frac,
+   bm:t.bol?t.rec/t.bol:0,ipb:t.bol?t.it/t.bol:0,pb1:t.bol?t.b1/t.bol:0,pBT:t.bol?t.bt/t.bol:0,pBP:t.bpe?Math.min(1,t.bp/t.bpe):0}});
+ ordenar('sortL',rows,(r,k)=>k==='nome'?r.l.nome:k==='rec'?r.t.rec:k==='hoje'?r.x.hoje:r[k]);
+ const abaixo=rows.filter(r=>r.ritmo<.9).length;
+ $('cardLojas').innerHTML=`<div class="card-hd"><div><h2>Lojas hoje</h2><p>${ls.length} lojas · ${abaixo} abaixo de 90% do esperado até ${esc(H.ate)} · clique para filtrar a loja</p></div></div>
+  <div class="tw tall"><table><thead><tr>${sortTh('sortL','nome','Loja')}${sortTh('sortL','hoje','Meta hoje','r')}${sortTh('sortL','rec','Vendido','r')}${sortTh('sortL','at','% meta')}${sortTh('sortL','ritmo','Ritmo agora')}${sortTh('sortL','proj','Projeção','r')}
+   <th class="r">Boletos</th>${sortTh('sortL','bm','BM','r')}${sortTh('sortL','ipb','IPB','r')}${sortTh('sortL','pb1','%B1','r')}${sortTh('sortL','pBT','BT','r')}${sortTh('sortL','pBP','BP','r')}</tr></thead><tbody>
+  ${rows.map(r=>`<tr class="click" data-loja="${r.l.id}"><td><p class="nm">${esc(r.l.nome)}</p><p class="sub">${esc(r.l.gestor)}</p></td>
+   <td class="r tnum"><b>${kbrl(r.x.hoje)}</b><p class="sub">${fx(r.x.bolNec)} boletos</p></td>
+   <td class="r tnum"><b>${kbrl(r.t.rec)}</b><p class="sub">esperado ${kbrl(r.esp)}</p></td>
+   <td><div class="bar"><span><i style="width:${Math.min(100,r.at*100)}%;background:${cor(r.ritmo)}"></i></span><b class="tnum">${pct(r.at)}</b></div></td>
+   <td>${chip(r.ritmo)}</td>
+   <td class="r tnum ${r.proj>=r.x.hoje?'c-ok':'c-bad'}"><b>${kbrl(r.proj)}</b><p class="sub">${pct(r.x.hoje?r.proj/r.x.hoje:0)}</p></td>
+   <td class="r tnum"><b class="${r.t.bol>=r.bolEsp?'c-ok':'c-bad'}">${fx(r.t.bol)}</b><p class="sub">esperado ${fx(r.bolEsp)}</p></td>
+   <td class="r tnum"><b class="${r.bm>=r.x.bmNec?'c-ok':'c-bad'}">${brl(r.bm)}</b><p class="sub">nec. ${brl(r.x.bmNec)}</p></td>
+   <td class="r tnum">${fx(r.ipb,2)}</td><td class="r tnum">${pct(r.pb1)}</td>
+   <td class="r tnum ${r.pBT>=F.bt?'c-ok':'c-bad'}">${pct(r.pBT)}</td><td class="r tnum ${r.pBP>=F.bp?'c-ok':'c-bad'}">${pct(r.pBP)}</td></tr>`).join('')}
+  </tbody></table></div>`;
+}
+
+function tabelaCons(ls){
+ const ids=new Set(ls.map(l=>l.id));
+ const rows=CS.filter(c=>ids.has(c.loja)&&(c.meta>0||c.t&&c.t.rec>0)).map(c=>{const x=X[c.loja],t=c.t||{rec:0,bol:0,it:0,b1:0,bt:0,bp:0,bpe:0},esp=c.meta*x.frac;
+  return{c,x,t,esp,ritmo:esp?t.rec/esp:(t.rec>0?9:0),at:c.meta?t.rec/c.meta:0,ipb:t.bol?t.it/t.bol:0,pb1:t.bol?t.b1/t.bol:0,pBT:t.bol?t.bt/t.bol:0,pBP:t.bpe?Math.min(1,t.bp/t.bpe):0}});
+ ordenar('sortC',rows,(r,k)=>k==='nome'?r.c.nome:k==='rec'?r.t.rec:k==='meta'?r.c.meta:k==='bol'?r.t.bol:r[k]);
+ const semVenda=rows.filter(r=>r.c.meta>0&&!r.t.rec).length,lim=S.todosC||S.loja?rows.length:30;
+ $('cardCons').innerHTML=`<div class="card-hd"><div><h2>Consultores hoje</h2><p>${rows.length} consultores · ${semVenda} ainda sem venda · meta individual = meta de hoje da loja × participação na receita do mês</p></div></div>
+  <div class="tw tall"><table><thead><tr>${sortTh('sortC','nome','Consultor')}${sortTh('sortC','meta','Meta hoje','r')}${sortTh('sortC','rec','Vendido','r')}${sortTh('sortC','at','% meta')}${sortTh('sortC','ritmo','Ritmo agora')}${sortTh('sortC','bol','Boletos','r')}${sortTh('sortC','ipb','IPB','r')}${sortTh('sortC','pb1','%B1','r')}${sortTh('sortC','pBT','BT','r')}${sortTh('sortC','pBP','BP','r')}</tr></thead><tbody>
+  ${rows.slice(0,lim).map(r=>`<tr><td><p class="nm">${esc(r.c.nome)}</p><p class="sub">${esc(r.x.l.nome)}</p></td>
+   <td class="r tnum">${r.c.meta?`<b>${kbrl(r.c.meta)}</b><p class="sub">esperado ${kbrl(r.esp)}</p>`:'<span class="mf">sem meta</span>'}</td>
+   <td class="r tnum"><b>${kbrl(r.t.rec)}</b></td>
+   <td>${r.c.meta?`<div class="bar"><span><i style="width:${Math.min(100,r.at*100)}%;background:${cor(r.ritmo)}"></i></span><b class="tnum">${pct(r.at)}</b></div>`:'—'}</td>
+   <td>${r.c.meta?(r.t.rec?chip(r.ritmo):'<span class="ritmo bad">Sem venda</span>'):'—'}</td>
+   <td class="r tnum">${fx(r.t.bol)}</td><td class="r tnum">${r.t.bol?fx(r.ipb,2):'—'}</td><td class="r tnum">${r.t.bol?pct(r.pb1):'—'}</td>
+   <td class="r tnum ${r.pBT>=F.bt?'c-ok':'c-bad'}">${r.t.bol?pct(r.pBT):'—'}</td><td class="r tnum ${r.pBP>=F.bp?'c-ok':'c-bad'}">${r.t.bpe?pct(r.pBP):'—'}</td></tr>`).join('')}
+  </tbody></table></div>
+  ${rows.length>lim?`<p class="mais"><button class="lk" data-todos="1">Ver os ${rows.length} consultores</button> · filtre uma loja para ver o time inteiro</p>`:''}`;
+}
+
+/* ---------- Filtros (os mesmos do painel do mês; o filtro fica lembrado) ---------- */
+const KEY_FIL='pulsar-filtro-v1';
+function fillFiltros(){
+ const opts=(i,todos)=>{const[k,f]=NIVEIS[i],m=new Map();filtra(i).forEach(l=>m.set(f(l),k==='reg'?`${l.regional} · ${l.grvo}`:k==='loja'?l.nome:f(l)));
+  if(S[k]&&!m.has(S[k]))S[k]='';
+  return `<option value="">${todos}</option>`+[...m].filter(([v])=>v).sort((a,b)=>a[1].localeCompare(b[1],'pt-BR')).map(([v,l])=>`<option value="${esc(v)}">${esc(l)}</option>`).join('')};
+ [['fReg','Todas as regionais'],['fPraca','Todas as praças'],['fGvo','Todos os GVOs'],['fLoja','Todas as lojas']].forEach(([id,t],i)=>{$(id).innerHTML=opts(i,t);$(id).value=S[NIVEIS[i][0]]});
+}
+const lembrar=()=>{try{localStorage.setItem(KEY_FIL,JSON.stringify({reg:S.reg,praca:S.praca,gvo:S.gvo,loja:S.loja}))}catch(e){}};
+function filtroInicial(){
+ let f={};try{f=JSON.parse(localStorage.getItem(KEY_FIL))||{}}catch(e){}
+ const q=new URLSearchParams(location.search);
+ if(['loja','gvo','praca','reg'].some(k=>q.has(k)))f={reg:q.get('reg')||'',praca:q.get('praca')||'',gvo:q.get('gvo')||'',loja:q.get('loja')||''};
+ const l=f.loja&&LJ.find(x=>x.id===f.loja);
+ if(l){S.reg=l.regional;S.praca=l.praca;S.gvo=l.gestor;S.loja=l.id}else{S.reg=f.reg||'';S.praca=f.praca||'';S.gvo=f.gvo||''}
+}
+const setFiltro=(k,v)=>{S[k]=v;fillFiltros();lembrar();render()};
+[['fReg','reg'],['fPraca','praca'],['fGvo','gvo'],['fLoja','loja']].forEach(([id,k])=>$(id).addEventListener('change',e=>setFiltro(k,e.target.value)));
+$('fLimpar').addEventListener('click',()=>{S.reg=S.praca=S.gvo=S.loja='';fillFiltros();lembrar();render()});
+document.addEventListener('click',e=>{
+ const t=e.target.closest('[data-sort],[data-loja],[data-todos]');if(!t)return;const d=t.dataset;
+ if(d.sort){const[tb,k]=d.sort.split(':'),c=S[tb];S[tb]=c[0]===k?[k,-c[1]]:[k,1];render();return}
+ if(d.todos){S.todosC=true;render();return}
+ if(d.loja){const l=LJ.find(x=>x.id===d.loja);S.reg=l.regional;S.praca=l.praca;S.gvo=l.gestor;S.loja=l.id;fillFiltros();lembrar();render();window.scrollTo({top:0,behavior:'smooth'})}
+});
+
+/* ---------- Carga ---------- */
+function cabecalho(){
+ const d=new Date(ANO,MES,TODAY);
+ $('hData').textContent=`${SEMANA[d.getDay()][0].toUpperCase()+SEMANA[d.getDay()].slice(1)}, ${pad(TODAY)}/${pad(MES+1)} · vendas até ${H.ate} · atualizado às ${H.geradoEm.slice(11,16)}`;
+ const ok=H.dia===`${ANO}-${pad(MES+1)}-${pad(TODAY)}`;
+ $('aviso').innerHTML=ok?'':`<div class="aviso">${ic('triangle-alert')}<span>A venda de hoje é de ${H.dia.split('-').reverse().join('/')}, mas o painel do mês vai até ${P.ontem.split('-').reverse().join('/')}. A meta de hoje precisa do fechamento de ontem: rode o processar_dados.py com as vendas até a véspera.</span></div>`;
+}
+async function carregar(){
+ const j=u=>fetch(u,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(u+' '+r.status);return r.json()});
+ [P,H]=await Promise.all([j('data/pulsar.json'),j('data/hoje.json')]);
+ preparar();cabecalho();
+}
+if(CONF.ambiente==='desenvolvimento'){$('hAmb').hidden=false;document.title='[DEV] '+document.title}
+carregar().then(()=>{filtroInicial();fillFiltros();render();
+ // a página busca a venda de hoje de novo a cada 5 minutos (o arquivo é atualizado pelo processar_hoje.py)
+ setInterval(()=>carregar().then(render).catch(()=>{}),ATUALIZA_MIN*60000);
+}).catch(err=>{
+ $('kpis').innerHTML=`<div class="card pad" style="grid-column:1/-1"><h2 style="font-size:18px">Ainda não há venda de hoje</h2><p class="mf">Salve o export de cupons de hoje em <b>Dados/Hoje</b> e rode <b>Atualizar hoje.bat</b> (ou <code>python processar_hoje.py</code>). A página precisa de <code>data/pulsar.json</code> e <code>data/hoje.json</code>.</p></div>`;
+ icons();
+});
+</script>
+</body>
+</html>

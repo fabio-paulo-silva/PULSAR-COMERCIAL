@@ -169,7 +169,8 @@ def mes_do_arquivo(arq: Path):
 
 
 def ler_vendas() -> pd.DataFrame:
-    arquivos = sorted(a for a in PASTA_VENDAS.rglob("*.xlsx") if not a.name.startswith("~$"))
+    # Dados/Hoje é a venda parcial do dia (processar_hoje.py): fica fora do fechamento D-1
+    arquivos = sorted(a for a in PASTA_VENDAS.rglob("*.xlsx") if not a.name.startswith("~$") and "Hoje" not in a.parts)
     # só o mês atual e os meses de referência
     meses = [mes_do_arquivo(a) for a in arquivos]
     conhecidos = [m for m in meses if m]
@@ -187,7 +188,8 @@ def ler_ano_anterior(ini_mes):
     """Mesmo mês do ano anterior (ex.: Dados/Outubro 2025/cupom_venda_2025-10-01_a_2025-10-31.xlsx).
     Mesmas regras do mês atual (só efetivados, brinde fora, sacola descontada). None se não houver arquivo."""
     alvo = (ini_mes.year - 1, ini_mes.month)
-    arqs = sorted(a for a in PASTA_VENDAS.rglob("*.xlsx") if not a.name.startswith("~$") and mes_do_arquivo(a) == alvo)
+    arqs = sorted(a for a in PASTA_VENDAS.rglob("*.xlsx")
+                  if not a.name.startswith("~$") and "Hoje" not in a.parts and mes_do_arquivo(a) == alvo)
     if not arqs:
         return None, []
     v = pd.concat([agregar_arquivo(a) for a in arqs], ignore_index=True)
