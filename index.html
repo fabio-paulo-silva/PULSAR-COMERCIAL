@@ -1284,16 +1284,24 @@ function anoAntHTML(ls,a){
    ${quedas.length?`<p class="puxam">${ic('trending-down')} Maiores quedas vs ${T}: ${quedas.map(([l,x])=>`<button class="lk" data-foco="${l.id}">${esc(l.nome)}</button> (${pct(x.d.rec,0,true)}, ${kbrl(x.atu.rec-x.ant.rec)})`).join(', ')}</p>`:''}
   </div></div>`;
 }
-// Meta de hoje da loja dividida entre os consultores, pela participação de cada um na receita do período
+// Time da loja: quem vendeu nos últimos 7 dias e tem receita no mês de pelo menos 20% da mediana dos colegas.
+// Abaixo disso é venda pontual (digital, apoio de outra loja): fora da divisão da meta.
+const MIN_TIME=.2;
+function timeDaLoja(lid){
+ const at=cons.filter(c=>c.loja===lid&&sum(c.rec)>0&&c.bol.slice(Math.max(0,LAST-7),LAST).some(v=>v>0));
+ const rs=at.map(c=>sum(c.rec)).sort((a,b)=>a-b),n=rs.length,med=n?(n%2?rs[(n-1)/2]:(rs[n/2-1]+rs[n/2])/2):0;
+ return{time:at.filter(c=>sum(c.rec)>=MIN_TIME*med),fora:at.filter(c=>sum(c.rec)<MIN_TIME*med)};
+}
+// Meta de hoje da loja dividida em partes iguais entre os consultores do time
 function metaConsHTML(l){
- // só quem vendeu nos últimos 7 dias (fora folguistas e desligados)
- const m=M[l.id],cs=cons.filter(c=>c.loja===l.id&&c.m.rec>0&&c.bol.slice(Math.max(0,LAST-7),LAST).some(v=>v>0)),tot=sum(cs.map(c=>c.m.rec));if(!cs.length||!tot)return '';
- const bm=m.bmAlvoV||m.bm;
- const rows=cs.map(c=>({c,s:c.m.rec/tot})).sort((x,y)=>y.s-x.s);
- return `<div class="card"><div class="card-hd"><div><h2>Meta de hoje por consultor</h2><p>${esc(l.nome)} · ${kbrl(m.hoje)} divididos pela participação na receita (${perTxt()})</p></div><span class="icchip t-accent">${ic('users')}</span></div>
-  <div class="tw"><table class="mc"><thead><tr><th>Consultor</th><th class="r">Participação</th><th class="r">Meta hoje</th><th class="r">Boletos</th><th class="r">Média atual/dia</th></tr></thead><tbody>
-  ${rows.map(({c,s})=>{const mh=m.hoje*s;return `<tr><td><p class="nm">${esc(c.nome)}</p></td><td class="r tnum">${pct(s)}</td><td class="r tnum"><b>${kbrl(mh)}</b></td><td class="r tnum">${fx(bm?mh/bm:0)}</td><td class="r tnum ${c.m.recDia>=mh?'c-ok':'c-bad'}">${kbrl(c.m.recDia)} · ${fx(c.m.bolDia,1)} bol.</td></tr>`}).join('')}
-  </tbody></table></div></div>`;
+ const m=M[l.id],{time,fora}=timeDaLoja(l.id);if(!time.length)return '';
+ const bm=m.bmAlvoV||m.bm,mh=m.hoje/time.length;
+ const rows=[...time].sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+ return `<div class="card"><div class="card-hd"><div><h2>Meta de hoje por consultor</h2><p>${esc(l.nome)} · ${kbrl(m.hoje)} ÷ ${time.length} consultores = <b>${kbrl(mh)}</b> e ${fx(bm?mh/bm:0)} boletos para cada um</p></div><span class="icchip t-accent">${ic('users')}</span></div>
+  <div class="tw"><table class="mc"><thead><tr><th>Consultor</th><th class="r">Meta hoje</th><th class="r">Boletos</th><th class="r">Média atual/dia</th></tr></thead><tbody>
+  ${rows.map(c=>`<tr><td><p class="nm">${esc(c.nome)}</p></td><td class="r tnum"><b>${kbrl(mh)}</b></td><td class="r tnum">${fx(bm?mh/bm:0)}</td><td class="r tnum ${c.m.recDia>=mh?'c-ok':'c-bad'}">${kbrl(c.m.recDia)} · ${fx(c.m.bolDia,1)} bol.</td></tr>`).join('')}
+  </tbody></table></div>
+  ${fora.length?`<p class="mf" style="padding:0 20px 16px">Fora do time (venda pontual no mês, ex.: digital): ${fora.map(c=>`${esc(c.nome)} (${kbrl(sum(c.rec))})`).join(', ')}.</p>`:''}</div>`;
 }
 /* ================= Hoje: uma decisão por loja ================= */
 // Régua única: a meta. Cada loja recebe UMA meta de hoje e UM indicador para mover.

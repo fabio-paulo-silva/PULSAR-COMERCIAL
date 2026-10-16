@@ -81,5 +81,5 @@ O indicador de boletos é **% dos boletos que a meta pede**: boletos de venda ÷
 - **Esperado até agora** = meta de hoje × parte do dia que costuma estar vendida até a hora do último cupom. A curva por hora vem dos cupons do mês no mesmo dia da semana (metade a curva da loja, metade a da rede).
 - **Ritmo agora** = vendido ÷ esperado (verde ≥ 100%, amarelo ≥ 90%, vermelho abaixo). **Projeção do dia** = vendido ÷ parte do dia já passada, comparada com o mesmo dia da semana do ano passado.
 - **Boletos, BM, IPB e PM necessários:** regra do "Garantir" (boletos até +13% sobre o mesmo dia da semana do ano passado). BT e BP com as mesmas regras de elegibilidade do painel.
-- **Consultores:** meta individual = meta de hoje da loja × participação na receita do mês (quem vendeu nos últimos 7 dias e tem pelo menos 3% da loja).
+- **Consultores:** meta individual = meta de hoje da loja ÷ nº de consultores do time, em partes iguais (mesma regra da "Meta de hoje por consultor" do painel do mês). Time = quem vendeu nos últimos 7 dias e tem receita no mês de pelo menos 20% da mediana dos colegas da loja; abaixo disso é venda pontual (digital, apoio de outra loja) e o consultor aparece como "fora do time".
 - A página busca o `data/hoje.json` de novo a cada 5 minutos. Filtros e `?loja=ID` iguais aos do painel do mês.
