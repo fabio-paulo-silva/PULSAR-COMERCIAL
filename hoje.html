@@ -177,10 +177,10 @@ tr.click{cursor:pointer} tr.click:hover td{background:var(--muted)}
    Meta de hoje (mesma conta do painel do mês): meta diarizada + gap até ontem ÷ dias que faltam com meta, contando hoje.
    Esperado até agora: meta de hoje × parte do dia que a loja costuma ter vendido até esta hora (curva por hora do mês,
    no mesmo dia da semana; metade da curva da loja e metade da curva da rede, para não depender de poucos dias).
-   Boletos necessários: regra do "Garantir" (até +13% sobre o mesmo dia da semana do ano passado; o resto no boleto médio).
+   Boletos necessários: regra do "Garantir" (até +30% sobre o mesmo dia da semana do ano passado; o resto no boleto médio).
    BT: boletos com Boleto Turbinado ÷ boletos com item pago. BP: boletos com Boleto Promocional ÷ boletos a partir de R$ 120. */
 const CONF=window.PULSAR_CONFIG||{ambiente:'desenvolvimento'};
-const F={bt:.32,bp:.30},CRESC_MAX_BOL=.13,ATUALIZA_MIN=5;
+const F={bt:.32,bp:.30},CRESC_MAX_BOL=.30,ATUALIZA_MIN=5;
 // Time da loja: quem vendeu nos últimos 7 dias e tem receita no mês de pelo menos 20% da mediana dos colegas.
 // Abaixo disso é venda pontual (digital, apoio de outra loja) e o consultor não entra na divisão da meta.
 const MIN_TIME=.2;

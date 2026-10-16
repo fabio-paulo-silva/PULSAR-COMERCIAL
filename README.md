@@ -56,8 +56,8 @@ O indicador de boletos é **% dos boletos que a meta pede**: boletos de venda ÷
 - **Régua única:** a meta. Cluster e ano passado aparecem só como evidência ("Por quê").
 - **R$ em risco hoje** (ranking de todas as visões) = meta de hoje − venda esperada se a loja repetir o ritmo dos últimos 7 dias (realizado ÷ meta do dia). Loja sem risco contra a meta, mas 8% ou mais abaixo do ano passado: em risco = venda do mesmo dia do ano passado − esperada.
 - **Garantir (o número de hoje):** base = boletos do mesmo dia da semana da mesma semana do ano passado (364 dias antes: 14/10/2026, quarta = 15/10/2025, quarta). Boletos que a meta pede = meta de hoje ÷ BM alvo.
-  - Se a meta pede até **+13%** de boletos sobre essa base: garantir esses boletos (no mínimo o mesmo do ano passado). Ação de fluxo: canal da loja ou item do ciclo.
-  - Se pede mais de +13%: boletos ficam em +13% e o resto vem do **boleto médio** (BM = meta de hoje ÷ boletos com +13%, dividido entre IPB e PM na proporção atual). Ação: BT e BP no fechamento, combos presenteáveis e sarrafos do Compre e Ganhe do ciclo.
+  - Se a meta pede até **+30%** de boletos sobre essa base: garantir esses boletos (no mínimo o mesmo do ano passado). Ação de fluxo: canal da loja ou item do ciclo.
+  - Se pede mais de +30%: boletos ficam em +30% e o resto vem do **boleto médio** (BM = meta de hoje ÷ boletos com +30%, dividido entre IPB e PM na proporção atual). Ação: BT e BP no fechamento, combos presenteáveis e sarrafos do Compre e Ganhe do ciclo.
   - Sem base do ano passado (loja nova ou fim do mês): o indicador abaixo do alvo que mais tira receita.
 - **Como:** canal da própria loja que mais rende contra o cluster (boletos) ou o item do ciclo; IPB sempre com BT e BP.
 - **Registro:** a ação registrada pelo card leva o indicador (coluna gatilho) e a meta ("Meta: 82 boletos hoje" na descrição). O **placar de ontem** compara essa meta com o que a loja (ou o consultor) fez no dia.
@@ -71,7 +71,7 @@ O indicador de boletos é **% dos boletos que a meta pede**: boletos de venda ÷
 ## Cards do topo
 - **% da meta:** atingimento do mês, balão "Deveria estar" (verde acima, vermelho abaixo), meta do mês e variação contra o ano anterior.
 - **Projeção:** % de fechamento e se fecha acima ou abaixo.
-- **Meta de hoje = meta diarizada + gap**, com os boletos, BM e IPB necessários (mesma regra do "Garantir": boletos até +13% sobre o mesmo dia da semana do ano passado) e BT/BP necessários (32% e 30%) contra o atual.
+- **Meta de hoje = meta diarizada + gap**, com os boletos, BM e IPB necessários (mesma regra do "Garantir": boletos até +30% sobre o mesmo dia da semana do ano passado) e BT/BP necessários (32% e 30%) contra o atual.
 - **BT e BP são sempre comparados com a meta de penetração** (32% e 30%), nunca com o cluster: card da loja, tabela de alavancas da loja e coluna "Maior oportunidade" da aba Lojas. Valor de chegar à meta = boletos que faltam × preço médio do item de BT ou BP do ciclo.
 - **%B1 contra o melhor do cluster:** referência = menor %B1 entre as lojas do mesmo cluster com pelo menos 200 boletos no período (QDB fora). Valor de chegar lá = boletos de 1 item que viram 2 com o BT × preço do item de BT do ciclo. Aparece no "Por quê" e no "Como" do card da loja, na coluna %B1 e na comparação da loja (aba Lojas) e na linha de BT/BP dos consultores.
 
@@ -80,6 +80,6 @@ O indicador de boletos é **% dos boletos que a meta pede**: boletos de venda ÷
 - **Meta de hoje** = meta diarizada + gap até ontem ÷ dias que faltam (a mesma do painel do mês); por isso o `data/pulsar.json` precisa estar fechado até ontem.
 - **Esperado até agora** = meta de hoje × parte do dia que costuma estar vendida até a hora do último cupom. A curva por hora vem dos cupons do mês no mesmo dia da semana (metade a curva da loja, metade a da rede).
 - **Ritmo agora** = vendido ÷ esperado (verde ≥ 100%, amarelo ≥ 90%, vermelho abaixo). **Projeção do dia** = vendido ÷ parte do dia já passada, comparada com o mesmo dia da semana do ano passado.
-- **Boletos, BM, IPB e PM necessários:** regra do "Garantir" (boletos até +13% sobre o mesmo dia da semana do ano passado). BT e BP com as mesmas regras de elegibilidade do painel.
+- **Boletos, BM, IPB e PM necessários:** regra do "Garantir" (boletos até +30% sobre o mesmo dia da semana do ano passado). BT e BP com as mesmas regras de elegibilidade do painel.
 - **Consultores:** meta individual = meta de hoje da loja ÷ nº de consultores do time, em partes iguais (mesma regra da "Meta de hoje por consultor" do painel do mês). Time = quem vendeu nos últimos 7 dias e tem receita no mês de pelo menos 20% da mediana dos colegas da loja; abaixo disso é venda pontual (digital, apoio de outra loja) e o consultor aparece como "fora do time".
 - A página busca o `data/hoje.json` de novo a cada 5 minutos. Filtros e `?loja=ID` iguais aos do painel do mês.
