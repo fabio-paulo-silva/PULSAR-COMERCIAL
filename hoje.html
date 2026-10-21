@@ -162,7 +162,7 @@ tr.click{cursor:pointer} tr.click:hover td{background:var(--muted)}
   <div id="aviso"></div>
   <section class="kpis" id="kpis"></section>
   <section class="ind" id="ind"></section>
-  <div class="card pad">
+  <div class="card pad" id="cardCurva">
     <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><h2 style="font-size:18px">Vendido × esperado por hora</h2><p class="mf" id="curvaTxt"></p></div></div>
     <div class="tw"><div class="chart" id="chart"></div></div>
     <div class="legend"><span><i class="l-rl"></i>Vendido acumulado</span><span><i class="l-esp"></i>Esperado acumulado</span><span><i class="l-hb"></i>Vendido na hora</span><span><i class="l-mt"></i>Meta de hoje</span></div>
@@ -266,6 +266,7 @@ const chip=r=>{const[c,t,i]=st(r);return `<span class="ritmo ${c}">${ic(i)}${t} 
 const cor=r=>r>=1?'var(--primary)':r>=.9?'var(--warning)':'var(--destructive)';
 
 function render(){
+ if(!DIA_OK){icons();return}
  const ls=filtra(4),a=agregar(ls),v=a.v,dA=TODAY+1<=DAYS?new Date(ANO-1,MES,TODAY+1):null;
  const lj=S.loja?LJ.find(l=>l.id===S.loja):null;
  $('kpis').innerHTML=`
@@ -389,11 +390,17 @@ document.addEventListener('click',e=>{
 });
 
 /* ---------- Carga ---------- */
+// A venda parcial só vale se for do dia seguinte ao fechamento do painel do mês. Se não for, a página não mistura os dias:
+// mostra só o aviso (venda parcial antiga = falta o arquivo de hoje; venda parcial à frente = falta fechar o mês até ontem).
+let DIA_OK=true;
 function cabecalho(){
- const d=new Date(ANO,MES,TODAY);
- $('hData').textContent=`${SEMANA[d.getDay()][0].toUpperCase()+SEMANA[d.getDay()].slice(1)}, ${pad(TODAY)}/${pad(MES+1)} · vendas até ${H.ate} · atualizado às ${H.geradoEm.slice(11,16)}`;
- const ok=H.dia===`${ANO}-${pad(MES+1)}-${pad(TODAY)}`;
- $('aviso').innerHTML=ok?'':`<div class="aviso">${ic('triangle-alert')}<span>A venda de hoje é de ${H.dia.split('-').reverse().join('/')}, mas o painel do mês vai até ${P.ontem.split('-').reverse().join('/')}. A meta de hoje precisa do fechamento de ontem: rode o processar_dados.py com as vendas até a véspera.</span></div>`;
+ const d=new Date(ANO,MES,TODAY),hojeISO=`${ANO}-${pad(MES+1)}-${pad(TODAY)}`,br=x=>x.split('-').reverse().join('/');
+ DIA_OK=H.dia===hojeISO;
+ $('hData').textContent=`${SEMANA[d.getDay()][0].toUpperCase()+SEMANA[d.getDay()].slice(1)}, ${pad(TODAY)}/${pad(MES+1)} · `+(DIA_OK?`vendas até ${H.ate} · atualizado às ${H.geradoEm.slice(11,16)}`:'sem venda de hoje');
+ $('aviso').innerHTML=DIA_OK?'':`<div class="aviso">${ic('triangle-alert')}<span>`+(H.dia<hojeISO
+  ?`Ainda não há venda de hoje (${br(hojeISO)}). O último arquivo de venda parcial é de ${br(H.dia)}, até ${H.ate}. Salve o export de cupons de hoje em <b>Dados/Hoje</b> e rode <b>Atualizar hoje.bat</b>. O realizado até ${br(P.ontem)} está no <a href="index.html">painel do mês</a>.`
+  :`A venda parcial é de ${br(H.dia)}, mas o painel do mês vai só até ${br(P.ontem)}. A meta de hoje precisa do fechamento de ontem: rode o processar_dados.py com as vendas até a véspera.`)+`</span></div>`;
+ ['kpis','ind','cardCurva','cardLojas','cardCons'].forEach(id=>$(id).hidden=!DIA_OK);
 }
 async function carregar(){
  const j=u=>fetch(u,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(u+' '+r.status);return r.json()});
