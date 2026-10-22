@@ -415,8 +415,15 @@ td.hp{background:oklch(0.76 0.19 152 / .1)} td.hn{background:oklch(0.58 0.21 22 
 .papel{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:12px;color:var(--muted-fg)}
 .papel .selo{margin-left:0}
 
-.btbp{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--muted-fg)}
-.btbp svg{width:14px;height:14px}
+.mix{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.mx{border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;background:var(--muted);border:1px solid transparent;min-width:0}
+.mx .l{display:flex;gap:5px;align-items:center;font-size:11px;font-weight:700;color:var(--muted-fg)}
+.mx .l svg{width:13px;height:13px}
+.mx b{font-family:var(--font-display);font-size:17px;font-variant-numeric:tabular-nums}
+.mx small{font-size:11px;line-height:1.3;color:var(--muted-fg)}
+.mx.ok b{color:var(--success-ink)} .mx.no b{color:var(--destructive)}
+.mixp{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--muted-fg)}
+.mixp svg{width:14px;height:14px;color:var(--destructive)} .mixp b{color:var(--destructive)}
 
 /* KPIs: status do ritmo e meta de hoje em destaque */
 .kpi.st-ok{border-color:var(--primary);background:linear-gradient(180deg,oklch(0.76 0.19 152 / .12),var(--card) 55%)}
@@ -1645,7 +1652,12 @@ function perfil(c){
  return c._p={k,t,idx,iBol,iIpb,iPm,lim,padrinho};
 }
 const ultAcao=c=>acoesMes().filter(x=>x.cons===c.id).sort((a,b)=>b.dia-a.dia)[0];
-const btbpLinha=m=>`<p class="btbp">${ic('ticket')}B1 <b>${pct(m.pb1)}</b> · BT <b class="${m.pBT>=F.bt?'c-ok':'c-bad'}">${pct(m.pBT)}</b> / ${pct(F.bt)} · BP <b class="${m.pBP>=F.bp?'c-ok':'c-bad'}">${pct(m.pBP)}</b> / ${pct(F.bp)}${m.perdaBTBP>0?` · <span class="c-bad">−${kbrl(m.perdaBTBP)}</span> no período`:''}</p>`;
+// Mix do boleto do consultor em 3 quadros: %B1 contra a loja (menor é melhor), BT e BP contra a meta de penetração
+function btbpLinha(m,lid){
+ const L=M[lid]||{},q=(lb,icn,v,ok,ref)=>`<div class="mx ${ok?'ok':'no'}"><span class="l">${ic(icn)}${lb}</span><b>${pct(v)}</b><small>${ref}</small></div>`;
+ return `<div class="mix">${q('%B1','package',m.pb1,L.pb1==null||m.pb1<=L.pb1,`loja ${pct(L.pb1||0)} · menor é melhor`)}${q('BT','zap',m.pBT,m.pBT>=F.bt,`meta ${pct(F.bt)} dos boletos`)}${q('BP','ticket',m.pBP,m.pBP>=F.bp,`meta ${pct(F.bp)} dos boletos ≥ R$ 120`)}</div>
+  ${m.perdaBTBP>0?`<p class="mixp">${ic('circle-alert')}BT e BP abaixo da meta: <b>−${kbrl(m.perdaBTBP)}</b> no período</p>`:''}`;
+}
 function drvChip(lb,v,ref,imp,lim,ic_){
  const cl=imp<lim?'dn':imp>-lim?'up':'eq';
  return `<div class="dc ${cl}"><span class="l">${ic(ic_)}${lb}</span><span class="v">${v}</span><span class="s">time: ${ref}</span><span class="i">${imp<0?'':'+'}${kbrl(imp)}/dia</span></div>`;
@@ -1661,7 +1673,7 @@ function consCard(c){
  return `<article class="card act ${P.sev} fade">
   <div class="hd"><div class="l"><span class="sev ${P.sev}">${ic(P.ic)}${P.n}</span></div><div class="imp"><b>${pct(p.idx)}</b><small>do time</small></div></div>
   <h3>${ic('user-round')}${esc(c.nome)} <span class="mf" style="font-family:var(--font-sans);font-size:13px;font-weight:600">· ${esc(l.nome)}</span></h3>
-  ${p.k==='ausente'?`<p class="evid">Sem cupom nos últimos 3 dias em que a loja vendeu. ${m.dias} dias com venda no mês.</p>`:`<div class="dchips">${drvChip('Boletos/dia',fx(m.bolDia,1),fx(p.t.bolDia,1),p.iBol,p.lim,'receipt')}${drvChip('IPB',fx(m.ipb,2),fx(p.t.ipb,2),p.iIpb,p.lim,'shopping-bag')}${drvChip('Preço médio',brl(m.pm,2),brl(p.t.pm,2),p.iPm,p.lim,'tag')}</div>${btbpLinha(m)}`}
+  ${p.k==='ausente'?`<p class="evid">Sem cupom nos últimos 3 dias em que a loja vendeu. ${m.dias} dias com venda no mês.</p>`:`<div class="dchips">${drvChip('Boletos/dia',fx(m.bolDia,1),fx(p.t.bolDia,1),p.iBol,p.lim,'receipt')}${drvChip('IPB',fx(m.ipb,2),fx(p.t.ipb,2),p.iIpb,p.lim,'shopping-bag')}${drvChip('Preço médio',brl(m.pm,2),brl(p.t.pm,2),p.iPm,p.lim,'tag')}</div>${btbpLinha(m,c.loja)}`}
   ${acaoBloco(p.k,{tipo:P.acao,acao:P.acao,detalhe:P.passos(c,p)[0]},'')}
   ${alvo?`<div class="goal">${ic('flag')}<span>Alvo: ${alvo}${ganho>0?` · vale <b>+${kbrl(ganho)} por dia</b>`:''}</span></div>`:''}
   <div class="ft"><span class="mf" style="font-size:12px">${ua?`Última ação ${dd(ua.dia)}`:''}</span>
