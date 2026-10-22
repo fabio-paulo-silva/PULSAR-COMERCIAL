@@ -250,7 +250,7 @@ function agregar(ls){
   for(const k in a.v)a.v[k]+=x.t[k]||0;(x.t.h||[]).forEach((v,i)=>a.h[i]+=v);
   let c=0;x.curva.forEach((v,i)=>{c+=v;a.cum[i]+=x.hoje*c});l.meta.forEach((v,i)=>metaD[i]+=v)});
  const rest=metaD.slice(TODAY-1).filter(v=>v>0).length,gap=Math.max(0,a.ate-a.rec);
- a.recup=a.mh>0&&rest?gap/rest:0;a.hoje=a.mh+a.recup;
+ a.recup=a.mh>0&&rest?gap/rest:0;a.hoje=a.mh+a.recup;a.rest=rest;a.gapR=a.rec-a.ate;
  const k=a.hojeL?a.hoje/a.hojeL:1;a.cum=a.cum.map(v=>v*k);   // curva esperada na escala da meta do conjunto
  a.frac=a.hojeL?a.espL/a.hojeL:0;a.esp=a.hoje*a.frac;
  a.bmNec=a.bolNec?a.hojeL/a.bolNec:0;a.bolNecC=a.bmNec?a.hoje/a.bmNec:0;
@@ -272,7 +272,8 @@ function render(){
  $('kpis').innerHTML=`
   <div class="card kpi hero2"><p class="lbl">Meta de hoje · ${pad(TODAY)}/${pad(MES+1)}${lj?' · '+esc(lj.nome):''}</p>
    <p class="val">${kbrl(a.hoje)}<small>${fx(a.bolNecC)} boletos</small></p>
-   <p class="kl">Meta de hoje = meta diarizada + gap: <b>${brl(a.hoje)} = ${brl(a.mh)} + ${brl(a.recup)}</b></p></div>
+   <p class="kl">Meta de hoje = meta diarizada + gap ÷ ${a.rest} dias que faltam: <b>${brl(a.hoje)} = ${brl(a.mh)} + ${brl(a.recup)}</b></p>
+   <p class="kl">${a.gapR<0?`Gap até ontem: <b>${brl(-a.gapR)}</b> ÷ ${a.rest} dias = ${brl(a.recup)}`:`Sem gap: <b>${brl(a.gapR)}</b> acima do deveria estar até ontem`}</p></div>
   <div class="card kpi"><p class="lbl">Vendido até ${esc(H.ate)}</p><p class="val">${kbrl(v.rec)}<small>${pct(a.at)} da meta</small></p>
    <div class="prog"><i style="width:${Math.min(100,a.at*100)}%;background:${cor(a.ritmo)}"></i><b style="left:calc(${Math.min(100,a.frac*100)}% - 1px)" title="Esperado até agora"></b></div>
    <p class="kl">Faltam <b>${kbrl(Math.max(0,a.hoje-v.rec))}</b></p></div>

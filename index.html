@@ -442,6 +442,7 @@ td.hp{background:oklch(0.76 0.19 152 / .1)} td.hn{background:oklch(0.58 0.21 22 
 .hnota.hf{display:flex;flex-direction:column;gap:2px}
 .hnota.hf span{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:oklch(1 0 0 / .65)}
 .hnota.hf b{font-family:var(--font-display);font-size:16px;font-variant-numeric:tabular-nums;color:#fff}
+.hnota.hf small{font-size:12px;color:oklch(1 0 0 / .7)}
 .alvos small{font-size:11px;font-weight:600;color:var(--muted-fg)}
 .kpi.hero .hsub{font-family:var(--font-sans);font-size:15px;font-weight:700;color:oklch(1 0 0 / .75);white-space:nowrap}
 .d1{display:inline-block;margin-left:6px;border-radius:6px;padding:1px 6px;background:var(--muted);color:var(--muted-fg);font-size:11px;font-weight:800;letter-spacing:.02em;text-transform:none}
@@ -1114,14 +1115,15 @@ function render(){
    ${chip(stP,stP==='ok'?'Fecha acima':stP==='warn'?'No limite':'Fecha abaixo',stP==='ok'?'circle-check':'triangle-alert')}</div>
   <div class="card kpi hero fade"><div class="top"><p class="lbl">Meta de hoje · ${dd(Math.min(TODAY,DAYS))}</p>${chip(a.recup>0?'bad':'ok',a.recup>0?'Recuperar':'No ritmo',a.recup>0?'alarm-clock':'circle-check')}</div>
    <p class="val">${kbrl(a.hoje)} <small class="hsub">${fx(nec.bol)} boletos</small></p>
-   <p class="hnota hf"><span>Meta de hoje = meta diarizada + gap</span><b>${brl(a.hoje)} = ${brl(a.metaHoje)} + ${brl(a.recup)}</b></p>
+   <p class="hnota hf"><span>Meta de hoje = meta diarizada + gap ÷ ${a.diasRest} dias que faltam</span><b>${brl(a.hoje)} = ${brl(a.metaHoje)} + ${brl(a.recup)}</b>
+    <small>${a.gapR<0?`Gap até ontem: ${brl(-a.gapR)} ÷ ${a.diasRest} dias = ${brl(a.recup)}`:`Sem gap: ${brl(a.gapR)} acima do deveria estar até ontem`}</small></p>
    <div class="hgrid">
     <div><span>BM necessário</span><b>${brl(nec.bm)}</b></div>
     <div><span>IPB necessário</span><b>${fx(nec.ipb,2)}</b></div>
     <div><span>BT necessário</span><b>${pct(F.bt)}</b><small>hoje ${pct(a.pBT)}</small></div>
     <div><span>BP necessário</span><b>${pct(F.bp)}</b><small>hoje ${pct(a.pBP)} · boletos ≥ R$ 120</small></div>
    </div></div>`;
- const TABS=[['hoje','Hoje','zap'],['entender','Entender','search'],['lojas','Lojas','store'],['consultores','Consultores','users']];
+ const TABS=[['hoje','Hoje','zap'],['consultores','Consultores','users'],['lojas','Lojas','store'],['entender','Entender','search']];
  $('tabs').innerHTML=TABS.map(([id,l,i])=>`<button class="tab ${S.tab===id?'on':''}" data-tab="${id}">${ic(i)}<span>${l}</span></button>`).join('');
  ({hoje:vHoje,entender:vEntender,lojas:vLojas,consultores:vCons})[S.tab](ls,cs,a);
  icons();
@@ -1668,16 +1670,17 @@ function consCard(c){
 function vCons(ls,cs){
  const cnt={};cs.forEach(c=>{const k=perfil(c).k;cnt[k]=(cnt[k]||0)+1});
  const lista=cs.filter(c=>!S.pfil||perfil(c).k===S.pfil);
- const prio=S.cons?lista:lista.filter(c=>c.m.dias>=Math.min(4,SEL.size)&&(S.pfil||PERFIS[perfil(c).k].sev!=='pos')).sort((a,b)=>PERFIS[perfil(a).k].o-PERFIS[perfil(b).k].o||Math.min(perfil(a).iBol,perfil(a).iIpb,perfil(a).iPm)-Math.min(perfil(b).iBol,perfil(b).iIpb,perfil(b).iPm));
+ // todos os consultores do filtro, na ordem de prioridade do perfil (os botões de perfil filtram um grupo)
+ const prio=[...lista].sort((a,b)=>PERFIS[perfil(a).k].o-PERFIS[perfil(b).k].o||Math.min(perfil(a).iBol,perfil(a).iIpb,perfil(a).iPm)-Math.min(perfil(b).iBol,perfil(b).iIpb,perfil(b).iPm));
  const rows=[...lista].sort(sorter('cons',(c,k)=>k==='nome'?c.nome:k==='perfil'?PERFIS[perfil(c).k].o:k==='idx'?perfil(c).idx:c.m[k]));
  const fator=c=>{const p=perfil(c),m=c.m;if(!['atende','item','ticket'].includes(p.k))return '<span class="mf">—</span>';
   const t={atende:`Boletos/dia ${fx(m.bolDia,1)} · time ${fx(p.t.bolDia,1)}`,item:`IPB ${fx(m.ipb,2)} · time ${fx(p.t.ipb,2)}`,ticket:`Preço médio ${brl(m.pm,2)} · time ${brl(p.t.pm,2)}`}[p.k];
   return `<span class="pill p-bad">${t}</span>`};
  $('view').innerHTML=`<section class="sec">
-  <div class="plan-hd"><div><h2>Plano de 1:1 de hoje</h2><p>Comparado com o time da loja · ${perTxt()}</p></div></div>
-  <div class="pfil">${Object.entries(PERFIS).filter(([k])=>cnt[k]).map(([k,P])=>`<button class="pf ${P.sev} ${S.pfil===k?'on':''}" data-pfil="${k}">${ic(P.ic)}<span>${P.n}</span><b>${cnt[k]}</b></button>`).join('')}</div>
-  <div class="acts3">${prio.slice(0,6).map(consCard).join('')||'<p class="empty">Nenhum consultor precisando de 1:1 neste filtro.</p>'}</div>
-  <div class="card"><div class="card-hd"><div><h2>Consultores${S.pfil?`: ${PERFIS[S.pfil].n}`:''}</h2><p>${lista.length}${S.pfil?' · <button class="btn ghost sm" data-pfil="">limpar filtro</button>':''}</p></div><span class="icchip t-accent">${ic('users')}</span></div>
+  <div class="plan-hd"><div><h2>Consultores${S.pfil?`: ${PERFIS[S.pfil].n}`:''} (${lista.length})</h2><p>Comparado com o time da loja · ${perTxt()} · clique num perfil para ver só esse grupo</p></div></div>
+  <div class="pfil"><button class="pf ${!S.pfil?'on':''}" data-pfil="">${ic('users')}<span>Todos</span><b>${cs.length}</b></button>${Object.entries(PERFIS).filter(([k])=>cnt[k]).map(([k,P])=>`<button class="pf ${P.sev} ${S.pfil===k?'on':''}" data-pfil="${k}">${ic(P.ic)}<span>${P.n}</span><b>${cnt[k]}</b></button>`).join('')}</div>
+  <div class="acts3">${prio.map(consCard).join('')||'<p class="empty">Nenhum consultor neste filtro.</p>'}</div>
+  <details class="card"><summary class="card-hd" style="cursor:pointer"><div><h2>Ver em tabela</h2><p>${lista.length} consultores · ordenável por coluna</p></div><span class="icchip t-accent">${ic('table')}</span></summary>
   <div class="tw tall"><table><thead><tr>${sortTh('cons','nome','Consultor')}${sortTh('cons','perfil','Perfil')}${sortTh('cons','idx','Receita/dia vs time')}<th>Fator que mais pesa</th>${sortTh('cons','pBT','BT / BP')}<th></th></tr></thead><tbody>
   ${rows.map(c=>{const p=perfil(c),P=PERFIS[p.k],m=c.m,l=lojaById(c.loja),ua=ultAcao(c);
    return `<tr><td><p class="nm">${esc(c.nome)}</p><p class="sub">${esc(l.nome)}</p></td>
@@ -1685,7 +1688,7 @@ function vCons(ls,cs){
    <td><div class="minibar"><span class="b"><i style="width:${Math.min(100,p.idx*70)}%;background:${p.idx>=.95?'var(--primary)':p.idx>=.8?'var(--warning)':'var(--destructive)'}"></i></span><b class="tnum">${pct(p.idx)}</b></div><p class="sub">${kbrl(m.recDia)} por dia</p></td>
    <td>${fator(c)}</td><td class="tnum"><b class="${m.pBT>=F.bt?'c-ok':'c-bad'}">${pct(m.pBT)}</b> / <b class="${m.pBP>=F.bp?'c-ok':'c-bad'}">${pct(m.pBP)}</b></td>
    <td>${ua&&ua.dia===TODAY?`<span class="done">${ic('circle-check')}</span>`:`<button class="btn sm" data-creg="${c.id}">${ic(TIPOS[P.acao])}${P.acao==='1:1 com consultor'?'1:1':P.acao==='Reconhecimento'?'Reconhecer':'Ação'}</button>`}</td></tr>`}).join('')}
-  </tbody></table></div></div></section>`;
+  </tbody></table></div></details></section>`;
 }
 function icons(){try{window.lucide&&lucide.createIcons()}catch(e){}}
 
