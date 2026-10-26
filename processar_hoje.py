@@ -109,6 +109,7 @@ def main():
             continue
         t = g[soma].sum()
         cons.append({"id": f"{codigo.strip()}@{loja}", "loja": loja, "nome": p.nome_curto(nome or c),
+                     **({"digital": True} if codigo.strip() in p.DIGITAIS else {}),
                      **{k: round(float(t[k]), 2) for k in soma}})
 
     saida = {"geradoEm": datetime.now().isoformat(timespec="minutes"), "dia": dia.strftime("%Y-%m-%d"), "ate": ate,

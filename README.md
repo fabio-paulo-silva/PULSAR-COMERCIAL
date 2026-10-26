@@ -83,3 +83,11 @@ O indicador de boletos é **% dos boletos que a meta pede**: boletos de venda ÷
 - **Boletos, BM, IPB e PM necessários:** regra do "Garantir" (boletos até +30% sobre o mesmo dia da semana do ano passado). BT e BP com as mesmas regras de elegibilidade do painel.
 - **Consultores:** meta individual = meta de hoje da loja ÷ nº de consultores do time, em partes iguais (mesma regra da "Meta de hoje por consultor" do painel do mês). Time = quem vendeu nos últimos 7 dias e tem receita no mês de pelo menos 20% da mediana dos colegas da loja; abaixo disso é venda pontual (digital, apoio de outra loja) e o consultor aparece como "fora do time".
 - A página busca o `data/hoje.json` de novo a cada 5 minutos. Filtros e `?loja=ID` iguais aos do painel do mês.
+
+## Consultores digitais (WhatsApp)
+- Lista em `processar_dados.py` (`DIGITAIS`, pelo código do Retaguarda): Allana Santos (1130) e João Barros (1413), de São Luís; Wanessa Menezes (1282) e Emilly Silva (795, Emilly Kailany Vicente da Silva), de Natal.
+- No painel, cada digital é uma pessoa só, somando a venda de todas as lojas em que atende. É comparado com a média do grupo digital, fica fora do time da loja (média do time, meta por consultor, "puxam para baixo") e aparece em uma tabela própria na aba Consultores.
+- Na hoje.html, os digitais aparecem como "digital (WhatsApp)", sem meta individual.
+
+## Aba Consultores
+Primeiro a tabela dos consultores de loja e a dos digitais, com receita/dia, boletos/dia, IPB, preço médio e %B1 contra o time (ou o grupo digital) e BT e BP contra a meta. Verde = no nível ou acima, amarelo = até 10% abaixo, vermelho = abaixo disso (no %B1, ao contrário). Embaixo, o card de cada consultor. Os botões de perfil filtram as tabelas e os cards.

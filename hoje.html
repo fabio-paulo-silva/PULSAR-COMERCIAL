@@ -233,13 +233,14 @@ function preparar(){
  const tc={};H.consultores.forEach(c=>tc[c.id]=c);
  CS=[];const vistos=new Set();
  LJ.forEach(l=>{
-  const ativos=P.consultores.filter(c=>c.loja===l.id&&sum(c.rec)>0&&c.bol.slice(Math.max(0,LAST-7),LAST).some(v=>v>0));
+  const ativos=P.consultores.filter(c=>c.loja===l.id&&!c.digital&&sum(c.rec)>0&&c.bol.slice(Math.max(0,LAST-7),LAST).some(v=>v>0));
   const rs=ativos.map(c=>sum(c.rec)).sort((a,b)=>a-b),n0=rs.length,med=n0?(n0%2?rs[(n0-1)/2]:(rs[n0/2-1]+rs[n0/2])/2):0;
   const time=ativos.filter(c=>sum(c.rec)>=MIN_TIME*med);X[l.id].nTime=time.length;
   ativos.forEach(c=>{vistos.add(c.id);const dt=time.includes(c);
    CS.push({id:c.id,nome:c.nome,loja:l.id,meta:dt&&time.length?X[l.id].hoje/time.length:0,fora:!dt,t:tc[c.id]||null})});
  });
- H.consultores.filter(c=>!vistos.has(c.id)&&X[c.loja]).forEach(c=>CS.push({id:c.id,nome:c.nome,loja:c.loja,meta:0,fora:true,t:c}));
+ // digitais (WhatsApp) e quem vendeu fora do time: aparecem, sem meta individual
+ H.consultores.filter(c=>!vistos.has(c.id)&&X[c.loja]).forEach(c=>CS.push({id:c.id,nome:c.nome,loja:c.loja,meta:0,fora:true,digital:!!c.digital,t:c}));
 }
 
 // Soma do conjunto filtrado. Meta de hoje do conjunto = meta diarizada + gap do conjunto (como no painel do mês).
@@ -354,7 +355,7 @@ function tabelaCons(ls){
  $('cardCons').innerHTML=`<div class="card-hd"><div><h2>Consultores hoje</h2><p>${rows.length} consultores · ${semVenda} ainda sem venda · meta individual = meta de hoje da loja ÷ nº de consultores do time</p></div></div>
   <div class="tw tall"><table><thead><tr>${sortTh('sortC','nome','Consultor')}${sortTh('sortC','meta','Meta hoje','r')}${sortTh('sortC','rec','Vendido','r')}${sortTh('sortC','at','% meta')}${sortTh('sortC','ritmo','Ritmo agora')}${sortTh('sortC','bol','Boletos','r')}${sortTh('sortC','ipb','IPB','r')}${sortTh('sortC','pb1','%B1','r')}${sortTh('sortC','pBT','BT','r')}${sortTh('sortC','pBP','BP','r')}</tr></thead><tbody>
   ${rows.slice(0,lim).map(r=>`<tr><td><p class="nm">${esc(r.c.nome)}</p><p class="sub">${esc(r.x.l.nome)}</p></td>
-   <td class="r tnum">${r.c.meta?`<b>${kbrl(r.c.meta)}</b><p class="sub">÷ ${r.x.nTime} · esperado ${kbrl(r.esp)}</p>`:'<span class="mf">fora do time</span>'}</td>
+   <td class="r tnum">${r.c.meta?`<b>${kbrl(r.c.meta)}</b><p class="sub">÷ ${r.x.nTime} · esperado ${kbrl(r.esp)}</p>`:`<span class="mf">${r.c.digital?'digital (WhatsApp)':'fora do time'}</span>`}</td>
    <td class="r tnum"><b>${kbrl(r.t.rec)}</b></td>
    <td>${r.c.meta?`<div class="bar"><span><i style="width:${Math.min(100,r.at*100)}%;background:${cor(r.ritmo)}"></i></span><b class="tnum">${pct(r.at)}</b></div>`:'—'}</td>
    <td>${r.c.meta?(r.t.rec?chip(r.ritmo):'<span class="ritmo bad">Sem venda</span>'):'—'}</td>

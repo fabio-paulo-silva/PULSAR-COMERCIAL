@@ -38,6 +38,14 @@ CANAIS = {"cal": ["24"], "vfl": ["20"], "wpp": ["3", "4"], "exp": ["13", "14", "
           "par": ["11"], "vic": ["10", "25"]}
 ALAVANCAS = list(CANAIS) + ["cl", "cb", "fc"]
 RECEITA = "Receita liquida"   # mesma base da meta (receita líquida dos cupons efetivados)
+# Consultores digitais (atendem pela carteira no WhatsApp, em várias lojas): comparados só entre si, fora do time das lojas.
+# Código do Retaguarda -> nome. Para incluir alguém, acrescente o código aqui.
+DIGITAIS = {
+    "1130": "Allana Karoline Constantino dos Santos (São Luís)",
+    "1413": "João Gabriel Carvalho Barros (São Luís)",
+    "1282": "Wanessa Caroline dos Santos Menezes (Natal)",
+    "795": "Emilly Kailany Vicente da Silva (Natal)",
+}
 SARRAFO_BP = 120.0            # boleto elegível ao Boleto Promocional: receita do cupom a partir de R$ 120
 LIMITE_BRINDE = 1.0           # cupom com receita abaixo disso é brinde (ex.: Ação de Fluxo), não venda
 MESES_REFERENCIA = 3          # IPB e preço médio "normais" de cada loja = média dos 3 meses anteriores
@@ -440,6 +448,7 @@ def main():
             rc = ref[(ref["loja"] == loja) & (ref["consultor"] == consultor)]
             cons_out.append({
                 "id": f"{codigo.strip()}@{loja}", "nome": nome_curto(nome_c or consultor), "loja": loja,
+                **({"digital": True} if codigo.strip() in DIGITAIS else {}),
                 "rec": serie(vc, "rec"), "bol": serie(vc, "bol"), "it": serie(vc, "it"), "b1": serie(vc, "b1"), "br": serie(vc, "br"),
                 "bt": serie(vc, "bt"), "bp": serie(vc, "bp"), "bpe": serie(vc, "bpe"),
                 "ref": resumo_ref(rc),
