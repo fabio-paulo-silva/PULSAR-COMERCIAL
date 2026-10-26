@@ -1751,8 +1751,8 @@ function qualCons(c){
 }
 const corP=v=>v>=50?'c-ok':v>=25?'c-warn':'c-bad';
 const qNivel=v=>v<25?['crit','Crítica']:v<50?['alto','Abaixo']:v<75?['medio','Boa']:['pos','Ótima'];
-// valor do indicador com a cor pelo percentil no grupo e a referência do grupo embaixo
-const vsPct=(txt,p,ref)=>p==null?`<b>${txt}</b>`:`<b class="${corP(p)}">${txt}</b><span class="sc ${p>=50?'pos':'neg'}" title="percentil no grupo de comparação">p${fx(p)}</span><p class="sub">${ref}</p>`;
+// valor do indicador com a cor pelo percentil no grupo; a referência fica na dica (passar o mouse)
+const vsPct=(txt,p,ref)=>p==null?`<b>${txt}</b>`:`<b class="${corP(p)}" title="${ref}">${txt}</b>`;
 function tabelaCons(lst,titulo,sub,ic_){
  if(!lst.length)return '';
  const rows=[...lst].sort(sorter('cons',(c,k)=>k==='nome'?c.nome:k==='perfil'?PERFIS[perfil(c).k].o:k==='idx'?perfil(c).idx:k==='emJogo'?qualCons(c).emJogo:k==='q'?qualCons(c).q:c.m[k]));
@@ -1761,24 +1761,21 @@ function tabelaCons(lst,titulo,sub,ic_){
  const tIpb=T.bol?T.it/T.bol:0,tPm=T.it?T.rec/T.it:0,tBm=T.bol?T.rec/T.bol:0,tB1=T.bol?T.b1/T.bol:0,tBT=T.bol?T.bt/T.bol:0,tBP=T.bpe?T.bp/T.bpe:0;
  const qs=lst.map(qualCons).filter(x=>x.ok),qMed=qs.length?sum(qs.map(x=>x.q))/qs.length:0,jogo=sum(qs.map(x=>x.emJogo));
  return `<div class="card"><div class="card-hd"><div><h2>${titulo}</h2><p>${sub}</p></div><span class="icchip t-accent">${ic(ic_)}</span></div>
-  <div class="tw tall t15"><table class="tcons"><thead><tr>${sortTh('cons','nome','Consultor')}${sortTh('cons','emJogo','R$ em jogo/dia','r')}${sortTh('cons','q','Qualidade','r')}${sortTh('cons','perfil','Perfil')}${sortTh('cons','idx','Receita/dia')}${sortTh('cons','bolDia','Boletos/dia','r')}${sortTh('cons','ipb','IPB · 4','r')}${sortTh('cons','pb1','%B1 · 3','r')}${sortTh('cons','pBT','BT + BP · 2','r')}${sortTh('cons','pm','Preço médio · 1','r')}${sortTh('cons','bm','Boleto médio','r')}<th></th></tr></thead><tbody>
+  <div class="tw tall t15"><table class="tcons"><thead><tr>${sortTh('cons','nome','Consultor')}${sortTh('cons','emJogo','R$ em jogo/dia','r')}${sortTh('cons','q','Qualidade','r')}${sortTh('cons','bolDia','Boletos/dia','r')}${sortTh('cons','ipb','IPB','r')}${sortTh('cons','pb1','%B1','r')}${sortTh('cons','pBT','BT · BP','r')}${sortTh('cons','pm','Preço médio','r')}${sortTh('cons','bm','Boleto médio','r')}<th></th></tr></thead><tbody>
   ${rows.map(c=>{const p=perfil(c),P=PERFIS[p.k],m=c.m,t=p.t,l=lojaById(c.loja),ua=ultAcao(c),q=qualCons(c),[nv,nt]=qNivel(q.q),r=q.ref||{};
-   return `<tr><td><p class="nm">${esc(c.nome)}</p><p class="sub">${c.digital?`WhatsApp · ${c.lojas.length} loja${c.lojas.length>1?'s':''}`:esc(l.nome)}</p></td>
-   <td class="r tnum">${q.ok?`<b class="${q.emJogo>0?'c-bad':'c-ok'}">${q.emJogo>0?kbrl(q.emJogo):'—'}</b><p class="sub">${q.emJogo>0?`IPB ${kbrl(Math.max(0,q.eIpb))} · PM ${kbrl(Math.max(0,q.ePm))}`:'no nível do grupo'}</p>`:'<span class="mf">—</span>'}</td>
-   <td class="r tnum">${q.ok?`<span class="scT ${nv}">${fx(q.q)}</span><p class="sub">${nt}</p>`:'<span class="mf">—</span>'}</td>
-   <td><span class="sev ${P.sev}" style="text-transform:none;letter-spacing:0">${ic(P.ic)}${P.n}</span></td>
-   <td><div class="minibar"><span class="b"><i style="width:${Math.min(100,p.idx*70)}%;background:${p.idx>=.95?'var(--primary)':p.idx>=.8?'var(--warning)':'var(--destructive)'}"></i></span><b class="tnum">${pct(p.idx)}</b></div><p class="sub">${kbrl(m.recDia)} · ${p.tl} ${kbrl(t.recDia)}</p></td>
-   <td class="r tnum"><b>${fx(m.bolDia,1)}</b><p class="sub">${p.tl} ${fx(t.bolDia,1)}</p></td>
+   return `<tr><td><p class="nm" title="${esc(P.n)}">${esc(c.nome)}</p><p class="sub">${c.digital?`WhatsApp · ${c.lojas.length} loja${c.lojas.length>1?'s':''}`:esc(l.nome)}</p></td>
+   <td class="r tnum">${q.ok?`<b class="${q.emJogo>0?'c-bad':'c-ok'}" title="IPB ${kbrl(q.eIpb)} · preço médio ${kbrl(q.ePm)}">${q.emJogo>0?kbrl(q.emJogo):'—'}</b>`:'<span class="mf">—</span>'}</td>
+   <td class="r tnum">${q.ok?`<span class="scT ${nv}" title="${nt} · ${q.gl}">${fx(q.q)}</span>`:'<span class="mf">—</span>'}</td>
+   <td class="r tnum"><b title="${p.tl} ${fx(t.bolDia,1)}">${fx(m.bolDia,1)}</b></td>
    <td class="r tnum">${vsPct(fx(m.ipb,2),q.ok?q.p.ipb:null,`grupo ${fx(r.ipb||0,2)}`)}</td>
    <td class="r tnum">${vsPct(pct(m.pb1),q.ok?q.p.b1:null,`grupo ${pct(r.b1||0)}`)}</td>
    <td class="r tnum">${vsPct(`${pct(m.pBT)} · ${m.bpe?pct(m.pBP):'—'}`,q.ok?q.p.btbp:null,`meta ${pct(F.bt)} · ${pct(F.bp)}`)}</td>
    <td class="r tnum">${vsPct(brl(m.pm,2),q.ok?q.p.pm:null,`grupo ${brl(r.pm||0,2)}`)}</td>
-   <td class="r tnum"><b>${brl(m.bm)}</b><p class="sub">grupo ${brl((r.ipb||0)*(r.pm||0))}</p></td>
+   <td class="r tnum"><b title="grupo ${brl((r.ipb||0)*(r.pm||0))}">${brl(m.bm)}</b></td>
    <td>${ua&&ua.dia===TODAY?`<span class="done">${ic('circle-check')}</span>`:`<button class="btn sm" data-creg="${c.id}">${ic(TIPOS[P.acao])}${P.acao==='1:1 com consultor'?'1:1':P.acao==='Reconhecimento'?'Reconhecer':'Ação'}</button>`}</td></tr>`}).join('')}
-  </tbody><tfoot><tr><td><p class="nm">Total do filtro</p><p class="sub">${lst.length} consultores</p></td>
-   <td class="r tnum"><b class="c-bad">${kbrl(jogo)}</b><p class="sub">por dia</p></td><td class="r tnum"><b>${fx(qMed)}</b><p class="sub">média</p></td><td></td>
-   <td><b class="tnum">${kbrl(T.rec)}</b><p class="sub">${kbrl(T.dias?T.rec/T.dias:0)} por consultor/dia</p></td>
-   <td class="r tnum"><b>${fx(T.bol)}</b><p class="sub">${fx(T.dias?T.bol/T.dias:0,1)} por consultor/dia</p></td>
+  </tbody><tfoot><tr><td><p class="nm">Total · ${lst.length}</p></td>
+   <td class="r tnum"><b class="c-bad">${kbrl(jogo)}</b></td><td class="r tnum"><b>${fx(qMed)}</b></td>
+   <td class="r tnum"><b title="${fx(T.bol)} boletos no período">${fx(T.dias?T.bol/T.dias:0,1)}</b></td>
    <td class="r tnum"><b>${fx(tIpb,2)}</b></td><td class="r tnum"><b>${pct(tB1)}</b></td>
    <td class="r tnum"><b class="${tBT>=F.bt&&tBP>=F.bp?'c-ok':'c-bad'}">${pct(tBT)} · ${pct(tBP)}</b></td><td class="r tnum"><b>${brl(tPm,2)}</b></td><td class="r tnum"><b>${brl(tBm)}</b></td><td></td></tr></tfoot></table></div></div>`;
 }
@@ -1794,12 +1791,12 @@ function vCons(ls,cs){
  const prio=[...lista].sort((a,b)=>PERFIS[perfil(a).k].o-PERFIS[perfil(b).k].o||qualCons(b).emJogo-qualCons(a).emJogo);
  const loja=lista.filter(c=>!c.digital),dig=lista.filter(c=>c.digital);
  $('view').innerHTML=`<section class="sec">
-  <div class="plan-hd"><div><h2>Consultores${S.pfil?`: ${PERFIS[S.pfil].n}`:''} (${lista.length})</h2><p>${perTxt()} · clique num perfil para ver só esse grupo · cores: verde no nível ou acima, amarelo até 10% abaixo, vermelho abaixo</p></div></div>
+  <div class="plan-hd"><div><h2>Consultores${S.pfil?`: ${PERFIS[S.pfil].n}`:''} (${lista.length})</h2><p>${perTxt()} · passe o mouse nos valores para ver a referência</p></div></div>
   <div class="pfil"><button class="pf ${!S.pfil?'on':''}" data-pfil="">${ic('users')}<span>Todos</span><b>${cs.length}</b></button>${Object.entries(PERFIS).filter(([k])=>cnt[k]).map(([k,P])=>`<button class="pf ${P.sev} ${S.pfil===k?'on':''}" data-pfil="${k}">${ic(P.ic)}<span>${P.n}</span><b>${cnt[k]}</b></button>`).join('')}</div>
-  ${tabelaCons(loja,`Consultores de loja (${loja.length})`,'Ordem: R$ em jogo por dia · qualidade do boleto de 0 a 100 = percentil no cluster de IPB (peso 4), %B1 (3), BT + BP contra a meta (2) e preço médio (1); p = percentil de cada indicador','users')}
-  ${tabelaCons(dig,`Consultores digitais · WhatsApp (${dig.length})`,`Comparados só entre si (${DIGTEAM.n} digitais) · somam a venda de todas as lojas em que atendem`,'smartphone')}
+  ${tabelaCons(loja,`Consultores de loja (${loja.length})`,'Comparados com o cluster · qualidade de 0 a 100 (IPB 4, %B1 3, BT + BP 2, preço médio 1)','users')}
+  ${tabelaCons(dig,`Consultores digitais · WhatsApp (${dig.length})`,'Comparados só entre si','smartphone')}
   ${!loja.length&&!dig.length?'<p class="empty">Nenhum consultor neste filtro.</p>':''}
-  ${prio.length?`<div class="plan-hd"><div><h2>Plano de cada consultor</h2><p>Na ordem de prioridade do perfil</p></div></div><div class="acts3">${prio.map(consCard).join('')}</div>`:''}
+  ${prio.length?`<div class="plan-hd"><div><h2>Plano de cada consultor</h2></div></div><div class="acts3">${prio.map(consCard).join('')}</div>`:''}
  </section>`;
  altura15();
 }
