@@ -91,3 +91,9 @@ O indicador de boletos é **% dos boletos que a meta pede**: boletos de venda ÷
 
 ## Aba Consultores
 Primeiro a tabela dos consultores de loja e a dos digitais, com receita/dia, boletos/dia, IPB, preço médio e %B1 contra o time (ou o grupo digital) e BT e BP contra a meta. Verde = no nível ou acima, amarelo = até 10% abaixo, vermelho = abaixo disso (no %B1, ao contrário). Embaixo, o card de cada consultor. Os botões de perfil filtram as tabelas e os cards.
+
+## Score de criticidade do consultor
+- Cada indicador vale pontos = peso × desvio em % contra o time da loja (ou o grupo digital). Positivo = melhor que a referência; negativo = pior. Cada desvio é limitado a ±50%.
+- Pesos: **IPB 4**, **%B1 3** (menor é melhor), **boleto médio 2**, **preço médio 1**. Score do consultor = soma dos 4.
+- Faixas: até −60 Crítico, −60 a −20 Atenção, −20 a +20 No nível, acima de +20 Acima.
+- A tabela de consultores abre ordenada pelo score (mais crítico primeiro), mostra 15 consultores antes de rolar e tem a linha "Total do filtro" fixa no rodapé (receita, boletos, IPB, %B1, boleto médio, preço médio, BT e BP de todos os consultores da tabela, e o score médio).

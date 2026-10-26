@@ -196,6 +196,13 @@ select:focus-visible,input:focus-visible,textarea:focus-visible,button:focus-vis
 /* Tabelas */
 .tw{overflow-x:auto}
 .tw.tall{max-height:36rem;overflow-y:auto}
+.tcons td{padding-top:6px;padding-bottom:6px}
+.tcons .sub{font-size:11px;line-height:1.25}
+.tcons tfoot td{position:sticky;bottom:0;background:var(--card);border-top:2px solid var(--foreground);box-shadow:0 -6px 12px -10px oklch(0 0 0 / .4);z-index:1}
+.sc{display:inline-block;margin-left:5px;border-radius:6px;padding:0 5px;font-size:11px;font-weight:800;font-variant-numeric:tabular-nums;vertical-align:1px}
+.sc.pos{background:oklch(0.76 0.19 152 / .15);color:var(--success-ink)} .sc.neg{background:oklch(0.58 0.21 22 / .12);color:var(--destructive)}
+.scT{display:inline-block;min-width:46px;text-align:center;border-radius:8px;padding:2px 8px;font-weight:800;font-family:var(--font-display)}
+.scT.crit{background:var(--destructive);color:#fff} .scT.alto{background:var(--warning);color:oklch(0.25 0.06 70)} .scT.medio{background:var(--muted)} .scT.pos{background:var(--primary);color:var(--primary-fg)}
 table{width:100%;border-collapse:collapse;font-size:14px}
 thead{position:sticky;top:0;z-index:1;background:var(--card)}
 th{padding:12px 8px;text-align:left;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;color:var(--muted-fg);border-bottom:1px solid var(--border);white-space:nowrap}
@@ -764,9 +771,9 @@ function recalc(){
  M={};TEAM={};
  lojas.forEach(l=>M[l.id]=aggL([l]));
  praticasCluster();
- cons.forEach(c=>{c.m=aggC(c);delete c._p});
+ cons.forEach(c=>{c.m=aggC(c);delete c._p;delete c._s});
  const media=cs=>{const t={rec:0,bol:0,it:0,b1:0,dias:0};cs.forEach(c=>{t.rec+=c.m.rec;t.bol+=c.m.bol;t.it+=c.m.it;t.b1+=c.m.b1;t.dias+=c.m.dias});
-  return{recDia:t.dias?t.rec/t.dias:0,bolDia:t.dias?t.bol/t.dias:0,ipb:t.bol?t.it/t.bol:0,pm:t.it?t.rec/t.it:0,pb1:t.bol?t.b1/t.bol:0,n:cs.length}};
+  return{recDia:t.dias?t.rec/t.dias:0,bolDia:t.dias?t.bol/t.dias:0,ipb:t.bol?t.it/t.bol:0,pm:t.it?t.rec/t.it:0,bm:t.bol?t.rec/t.bol:0,pb1:t.bol?t.b1/t.bol:0,n:cs.length}};
  lojas.forEach(l=>{TEAM[l.id]=media(cons.filter(c=>c.loja===l.id&&!c.digital&&c.m.dias>0))});
  DIGTEAM=media(cons.filter(c=>c.digital&&c.m.dias>0));
 }
@@ -1105,7 +1112,7 @@ function avaliar(ls){
 }
 
 /* ================= Estado e escopo ================= */
-const S={reg:'',praca:'',gvo:'',loja:'',cons:'',tab:'hoje',pfil:'',chart:'dia',acSel:null,foco:null,sort:{lojas:['gapR',1],cons:['idx',1]}};
+const S={reg:'',praca:'',gvo:'',loja:'',cons:'',tab:'hoje',pfil:'',chart:'dia',acSel:null,foco:null,sort:{lojas:['gapR',1],cons:['score',1]}};
 let FIRED=[];
 const $=id=>document.getElementById(id);
 // Hierarquia dos filtros: Regional -> Praça -> GVO -> Loja -> Consultor
@@ -1687,7 +1694,7 @@ function consCard(c){
  const p=perfil(c),P=PERFIS[p.k],m=c.m,l=lojaById(c.loja),ua=ultAcao(c),alvo=alvoCons(c,p);
  const ganho=Math.max(0,-Math.min(p.iBol,p.iIpb,p.iPm));
  return `<article class="card act ${P.sev} fade">
-  <div class="hd"><div class="l"><span class="sev ${P.sev}">${ic(P.ic)}${P.n}</span>${c.digital?`<span class="tag">${ic('smartphone')} Digital</span>`:''}</div><div class="imp"><b>${pct(p.idx)}</b><small>${c.digital?'dos digitais':'do time'}</small></div></div>
+  <div class="hd"><div class="l"><span class="sev ${P.sev}">${ic(P.ic)}${P.n}</span>${c.digital?`<span class="tag">${ic('smartphone')} Digital</span>`:''}</div><div class="imp"><b>${pct(p.idx)}</b><small>${c.digital?'dos digitais':'do time'}${scoreCons(c).ok?` · score ${pts(scoreCons(c).total)}`:''}</small></div></div>
   <h3>${ic('user-round')}${esc(c.nome)} <span class="mf" style="font-family:var(--font-sans);font-size:13px;font-weight:600">· ${c.digital?`WhatsApp · ${c.lojas.length} loja${c.lojas.length>1?'s':''}`:esc(l.nome)}</span></h3>
   ${p.k==='ausente'?`<p class="evid">Sem cupom nos últimos 3 dias em que a loja vendeu. ${m.dias} dias com venda no mês.</p>`:`<div class="dchips">${drvChip('Boletos/dia',fx(m.bolDia,1),fx(p.t.bolDia,1),p.iBol,p.lim,'receipt',p.tl)}${drvChip('IPB',fx(m.ipb,2),fx(p.t.ipb,2),p.iIpb,p.lim,'shopping-bag',p.tl)}${drvChip('Preço médio',brl(m.pm,2),brl(p.t.pm,2),p.iPm,p.lim,'tag',p.tl)}</div>${btbpLinha(m,p.t.pb1,p.tl)}`}
   ${c.digital&&p.k==='atende'?`<div class="do">${ic('smartphone')}<div><b>Carteira no WhatsApp</b><span>30 conversas por dia com a oferta do dia, o saldo de cashback e os kits do ciclo; retomar quem não respondeu na semana.</span></div></div>`:acaoBloco(p.k,{tipo:P.acao,acao:P.acao,detalhe:P.passos(c,p)[0]},'')}
@@ -1695,29 +1702,61 @@ function consCard(c){
   <div class="ft"><span class="mf" style="font-size:12px">${ua?`Última ação ${dd(ua.dia)}`:''}</span>
    ${ua&&ua.dia===TODAY?`<span class="done">${ic('circle-check')}Registrada hoje</span>`:`<button class="btn" data-creg="${c.id}">${ic('plus')}Registrar ${P.acao==='1:1 com consultor'?'1:1':'ação'}</button>`}</div></article>`;
 }
+// Score de criticidade do consultor: cada indicador contra o time da loja (ou o grupo digital), em pontos = peso × desvio em %.
+// Positivo = melhor que a referência; negativo = pior. Pesos: IPB 4, %B1 3 (menor é melhor), boleto médio 2, preço médio 1.
+// Cada desvio é limitado a ±50% para um dia atípico não dominar o score.
+const PESO_SCORE={ipb:4,b1:3,bm:2,pm:1};
+function scoreCons(c){
+ if(c._s)return c._s;
+ const m=c.m,t=perfil(c).t,lim=x=>Math.max(-.5,Math.min(.5,x));
+ if(!m.bol||!t||!t.ipb)return c._s={total:0,ipb:0,b1:0,bm:0,pm:0,ok:false};
+ const sc={ipb:t.ipb?PESO_SCORE.ipb*lim(m.ipb/t.ipb-1)*100:0,b1:t.pb1?PESO_SCORE.b1*lim((t.pb1-m.pb1)/t.pb1)*100:0,
+  bm:t.bm?PESO_SCORE.bm*lim(m.bm/t.bm-1)*100:0,pm:t.pm?PESO_SCORE.pm*lim(m.pm/t.pm-1)*100:0};
+ sc.total=sc.ipb+sc.b1+sc.bm+sc.pm;sc.ok=true;
+ return c._s=sc;
+}
+const pts=v=>`${v>0?'+':v<0?'−':''}${fx(Math.abs(v))}`;
+const scBadge=v=>`<span class="sc ${v>=0?'pos':'neg'}" title="pontos no score de criticidade">${pts(v)}</span>`;
+const scNivel=v=>v<=-60?['crit','Crítico']:v<=-20?['alto','Atenção']:v<20?['medio','No nível']:['pos','Acima'];
 // Valor contra a referência, com cor: verde no nível ou acima, amarelo até 10% abaixo, vermelho abaixo disso (B1: ao contrário)
-function vsRef(v,ref,f,maior=true){
+function vsRef(v,ref,f,maior=true,sc=null){
  if(!ref)return `<b>${f(v)}</b>`;
  const r=v/ref,ok=maior?r>=1:r<=1,qs=maior?r>=.9:r<=1.1;
- return `<b class="${ok?'c-ok':qs?'c-warn':'c-bad'}">${f(v)}</b><p class="sub">${r>=1?'▲':'▼'} ${pct(Math.abs(r-1))} · ${f(ref)}</p>`;
+ return `<b class="${ok?'c-ok':qs?'c-warn':'c-bad'}">${f(v)}</b>${sc!=null?scBadge(sc):''}<p class="sub">${r>=1?'▲':'▼'} ${pct(Math.abs(r-1))} · ${f(ref)}</p>`;
 }
 const vsMeta=(v,meta)=>`<b class="${v>=meta?'c-ok':v>=meta*.7?'c-warn':'c-bad'}">${pct(v)}</b><p class="sub">meta ${pct(meta)}</p>`;
 function tabelaCons(lst,titulo,sub,ic_){
  if(!lst.length)return '';
- const rows=[...lst].sort(sorter('cons',(c,k)=>k==='nome'?c.nome:k==='perfil'?PERFIS[perfil(c).k].o:k==='idx'?perfil(c).idx:c.m[k]));
+ const rows=[...lst].sort(sorter('cons',(c,k)=>k==='nome'?c.nome:k==='perfil'?PERFIS[perfil(c).k].o:k==='idx'?perfil(c).idx:k==='score'?scoreCons(c).total:c.m[k]));
+ // total do filtro (linha fixa no rodapé)
+ const T={rec:0,bol:0,it:0,b1:0,bt:0,bp:0,bpe:0,dias:0};lst.forEach(c=>{for(const k in T)T[k]+=c.m[k]||0});
+ const tIpb=T.bol?T.it/T.bol:0,tPm=T.it?T.rec/T.it:0,tBm=T.bol?T.rec/T.bol:0,tB1=T.bol?T.b1/T.bol:0,tBT=T.bol?T.bt/T.bol:0,tBP=T.bpe?T.bp/T.bpe:0;
+ const scs=lst.map(c=>scoreCons(c)).filter(x=>x.ok),scMed=scs.length?sum(scs.map(x=>x.total))/scs.length:0;
  return `<div class="card"><div class="card-hd"><div><h2>${titulo}</h2><p>${sub}</p></div><span class="icchip t-accent">${ic(ic_)}</span></div>
-  <div class="tw tall"><table><thead><tr>${sortTh('cons','nome','Consultor')}${sortTh('cons','perfil','Perfil')}${sortTh('cons','idx','Receita/dia')}${sortTh('cons','bolDia','Boletos/dia','r')}${sortTh('cons','ipb','IPB','r')}${sortTh('cons','pm','Preço médio','r')}${sortTh('cons','pb1','%B1','r')}${sortTh('cons','pBT','BT','r')}${sortTh('cons','pBP','BP','r')}<th></th></tr></thead><tbody>
-  ${rows.map(c=>{const p=perfil(c),P=PERFIS[p.k],m=c.m,t=p.t,l=lojaById(c.loja),ua=ultAcao(c);
+  <div class="tw tall t15"><table class="tcons"><thead><tr>${sortTh('cons','nome','Consultor')}${sortTh('cons','score','Score','r')}${sortTh('cons','perfil','Perfil')}${sortTh('cons','idx','Receita/dia')}${sortTh('cons','bolDia','Boletos/dia','r')}${sortTh('cons','ipb','IPB · 4','r')}${sortTh('cons','pb1','%B1 · 3','r')}${sortTh('cons','bm','Boleto médio · 2','r')}${sortTh('cons','pm','Preço médio · 1','r')}${sortTh('cons','pBT','BT','r')}${sortTh('cons','pBP','BP','r')}<th></th></tr></thead><tbody>
+  ${rows.map(c=>{const p=perfil(c),P=PERFIS[p.k],m=c.m,t=p.t,l=lojaById(c.loja),ua=ultAcao(c),sc=scoreCons(c),[nv,nt]=scNivel(sc.total);
    return `<tr><td><p class="nm">${esc(c.nome)}</p><p class="sub">${c.digital?`WhatsApp · ${c.lojas.length} loja${c.lojas.length>1?'s':''}`:esc(l.nome)}</p></td>
+   <td class="r tnum">${sc.ok?`<span class="scT ${nv}">${pts(sc.total)}</span><p class="sub">${nt}</p>`:'<span class="mf">—</span>'}</td>
    <td><span class="sev ${P.sev}" style="text-transform:none;letter-spacing:0">${ic(P.ic)}${P.n}</span></td>
    <td><div class="minibar"><span class="b"><i style="width:${Math.min(100,p.idx*70)}%;background:${p.idx>=.95?'var(--primary)':p.idx>=.8?'var(--warning)':'var(--destructive)'}"></i></span><b class="tnum">${pct(p.idx)}</b></div><p class="sub">${kbrl(m.recDia)} · ${p.tl} ${kbrl(t.recDia)}</p></td>
    <td class="r tnum">${vsRef(m.bolDia,t.bolDia,v=>fx(v,1))}</td>
-   <td class="r tnum">${vsRef(m.ipb,t.ipb,v=>fx(v,2))}</td>
-   <td class="r tnum">${vsRef(m.pm,t.pm,v=>brl(v,2))}</td>
-   <td class="r tnum">${vsRef(m.pb1,t.pb1,v=>pct(v),false)}</td>
+   <td class="r tnum">${vsRef(m.ipb,t.ipb,v=>fx(v,2),true,sc.ok?sc.ipb:null)}</td>
+   <td class="r tnum">${vsRef(m.pb1,t.pb1,v=>pct(v),false,sc.ok?sc.b1:null)}</td>
+   <td class="r tnum">${vsRef(m.bm,t.bm,v=>brl(v),true,sc.ok?sc.bm:null)}</td>
+   <td class="r tnum">${vsRef(m.pm,t.pm,v=>brl(v,2),true,sc.ok?sc.pm:null)}</td>
    <td class="r tnum">${vsMeta(m.pBT,F.bt)}</td><td class="r tnum">${m.bpe?vsMeta(m.pBP,F.bp):'<span class="mf">—</span>'}</td>
    <td>${ua&&ua.dia===TODAY?`<span class="done">${ic('circle-check')}</span>`:`<button class="btn sm" data-creg="${c.id}">${ic(TIPOS[P.acao])}${P.acao==='1:1 com consultor'?'1:1':P.acao==='Reconhecimento'?'Reconhecer':'Ação'}</button>`}</td></tr>`}).join('')}
-  </tbody></table></div></div>`;
+  </tbody><tfoot><tr><td><p class="nm">Total do filtro</p><p class="sub">${lst.length} consultores</p></td>
+   <td class="r tnum"><b>${pts(scMed)}</b><p class="sub">média</p></td><td></td>
+   <td><b class="tnum">${kbrl(T.rec)}</b><p class="sub">${kbrl(T.dias?T.rec/T.dias:0)} por consultor/dia</p></td>
+   <td class="r tnum"><b>${fx(T.bol)}</b><p class="sub">${fx(T.dias?T.bol/T.dias:0,1)} por consultor/dia</p></td>
+   <td class="r tnum"><b>${fx(tIpb,2)}</b></td><td class="r tnum"><b>${pct(tB1)}</b></td><td class="r tnum"><b>${brl(tBm)}</b></td><td class="r tnum"><b>${brl(tPm,2)}</b></td>
+   <td class="r tnum"><b class="${tBT>=F.bt?'c-ok':'c-bad'}">${pct(tBT)}</b></td><td class="r tnum"><b class="${tBP>=F.bp?'c-ok':'c-bad'}">${pct(tBP)}</b></td><td></td></tr></tfoot></table></div></div>`;
+}
+// Mostra 15 consultores antes de rolar: altura = cabeçalho + 15 linhas + total
+function altura15(){
+ document.querySelectorAll('.t15').forEach(w=>{const th=w.querySelector('thead'),tf=w.querySelector('tfoot'),rs=[...w.querySelectorAll('tbody tr')].slice(0,15);
+  const h=e=>e?e.getBoundingClientRect().height:0;w.style.maxHeight=Math.ceil(h(th)+h(tf)+sum(rs.map(h))+4)+'px'});
 }
 function vCons(ls,cs){
  const cnt={};cs.forEach(c=>{const k=perfil(c).k;cnt[k]=(cnt[k]||0)+1});
@@ -1728,11 +1767,12 @@ function vCons(ls,cs){
  $('view').innerHTML=`<section class="sec">
   <div class="plan-hd"><div><h2>Consultores${S.pfil?`: ${PERFIS[S.pfil].n}`:''} (${lista.length})</h2><p>${perTxt()} · clique num perfil para ver só esse grupo · cores: verde no nível ou acima, amarelo até 10% abaixo, vermelho abaixo</p></div></div>
   <div class="pfil"><button class="pf ${!S.pfil?'on':''}" data-pfil="">${ic('users')}<span>Todos</span><b>${cs.length}</b></button>${Object.entries(PERFIS).filter(([k])=>cnt[k]).map(([k,P])=>`<button class="pf ${P.sev} ${S.pfil===k?'on':''}" data-pfil="${k}">${ic(P.ic)}<span>${P.n}</span><b>${cnt[k]}</b></button>`).join('')}</div>
-  ${tabelaCons(loja,`Consultores de loja (${loja.length})`,'Comparados com o time da própria loja (sem os digitais) · BT e BP contra a meta','users')}
+  ${tabelaCons(loja,`Consultores de loja (${loja.length})`,'Comparados com o time da própria loja (sem os digitais) · score = soma dos pontos de IPB (peso 4), %B1 (3), boleto médio (2) e preço médio (1) · BT e BP contra a meta','users')}
   ${tabelaCons(dig,`Consultores digitais · WhatsApp (${dig.length})`,`Comparados só entre si (média dos ${DIGTEAM.n} digitais) · somam a venda de todas as lojas em que atendem`,'smartphone')}
   ${!loja.length&&!dig.length?'<p class="empty">Nenhum consultor neste filtro.</p>':''}
   ${prio.length?`<div class="plan-hd"><div><h2>Plano de cada consultor</h2><p>Na ordem de prioridade do perfil</p></div></div><div class="acts3">${prio.map(consCard).join('')}</div>`:''}
  </section>`;
+ altura15();
 }
 function icons(){try{window.lucide&&lucide.createIcons()}catch(e){}}
 
