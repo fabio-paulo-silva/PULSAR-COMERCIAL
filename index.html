@@ -719,7 +719,7 @@ let D,ANO,MES,DAYS,LAST,TODAY,REFTXT,lojas=[],cons=[],M={},TEAM={};
 let PB=null;                                        // faixas da rede (meta de %B1)
 let CICLO=null;                                     // Ciclo/ciclo_atual.json: alavancas comerciais do ciclo vigente
 // Liga cada detrator (gatilho ou perfil) à alavanca do ciclo que ataca ele
-const CIC_MAPA={btbp:'b1',fluxo:'fluxo',ritmo:'fluxo',tendencia:'fluxo',ipb:'ipb',b1:'b1',pm:'pm',bmsaud:'bmsaud',atende:'fluxo',item:'b1',ticket:'pm',abaixo:'b1'};
+const CIC_MAPA={fraco:'b1',critico:'b1',btbp:'b1',fluxo:'fluxo',ritmo:'fluxo',tendencia:'fluxo',ipb:'ipb',b1:'b1',pm:'pm',bmsaud:'bmsaud',atende:'fluxo',item:'b1',ticket:'pm',abaixo:'b1'};
 function cicloAtivo(){if(!CICLO)return false;const h=`${ANO}-${pad(MES+1)}-${pad(Math.min(TODAY,DAYS))}`;return h>=CICLO.inicio&&h<=CICLO.fim}
 // Ações do ciclo vigentes hoje para o detrator, em ordem de prioridade (a 1ª é a principal)
 function acoesCiclo(k){
@@ -769,11 +769,12 @@ function recalc(){
  M={};TEAM={};
  lojas.forEach(l=>M[l.id]=aggL([l]));
  praticasCluster();
- cons.forEach(c=>{c.m=aggC(c);delete c._p;delete c._s});
+ cons.forEach(c=>{c.m=aggC(c);delete c._p;delete c._q});
  const media=cs=>{const t={rec:0,bol:0,it:0,b1:0,dias:0};cs.forEach(c=>{t.rec+=c.m.rec;t.bol+=c.m.bol;t.it+=c.m.it;t.b1+=c.m.b1;t.dias+=c.m.dias});
   return{recDia:t.dias?t.rec/t.dias:0,bolDia:t.dias?t.bol/t.dias:0,ipb:t.bol?t.it/t.bol:0,pm:t.it?t.rec/t.it:0,bm:t.bol?t.rec/t.bol:0,pb1:t.bol?t.b1/t.bol:0,n:cs.length}};
  lojas.forEach(l=>{TEAM[l.id]=media(cons.filter(c=>c.loja===l.id&&!c.digital&&c.m.dias>0))});
  DIGTEAM=media(cons.filter(c=>c.digital&&c.m.dias>0));
+ calcQualidade();
 }
 // ---------- Boas práticas: cada loja contra as lojas do MESMO cluster que estão no ritmo ----------
 // Alavanca = % dos boletos de venda no período (conversão do brinde = vendas da Ação de Fluxo ÷ clientes da ação).
@@ -1110,7 +1111,7 @@ function avaliar(ls){
 }
 
 /* ================= Estado e escopo ================= */
-const S={reg:'',praca:'',gvo:'',loja:'',cons:'',tab:'hoje',pfil:'',chart:'dia',acSel:null,foco:null,sort:{lojas:['gapR',1],cons:['score',1]}};
+const S={reg:'',praca:'',gvo:'',loja:'',cons:'',tab:'hoje',pfil:'',chart:'dia',acSel:null,foco:null,sort:{lojas:['gapR',1],cons:['emJogo',-1]}};
 let FIRED=[];
 const $=id=>document.getElementById(id);
 // Hierarquia dos filtros: Regional -> Praça -> GVO -> Loja -> Consultor
@@ -1642,7 +1643,11 @@ function drawChart(m,la,el){
 const PERFIS={
  ausente:{n:'Sem venda nos últimos 3 dias',ic:'circle-slash',sev:'alto',o:3,acao:'1:1 com consultor',
   passos:()=>['Confirmar escala, folga, férias ou afastamento até as 10h','Se estiver ativo(a): 1:1 hoje para entender o bloqueio']},
- atende:{n:'Poucos boletos',ic:'users',sev:'alto',o:0,acao:'Push do time',
+ critico:{n:'Crítico: volume e boleto',ic:'siren',sev:'crit',o:0,acao:'1:1 com consultor',
+  passos:(c,p)=>[`1:1 completo hoje: abordagem, 2º item e fechamento com BT (B1 ${pct(c.m.pb1)}, BT ${pct(c.m.pBT)}, BP ${pct(c.m.pBP)})`,p.padrinho?`Acompanhar 2 atendimentos de ${esc(p.padrinho.nome)} (IPB ${fx(p.padrinho.m.ipb,2)})`:'Meta individual do dia na abertura e placar às 14h e às 18h']},
+ fraco:{n:'Vende muito, boleto fraco',ic:'package-open',sev:'alto',o:1,acao:'1:1 com consultor',
+  passos:(c,p)=>[`1:1 de 15 min nos boletos de 1 item: BT no fechamento de todo boleto de 1 item (B1 ${pct(c.m.pb1)}, BT ${pct(c.m.pBT)})`,p.padrinho?`Acompanhar 2 atendimentos de ${esc(p.padrinho.nome)} (IPB ${fx(p.padrinho.m.ipb,2)})`:'Gestor acompanha 2 atendimentos e dá retorno na hora']},
+ atende:{n:'Poucos boletos',ic:'users',sev:'alto',o:2,acao:'Push do time',
   passos:(c,p)=>[`Meta de boletos de hoje: ${fx(p.t.bolDia)} (média do time)`,'Escalar na Calçada Perfumada e no horário de pico; 10 mensagens de WhatsApp para a própria carteira de clientes; repostar a promoção do dia nas redes']},
  item:{n:'Pouco item por boleto',ic:'shopping-bag',sev:'alto',o:0,acao:'1:1 com consultor',
   passos:(c,p)=>[`1:1 de 15 min revisando os boletos de 1 item (B1 ${pct(c.m.pb1)}, BT ${pct(c.m.pBT)}, BP ${pct(c.m.pBP)})`,p.padrinho?`Acompanhar 2 atendimentos de ${esc(p.padrinho.nome)} (IPB ${fx(p.padrinho.m.ipb,2)})`:'Gestor acompanha 2 atendimentos e dá retorno na hora']},
@@ -1663,13 +1668,16 @@ function perfil(c){
  const abertos=[];for(let d=LAST;d>=1&&abertos.length<3;d--)if(L.days[d-1]>0)abertos.push(d);
  let k;
  if(SEL.has(LAST)&&sum(c.bol)>0&&c.bol.filter(v=>v>0).length>=4&&abertos.length===3&&abertos.every(d=>!c.bol[d-1]))k='ausente';
- else if(idx>=1.15)k='destaque';
- else if(idx>=.95)k='ritmo';
- else{const w=[['atende',iBol],['item',iIpb],['ticket',iPm]].sort((a,b)=>a[1]-b[1]);k=w[0][1]<lim?w[0][0]:'abaixo'}
+ else{
+  // volume (receita/dia contra o time) × qualidade do boleto (0–100 no cluster; 50 = mediana)
+  const q=qualCons(c),alto=idx>=.95,boa=!q.ok||q.q>=50;
+  k=alto?(boa?(idx>=1.15?'destaque':'ritmo'):'fraco'):(boa?'atende':'critico');
+ }
  const pares=cons.filter(x=>x.id!==c.id&&x.m.dias>=2&&(c.digital?x.digital:x.loja===c.loja&&!x.digital));
  // padrinho: o colega da loja com melhor IPB / preço médio
- const pad_=k==='item'?[...pares].sort((a,b)=>b.m.ipb-a.m.ipb)[0]:k==='ticket'?[...pares].sort((a,b)=>b.m.pm-a.m.pm)[0]:null;
- const padrinho=pad_&&(k==='item'?pad_.m.ipb>m.ipb*1.05:pad_.m.pm>m.pm*1.05)?pad_:null;
+ const porIpb=['item','fraco','critico'].includes(k);
+ const pad_=porIpb?[...pares].sort((a,b)=>b.m.ipb-a.m.ipb)[0]:k==='ticket'?[...pares].sort((a,b)=>b.m.pm-a.m.pm)[0]:null;
+ const padrinho=pad_&&(porIpb?pad_.m.ipb>m.ipb*1.05:pad_.m.pm>m.pm*1.05)?pad_:null;
  return c._p={k,t,tl,idx,iBol,iIpb,iPm,lim,padrinho};
 }
 const ultAcao=c=>acoesMes().filter(x=>x.cons===c.id).sort((a,b)=>b.dia-a.dia)[0];
@@ -1685,71 +1693,94 @@ function drvChip(lb,v,ref,imp,lim,ic_,tl='time'){
 }
 function alvoCons(c,p){
  const t=p.t,qm=c.digital?'média dos digitais':'média do time';
- return {atende:`${fx(t.bolDia)} boletos hoje (${qm})`,item:`IPB ${fx(Math.max(t.ipb,F.ipb||0),2)} hoje (${qm})`,ticket:`preço médio ${brl(Math.max(t.pm,F.pm||0),2)} hoje (${qm})`,
+ const q=qualCons(c);
+ return {critico:q.ok?`${fx(t.bolDia)} boletos e IPB ${fx(q.ref.ipb,2)} hoje (${qm} e ${q.gl})`:'',fraco:q.ok?`IPB ${fx(q.ref.ipb,2)} e %B1 ≤ ${pct(q.ref.b1)} hoje (${q.gl})`:'',
+  atende:`${fx(t.bolDia)} boletos hoje (${qm})`,item:`IPB ${fx(Math.max(t.ipb,F.ipb||0),2)} hoje (${qm})`,ticket:`preço médio ${brl(Math.max(t.pm,F.pm||0),2)} hoje (${qm})`,
   abaixo:`${kbrl(t.recDia)} hoje (${qm} por dia)`}[p.k];
 }
 function consCard(c){
  const p=perfil(c),P=PERFIS[p.k],m=c.m,l=lojaById(c.loja),ua=ultAcao(c),alvo=alvoCons(c,p);
  const ganho=Math.max(0,-Math.min(p.iBol,p.iIpb,p.iPm));
  return `<article class="card act ${P.sev} fade">
-  <div class="hd"><div class="l"><span class="sev ${P.sev}">${ic(P.ic)}${P.n}</span>${c.digital?`<span class="tag">${ic('smartphone')} Digital</span>`:''}</div><div class="imp"><b>${pct(p.idx)}</b><small>${c.digital?'dos digitais':'do time'}${scoreCons(c).ok?` · score ${pts(scoreCons(c).total)}`:''}</small></div></div>
+  <div class="hd"><div class="l"><span class="sev ${P.sev}">${ic(P.ic)}${P.n}</span>${c.digital?`<span class="tag">${ic('smartphone')} Digital</span>`:''}</div><div class="imp">${qualCons(c).ok?`<b>${kbrl(qualCons(c).emJogo)}</b><small>em jogo por dia · qualidade ${fx(qualCons(c).q)}</small>`:`<b>${pct(p.idx)}</b><small>${c.digital?'dos digitais':'do time'}</small>`}</div></div>
   <h3>${ic('user-round')}${esc(c.nome)} <span class="mf" style="font-family:var(--font-sans);font-size:13px;font-weight:600">· ${c.digital?`WhatsApp · ${c.lojas.length} loja${c.lojas.length>1?'s':''}`:esc(l.nome)}</span></h3>
   ${p.k==='ausente'?`<p class="evid">Sem cupom nos últimos 3 dias em que a loja vendeu. ${m.dias} dias com venda no mês.</p>`:`<div class="dchips">${drvChip('Boletos/dia',fx(m.bolDia,1),fx(p.t.bolDia,1),p.iBol,p.lim,'receipt',p.tl)}${drvChip('IPB',fx(m.ipb,2),fx(p.t.ipb,2),p.iIpb,p.lim,'shopping-bag',p.tl)}${drvChip('Preço médio',brl(m.pm,2),brl(p.t.pm,2),p.iPm,p.lim,'tag',p.tl)}</div>${btbpLinha(m,p.t.pb1,p.tl)}`}
   ${c.digital&&p.k==='atende'?`<div class="do">${ic('smartphone')}<div><b>Carteira no WhatsApp</b><span>30 conversas por dia com a oferta do dia, o saldo de cashback e os kits do ciclo; retomar quem não respondeu na semana.</span></div></div>`:acaoBloco(p.k,{tipo:P.acao,acao:P.acao,detalhe:P.passos(c,p)[0]},'')}
   ${alvo?`<div class="goal">${ic('flag')}<span>Alvo: ${alvo}${ganho>0?` · vale <b>+${kbrl(ganho)} por dia</b>`:''}</span></div>`:''}
+  <p class="sub" style="font-size:12px">Receita/dia ${pct(p.idx)} ${c.digital?'dos digitais':'do time'}</p>
   <div class="ft"><span class="mf" style="font-size:12px">${ua?`Última ação ${dd(ua.dia)}`:''}</span>
    ${ua&&ua.dia===TODAY?`<span class="done">${ic('circle-check')}Registrada hoje</span>`:`<button class="btn" data-creg="${c.id}">${ic('plus')}Registrar ${P.acao==='1:1 com consultor'?'1:1':'ação'}</button>`}</div></article>`;
 }
-// Score de criticidade do consultor: cada indicador contra o time da loja (ou o grupo digital), em pontos = peso × desvio em %.
-// Positivo = melhor que a referência; negativo = pior. Pesos: IPB 4, %B1 3 (menor é melhor), boleto médio 2, preço médio 1.
-// Cada desvio é limitado a ±50% para um dia atípico não dominar o score.
-const PESO_SCORE={ipb:4,b1:3,bm:2,pm:1};
-function scoreCons(c){
- if(c._s)return c._s;
- const m=c.m,t=perfil(c).t,lim=x=>Math.max(-.5,Math.min(.5,x));
- if(!m.bol||!t||!t.ipb)return c._s={total:0,ipb:0,b1:0,bm:0,pm:0,ok:false};
- const sc={ipb:t.ipb?PESO_SCORE.ipb*lim(m.ipb/t.ipb-1)*100:0,b1:t.pb1?PESO_SCORE.b1*lim((t.pb1-m.pb1)/t.pb1)*100:0,
-  bm:t.bm?PESO_SCORE.bm*lim(m.bm/t.bm-1)*100:0,pm:t.pm?PESO_SCORE.pm*lim(m.pm/t.pm-1)*100:0};
- sc.total=sc.ipb+sc.b1+sc.bm+sc.pm;sc.ok=true;
- return c._s=sc;
+// ---------- Qualidade do boleto (0–100) e R$ em jogo por dia ----------
+// Grupo de comparação: consultores do mesmo cluster (shopping, rua...); os digitais só entre si.
+// Cada indicador vira percentil no grupo (0 = pior, 100 = melhor). Quem tem menos de 100 boletos no período é puxado
+// para a média do grupo na proporção do volume (com 100 boletos ou mais vale o próprio resultado).
+// Qualidade = média ponderada: IPB 4, %B1 3 (menor é melhor), BT+BP contra a meta 2, preço médio 1.
+// R$ em jogo por dia = o que o consultor perde por estar abaixo do grupo no IPB e no preço médio (com os mesmos boletos/dia).
+// Seguindo a prioridade (IPB pesa mais): preço médio alto NÃO compensa IPB baixo; IPB alto compensa preço médio baixo
+// (quem leva mais itens por boleto naturalmente baixa o preço médio).
+const PESO_Q={ipb:4,b1:3,btbp:2,pm:1},BOL_PLENO=100;
+let QG={};
+// QDB é outra marca (preço médio bem menor): compara só com QDB
+const grupoCons=c=>{if(c.digital)return 'DIGITAL';const l=lojaById(c.loja)||{};return /^qdb/i.test(l.nome||'')?'QDB':(l.cluster||'—')};
+const nomeGrupo=g=>g==='DIGITAL'?'digitais':g==='QDB'?'lojas QDB':`cluster ${nomeCluster(g).toLowerCase()}`;
+const btbpIdx=m=>(Math.min(1.5,m.bol?(m.bt/m.bol)/F.bt:0)+Math.min(1.5,m.bpe?(m.bp/m.bpe)/F.bp:0))/2;   // 1 = as duas na meta
+function calcQualidade(){
+ QG={};
+ cons.filter(c=>c.m.bol>0&&c.m.dias>=2).forEach(c=>{(QG[grupoCons(c)]=QG[grupoCons(c)]||{cs:[]}).cs.push(c)});
+ for(const g in QG){
+  const G=QG[g],T={rec:0,bol:0,it:0,b1:0,bt:0,bp:0,bpe:0};G.cs.forEach(c=>{for(const k in T)T[k]+=c.m[k]||0});
+  G.ref={ipb:T.bol?T.it/T.bol:0,pm:T.it?T.rec/T.it:0,b1:T.bol?T.b1/T.bol:0,btbp:btbpIdx(T)};
+  const aj=(c,k,v)=>{const w=Math.min(1,c.m.bol/BOL_PLENO);return w*v+(1-w)*G.ref[k]};
+  G.v={ipb:[],b1:[],btbp:[],pm:[]};
+  G.cs.forEach(c=>{const m=c.m;c._a={ipb:aj(c,'ipb',m.ipb),b1:aj(c,'b1',m.pb1),btbp:aj(c,'btbp',btbpIdx(m)),pm:aj(c,'pm',m.pm)};for(const k in G.v)G.v[k].push(c._a[k])});
+  for(const k in G.v)G.v[k].sort((a,b)=>a-b);
+ }
 }
-const pts=v=>`${v>0?'+':v<0?'−':''}${fx(Math.abs(v))}`;
-const scBadge=v=>`<span class="sc ${v>=0?'pos':'neg'}" title="pontos no score de criticidade">${pts(v)}</span>`;
-const scNivel=v=>v<=-60?['crit','Crítico']:v<=-20?['alto','Atenção']:v<20?['medio','No nível']:['pos','Acima'];
-// Valor contra a referência, com cor: verde no nível ou acima, amarelo até 10% abaixo, vermelho abaixo disso (B1: ao contrário)
-function vsRef(v,ref,f,maior=true,sc=null){
- if(!ref)return `<b>${f(v)}</b>`;
- const r=v/ref,ok=maior?r>=1:r<=1,qs=maior?r>=.9:r<=1.1;
- return `<b class="${ok?'c-ok':qs?'c-warn':'c-bad'}">${f(v)}</b>${sc!=null?scBadge(sc):''}<p class="sub">${r>=1?'▲':'▼'} ${pct(Math.abs(r-1))} · ${f(ref)}</p>`;
+// percentil de x no grupo (empates contam metade)
+function pctil(arr,x){let lo=0,eq=0;for(const v of arr){if(v<x)lo++;else if(v===x)eq++}return arr.length?(lo+eq/2)/arr.length*100:50}
+function qualCons(c){
+ if(c._q)return c._q;
+ const g=grupoCons(c),G=QG[g];
+ if(!G||!c._a||G.cs.length<3)return c._q={ok:false,q:0,emJogo:0,p:{}};
+ const a=c._a,P={ipb:pctil(G.v.ipb,a.ipb),b1:100-pctil(G.v.b1,a.b1),btbp:pctil(G.v.btbp,a.btbp),pm:pctil(G.v.pm,a.pm)};
+ const q=(P.ipb*PESO_Q.ipb+P.b1*PESO_Q.b1+P.btbp*PESO_Q.btbp+P.pm*PESO_Q.pm)/(PESO_Q.ipb+PESO_Q.b1+PESO_Q.btbp+PESO_Q.pm);
+ const m=c.m,r=G.ref,dIpb=m.bolDia*(r.ipb-m.ipb)*r.pm,dPm=m.bolDia*m.ipb*(r.pm-m.pm);
+ const eIpb=Math.max(0,dIpb),ePm=Math.max(0,dPm+Math.min(0,dIpb)),emJogo=eIpb+ePm;
+ return c._q={ok:true,q,p:P,ref:r,g,gl:nomeGrupo(g),n:G.cs.length,emJogo,eIpb,ePm};
 }
-const vsMeta=(v,meta)=>`<b class="${v>=meta?'c-ok':v>=meta*.7?'c-warn':'c-bad'}">${pct(v)}</b><p class="sub">meta ${pct(meta)}</p>`;
+const corP=v=>v>=50?'c-ok':v>=25?'c-warn':'c-bad';
+const qNivel=v=>v<25?['crit','Crítica']:v<50?['alto','Abaixo']:v<75?['medio','Boa']:['pos','Ótima'];
+// valor do indicador com a cor pelo percentil no grupo e a referência do grupo embaixo
+const vsPct=(txt,p,ref)=>p==null?`<b>${txt}</b>`:`<b class="${corP(p)}">${txt}</b><span class="sc ${p>=50?'pos':'neg'}" title="percentil no grupo de comparação">p${fx(p)}</span><p class="sub">${ref}</p>`;
 function tabelaCons(lst,titulo,sub,ic_){
  if(!lst.length)return '';
- const rows=[...lst].sort(sorter('cons',(c,k)=>k==='nome'?c.nome:k==='perfil'?PERFIS[perfil(c).k].o:k==='idx'?perfil(c).idx:k==='score'?scoreCons(c).total:c.m[k]));
+ const rows=[...lst].sort(sorter('cons',(c,k)=>k==='nome'?c.nome:k==='perfil'?PERFIS[perfil(c).k].o:k==='idx'?perfil(c).idx:k==='emJogo'?qualCons(c).emJogo:k==='q'?qualCons(c).q:c.m[k]));
  // total do filtro (linha fixa no rodapé)
  const T={rec:0,bol:0,it:0,b1:0,bt:0,bp:0,bpe:0,dias:0};lst.forEach(c=>{for(const k in T)T[k]+=c.m[k]||0});
  const tIpb=T.bol?T.it/T.bol:0,tPm=T.it?T.rec/T.it:0,tBm=T.bol?T.rec/T.bol:0,tB1=T.bol?T.b1/T.bol:0,tBT=T.bol?T.bt/T.bol:0,tBP=T.bpe?T.bp/T.bpe:0;
- const scs=lst.map(c=>scoreCons(c)).filter(x=>x.ok),scMed=scs.length?sum(scs.map(x=>x.total))/scs.length:0;
+ const qs=lst.map(qualCons).filter(x=>x.ok),qMed=qs.length?sum(qs.map(x=>x.q))/qs.length:0,jogo=sum(qs.map(x=>x.emJogo));
  return `<div class="card"><div class="card-hd"><div><h2>${titulo}</h2><p>${sub}</p></div><span class="icchip t-accent">${ic(ic_)}</span></div>
-  <div class="tw tall t15"><table class="tcons"><thead><tr>${sortTh('cons','nome','Consultor')}${sortTh('cons','score','Score','r')}${sortTh('cons','perfil','Perfil')}${sortTh('cons','idx','Receita/dia')}${sortTh('cons','bolDia','Boletos/dia','r')}${sortTh('cons','ipb','IPB · 4','r')}${sortTh('cons','pb1','%B1 · 3','r')}${sortTh('cons','bm','Boleto médio · 2','r')}${sortTh('cons','pm','Preço médio · 1','r')}${sortTh('cons','pBT','BT','r')}${sortTh('cons','pBP','BP','r')}<th></th></tr></thead><tbody>
-  ${rows.map(c=>{const p=perfil(c),P=PERFIS[p.k],m=c.m,t=p.t,l=lojaById(c.loja),ua=ultAcao(c),sc=scoreCons(c),[nv,nt]=scNivel(sc.total);
+  <div class="tw tall t15"><table class="tcons"><thead><tr>${sortTh('cons','nome','Consultor')}${sortTh('cons','emJogo','R$ em jogo/dia','r')}${sortTh('cons','q','Qualidade','r')}${sortTh('cons','perfil','Perfil')}${sortTh('cons','idx','Receita/dia')}${sortTh('cons','bolDia','Boletos/dia','r')}${sortTh('cons','ipb','IPB · 4','r')}${sortTh('cons','pb1','%B1 · 3','r')}${sortTh('cons','pBT','BT + BP · 2','r')}${sortTh('cons','pm','Preço médio · 1','r')}${sortTh('cons','bm','Boleto médio','r')}<th></th></tr></thead><tbody>
+  ${rows.map(c=>{const p=perfil(c),P=PERFIS[p.k],m=c.m,t=p.t,l=lojaById(c.loja),ua=ultAcao(c),q=qualCons(c),[nv,nt]=qNivel(q.q),r=q.ref||{};
    return `<tr><td><p class="nm">${esc(c.nome)}</p><p class="sub">${c.digital?`WhatsApp · ${c.lojas.length} loja${c.lojas.length>1?'s':''}`:esc(l.nome)}</p></td>
-   <td class="r tnum">${sc.ok?`<span class="scT ${nv}">${pts(sc.total)}</span><p class="sub">${nt}</p>`:'<span class="mf">—</span>'}</td>
+   <td class="r tnum">${q.ok?`<b class="${q.emJogo>0?'c-bad':'c-ok'}">${q.emJogo>0?kbrl(q.emJogo):'—'}</b><p class="sub">${q.emJogo>0?`IPB ${kbrl(Math.max(0,q.eIpb))} · PM ${kbrl(Math.max(0,q.ePm))}`:'no nível do grupo'}</p>`:'<span class="mf">—</span>'}</td>
+   <td class="r tnum">${q.ok?`<span class="scT ${nv}">${fx(q.q)}</span><p class="sub">${nt}</p>`:'<span class="mf">—</span>'}</td>
    <td><span class="sev ${P.sev}" style="text-transform:none;letter-spacing:0">${ic(P.ic)}${P.n}</span></td>
    <td><div class="minibar"><span class="b"><i style="width:${Math.min(100,p.idx*70)}%;background:${p.idx>=.95?'var(--primary)':p.idx>=.8?'var(--warning)':'var(--destructive)'}"></i></span><b class="tnum">${pct(p.idx)}</b></div><p class="sub">${kbrl(m.recDia)} · ${p.tl} ${kbrl(t.recDia)}</p></td>
-   <td class="r tnum">${vsRef(m.bolDia,t.bolDia,v=>fx(v,1))}</td>
-   <td class="r tnum">${vsRef(m.ipb,t.ipb,v=>fx(v,2),true,sc.ok?sc.ipb:null)}</td>
-   <td class="r tnum">${vsRef(m.pb1,t.pb1,v=>pct(v),false,sc.ok?sc.b1:null)}</td>
-   <td class="r tnum">${vsRef(m.bm,t.bm,v=>brl(v),true,sc.ok?sc.bm:null)}</td>
-   <td class="r tnum">${vsRef(m.pm,t.pm,v=>brl(v,2),true,sc.ok?sc.pm:null)}</td>
-   <td class="r tnum">${vsMeta(m.pBT,F.bt)}</td><td class="r tnum">${m.bpe?vsMeta(m.pBP,F.bp):'<span class="mf">—</span>'}</td>
+   <td class="r tnum"><b>${fx(m.bolDia,1)}</b><p class="sub">${p.tl} ${fx(t.bolDia,1)}</p></td>
+   <td class="r tnum">${vsPct(fx(m.ipb,2),q.ok?q.p.ipb:null,`grupo ${fx(r.ipb||0,2)}`)}</td>
+   <td class="r tnum">${vsPct(pct(m.pb1),q.ok?q.p.b1:null,`grupo ${pct(r.b1||0)}`)}</td>
+   <td class="r tnum">${vsPct(`${pct(m.pBT)} · ${m.bpe?pct(m.pBP):'—'}`,q.ok?q.p.btbp:null,`meta ${pct(F.bt)} · ${pct(F.bp)}`)}</td>
+   <td class="r tnum">${vsPct(brl(m.pm,2),q.ok?q.p.pm:null,`grupo ${brl(r.pm||0,2)}`)}</td>
+   <td class="r tnum"><b>${brl(m.bm)}</b><p class="sub">grupo ${brl((r.ipb||0)*(r.pm||0))}</p></td>
    <td>${ua&&ua.dia===TODAY?`<span class="done">${ic('circle-check')}</span>`:`<button class="btn sm" data-creg="${c.id}">${ic(TIPOS[P.acao])}${P.acao==='1:1 com consultor'?'1:1':P.acao==='Reconhecimento'?'Reconhecer':'Ação'}</button>`}</td></tr>`}).join('')}
   </tbody><tfoot><tr><td><p class="nm">Total do filtro</p><p class="sub">${lst.length} consultores</p></td>
-   <td class="r tnum"><b>${pts(scMed)}</b><p class="sub">média</p></td><td></td>
+   <td class="r tnum"><b class="c-bad">${kbrl(jogo)}</b><p class="sub">por dia</p></td><td class="r tnum"><b>${fx(qMed)}</b><p class="sub">média</p></td><td></td>
    <td><b class="tnum">${kbrl(T.rec)}</b><p class="sub">${kbrl(T.dias?T.rec/T.dias:0)} por consultor/dia</p></td>
    <td class="r tnum"><b>${fx(T.bol)}</b><p class="sub">${fx(T.dias?T.bol/T.dias:0,1)} por consultor/dia</p></td>
-   <td class="r tnum"><b>${fx(tIpb,2)}</b></td><td class="r tnum"><b>${pct(tB1)}</b></td><td class="r tnum"><b>${brl(tBm)}</b></td><td class="r tnum"><b>${brl(tPm,2)}</b></td>
-   <td class="r tnum"><b class="${tBT>=F.bt?'c-ok':'c-bad'}">${pct(tBT)}</b></td><td class="r tnum"><b class="${tBP>=F.bp?'c-ok':'c-bad'}">${pct(tBP)}</b></td><td></td></tr></tfoot></table></div></div>`;
+   <td class="r tnum"><b>${fx(tIpb,2)}</b></td><td class="r tnum"><b>${pct(tB1)}</b></td>
+   <td class="r tnum"><b class="${tBT>=F.bt&&tBP>=F.bp?'c-ok':'c-bad'}">${pct(tBT)} · ${pct(tBP)}</b></td><td class="r tnum"><b>${brl(tPm,2)}</b></td><td class="r tnum"><b>${brl(tBm)}</b></td><td></td></tr></tfoot></table></div></div>`;
 }
 // Tabela com todos os consultores, rolável: altura de até 15 linhas, limitada a 80% da tela; o total fica fixo no rodapé
 function altura15(){
@@ -1760,13 +1791,13 @@ function vCons(ls,cs){
  const cnt={};cs.forEach(c=>{const k=perfil(c).k;cnt[k]=(cnt[k]||0)+1});
  const lista=cs.filter(c=>!S.pfil||perfil(c).k===S.pfil);
  // todos os consultores do filtro, na ordem de prioridade do perfil (os botões de perfil filtram um grupo)
- const prio=[...lista].sort((a,b)=>PERFIS[perfil(a).k].o-PERFIS[perfil(b).k].o||Math.min(perfil(a).iBol,perfil(a).iIpb,perfil(a).iPm)-Math.min(perfil(b).iBol,perfil(b).iIpb,perfil(b).iPm));
+ const prio=[...lista].sort((a,b)=>PERFIS[perfil(a).k].o-PERFIS[perfil(b).k].o||qualCons(b).emJogo-qualCons(a).emJogo);
  const loja=lista.filter(c=>!c.digital),dig=lista.filter(c=>c.digital);
  $('view').innerHTML=`<section class="sec">
   <div class="plan-hd"><div><h2>Consultores${S.pfil?`: ${PERFIS[S.pfil].n}`:''} (${lista.length})</h2><p>${perTxt()} · clique num perfil para ver só esse grupo · cores: verde no nível ou acima, amarelo até 10% abaixo, vermelho abaixo</p></div></div>
   <div class="pfil"><button class="pf ${!S.pfil?'on':''}" data-pfil="">${ic('users')}<span>Todos</span><b>${cs.length}</b></button>${Object.entries(PERFIS).filter(([k])=>cnt[k]).map(([k,P])=>`<button class="pf ${P.sev} ${S.pfil===k?'on':''}" data-pfil="${k}">${ic(P.ic)}<span>${P.n}</span><b>${cnt[k]}</b></button>`).join('')}</div>
-  ${tabelaCons(loja,`Consultores de loja (${loja.length})`,'Comparados com o time da própria loja (sem os digitais) · score = soma dos pontos de IPB (peso 4), %B1 (3), boleto médio (2) e preço médio (1) · BT e BP contra a meta','users')}
-  ${tabelaCons(dig,`Consultores digitais · WhatsApp (${dig.length})`,`Comparados só entre si (média dos ${DIGTEAM.n} digitais) · somam a venda de todas as lojas em que atendem`,'smartphone')}
+  ${tabelaCons(loja,`Consultores de loja (${loja.length})`,'Ordem: R$ em jogo por dia · qualidade do boleto de 0 a 100 = percentil no cluster de IPB (peso 4), %B1 (3), BT + BP contra a meta (2) e preço médio (1); p = percentil de cada indicador','users')}
+  ${tabelaCons(dig,`Consultores digitais · WhatsApp (${dig.length})`,`Comparados só entre si (${DIGTEAM.n} digitais) · somam a venda de todas as lojas em que atendem`,'smartphone')}
   ${!loja.length&&!dig.length?'<p class="empty">Nenhum consultor neste filtro.</p>':''}
   ${prio.length?`<div class="plan-hd"><div><h2>Plano de cada consultor</h2><p>Na ordem de prioridade do perfil</p></div></div><div class="acts3">${prio.map(consCard).join('')}</div>`:''}
  </section>`;

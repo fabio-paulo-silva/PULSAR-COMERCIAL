@@ -92,8 +92,9 @@ O indicador de boletos é **% dos boletos que a meta pede**: boletos de venda ÷
 ## Aba Consultores
 Primeiro a tabela dos consultores de loja e a dos digitais, com receita/dia, boletos/dia, IPB, preço médio e %B1 contra o time (ou o grupo digital) e BT e BP contra a meta. Verde = no nível ou acima, amarelo = até 10% abaixo, vermelho = abaixo disso (no %B1, ao contrário). Embaixo, o card de cada consultor. Os botões de perfil filtram as tabelas e os cards.
 
-## Score de criticidade do consultor
-- Cada indicador vale pontos = peso × desvio em % contra o time da loja (ou o grupo digital). Positivo = melhor que a referência; negativo = pior. Cada desvio é limitado a ±50%.
-- Pesos: **IPB 4**, **%B1 3** (menor é melhor), **boleto médio 2**, **preço médio 1**. Score do consultor = soma dos 4.
-- Faixas: até −60 Crítico, −60 a −20 Atenção, −20 a +20 No nível, acima de +20 Acima.
-- A tabela de consultores abre ordenada pelo score (mais crítico primeiro), traz todos os consultores do filtro com rolagem (até 15 linhas, limitada a 80% da tela) e tem a linha "Total do filtro" fixa no rodapé (receita, boletos, IPB, %B1, boleto médio, preço médio, BT e BP de todos os consultores da tabela, e o score médio).
+## Qualidade do boleto e R$ em jogo (consultores)
+- **Grupo de comparação:** consultores do mesmo cluster (shopping, rua, galeria, supermercado); QDB só com QDB; digitais só entre si.
+- **Qualidade (0 a 100):** cada indicador vira percentil no grupo (0 = pior, 100 = melhor) e entra na média com os pesos **IPB 4**, **%B1 3** (menor é melhor), **BT + BP contra a meta 2** e **preço médio 1**. Quem tem menos de 100 boletos no período é puxado para a média do grupo na proporção do volume. Faixas: < 25 Crítica, 25–50 Abaixo, 50–75 Boa, ≥ 75 Ótima.
+- **R$ em jogo por dia:** quanto o consultor perde, com os mesmos boletos/dia, por estar abaixo do grupo no IPB e no preço médio. Preço médio alto não compensa IPB baixo; IPB alto compensa preço médio baixo. É a ordem padrão da tabela.
+- **Perfil = volume × qualidade:** receita/dia ≥ 95% do time e qualidade ≥ 50 → No nível do time (ou Destaque, se ≥ 115%); volume alto e qualidade < 50 → **Vende muito, boleto fraco** (1:1 de BT no boleto de 1 item); volume baixo e qualidade ≥ 50 → **Poucos boletos**; volume baixo e qualidade < 50 → **Crítico: volume e boleto**. "Sem venda nos últimos 3 dias" continua à parte.
+- A tabela traz todos os consultores do filtro com rolagem (até 15 linhas, limitada a 80% da tela) e a linha "Total do filtro" fixa no rodapé, com o R$ em jogo somado e a qualidade média.
