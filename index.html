@@ -196,8 +196,6 @@ select:focus-visible,input:focus-visible,textarea:focus-visible,button:focus-vis
 /* Tabelas */
 .tw{overflow-x:auto}
 .tw.tall{max-height:36rem;overflow-y:auto}
-.tcons td{padding-top:6px;padding-bottom:6px}
-.tcons .sub{font-size:11px;line-height:1.25}
 .tcons tfoot td{position:sticky;bottom:0;background:var(--card);border-top:2px solid var(--foreground);box-shadow:0 -6px 12px -10px oklch(0 0 0 / .4);z-index:1}
 .sc{display:inline-block;margin-left:5px;border-radius:6px;padding:0 5px;font-size:11px;font-weight:800;font-variant-numeric:tabular-nums;vertical-align:1px}
 .sc.pos{background:oklch(0.76 0.19 152 / .15);color:var(--success-ink)} .sc.neg{background:oklch(0.58 0.21 22 / .12);color:var(--destructive)}
@@ -1753,10 +1751,10 @@ function tabelaCons(lst,titulo,sub,ic_){
    <td class="r tnum"><b>${fx(tIpb,2)}</b></td><td class="r tnum"><b>${pct(tB1)}</b></td><td class="r tnum"><b>${brl(tBm)}</b></td><td class="r tnum"><b>${brl(tPm,2)}</b></td>
    <td class="r tnum"><b class="${tBT>=F.bt?'c-ok':'c-bad'}">${pct(tBT)}</b></td><td class="r tnum"><b class="${tBP>=F.bp?'c-ok':'c-bad'}">${pct(tBP)}</b></td><td></td></tr></tfoot></table></div></div>`;
 }
-// Mostra 15 consultores antes de rolar: altura = cabeçalho + 15 linhas + total
+// Tabela com todos os consultores, rolável: altura de até 15 linhas, limitada a 80% da tela; o total fica fixo no rodapé
 function altura15(){
  document.querySelectorAll('.t15').forEach(w=>{const th=w.querySelector('thead'),tf=w.querySelector('tfoot'),rs=[...w.querySelectorAll('tbody tr')].slice(0,15);
-  const h=e=>e?e.getBoundingClientRect().height:0;w.style.maxHeight=Math.ceil(h(th)+h(tf)+sum(rs.map(h))+4)+'px'});
+  const h=e=>e?e.getBoundingClientRect().height:0;w.style.maxHeight=Math.min(Math.ceil(h(th)+h(tf)+sum(rs.map(h))+4),Math.round(innerHeight*.8))+'px'});
 }
 function vCons(ls,cs){
  const cnt={};cs.forEach(c=>{const k=perfil(c).k;cnt[k]=(cnt[k]||0)+1});
