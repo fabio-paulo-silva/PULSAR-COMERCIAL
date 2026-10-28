@@ -1119,7 +1119,7 @@ function avaliar(ls){
 }
 
 /* ================= Estado e escopo ================= */
-const S={reg:'',praca:'',gvo:'',loja:'',cons:'',tab:'hoje',pfil:'',chart:'dia',acSel:null,foco:null,sort:{lojas:['gapR',1],cons:['emJogo',-1],uso:['ult',1]}};
+const S={reg:'',praca:'',gvo:'',loja:'',cons:'',tab:'hoje',pfil:'',chart:'dia',acSel:null,foco:null,sort:{lojas:['gapR',1],cons:['emJogo',-1],uso:['ult',1]},usoNome:''};
 let FIRED=[];
 const $=id=>document.getElementById(id);
 // Hierarquia dos filtros: Regional -> Praça -> GVO -> Loja -> Consultor
@@ -1165,7 +1165,7 @@ function render(){
  ({hoje:vHoje,entender:vEntender,lojas:vLojas,consultores:vCons,uso:vUso})[S.tab](ls,cs,a);
  icons();
  // registra o acesso (página do mês, aba e filtro); o uso.js não repete a mesma tela antes de 30 minutos
- if(window.PulsarUso)PulsarUso.registrar({pagina:'mes',aba:S.tab,regional:S.reg,praca:S.praca,gvo:S.gvo,loja_id:S.loja});
+ if(window.PulsarUso)PulsarUso.registrar({pagina:'mes',aba:S.tab,regional:S.reg,praca:S.praca,gvo:S.gvo,loja_id:S.loja||(S.tab==='lojas'&&S.foco?S.foco:'')});
 }
 /* ================= Uso: quem está acessando o PULSAR ================= */
 // Lê a aba "acessos" da planilha (gravada pelo uso.js) e cruza com as pessoas do cadastro (GVO, GCVO/GPVO, GRVO).
@@ -1178,6 +1178,27 @@ async function carregarUso(force){
  catch(e){USO={mes,dados:null,em:Date.now(),erro:'rede'}}
 }
 const dataLocal=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+// Detalhe do uso: telas mais usadas e histórico dos últimos acessos (página, aba e filtro), com filtro por pessoa
+const ABAS_TXT={hoje:'Hoje',consultores:'Consultores',lojas:'Lojas',entender:'Entender',uso:'Uso'};
+function filtroTxt(a){
+ const l=a.loja_id&&lojaById(a.loja_id);
+ return l?`${l.nome}${a.aba==='lojas'&&!a.gvo?' (loja aberta)':''}`:a.gvo?`GVO ${a.gvo}`:a.praca?`Praça ${a.praca}`:a.regional?a.regional:'Todas as lojas';
+}
+function usoDetalhe(acs){
+ const sel=S.usoNome?acs.filter(a=>a.nome===S.usoNome):acs;
+ const tela=a=>`${a.pagina==='hoje'?'Acompanhamento do dia':'Painel do mês · '+(ABAS_TXT[a.aba]||a.aba)}`;
+ const g={};sel.forEach(a=>{const k=tela(a),x=g[k]=g[k]||{n:0,p:new Set()};x.n++;x.p.add(a.nome)});
+ const telas=Object.entries(g).sort((a,b)=>b[1].n-a[1].n),max=telas.length?telas[0][1].n:1;
+ const hist=[...sel].sort((a,b)=>b.quando.localeCompare(a.quando)).slice(0,200);
+ return `<div class="focus" style="grid-template-columns:minmax(0,1fr) minmax(0,2fr)">
+  <div class="card"><div class="card-hd"><div><h2>Telas mais usadas</h2><p>${S.usoNome?esc(S.usoNome):'Todos'} · ${sel.length} acessos</p></div></div>
+   <div class="pad" style="display:flex;flex-direction:column;gap:10px">${telas.map(([k,x])=>`<div><div style="display:flex;justify-content:space-between;gap:8px;font-size:13px"><b>${esc(k)}</b><span class="mf tnum">${x.n} · ${x.p.size} pessoa${x.p.size>1?'s':''}</span></div>
+    <div class="minibar" style="margin-top:4px"><span class="b" style="flex:1"><i style="width:${Math.round(x.n/max*100)}%;background:var(--accent)"></i></span></div></div>`).join('')||'<p class="mf">Sem acessos.</p>'}</div></div>
+  <div class="card"><div class="card-hd"><div><h2>Últimos acessos</h2><p>${S.usoNome?`${esc(S.usoNome)} · <button class="lk" data-usonome="">ver todos</button>`:'Clique num gestor na tabela acima para ver só os acessos dele'}</p></div></div>
+   <div class="tw tall"><table><thead><tr><th>Quando</th><th>Quem</th><th>Tela</th><th>Filtro</th></tr></thead><tbody>
+   ${hist.map(a=>`<tr><td class="tnum">${a.quando.slice(8,10)}/${a.quando.slice(5,7)} ${a.quando.slice(11,16)}</td><td>${esc(a.nome)}</td><td>${esc(tela(a))}</td><td>${esc(filtroTxt(a))}</td></tr>`).join('')||'<tr><td colspan="4" class="mf">Sem acessos.</td></tr>'}
+   </tbody></table></div></div></div>`;
+}
 function vUso(ls){
  if(!USO.dados&&!USO.erro){$('view').innerHTML='<section class="sec"><p class="mf">Carregando os acessos…</p></section>';carregarUso().then(()=>{if(S.tab==='uso')render()});return}
  if(!USO.dados){
@@ -1213,13 +1234,14 @@ function vUso(ls){
   </div>
   <div class="card"><div class="card-hd"><div><h2>Uso por gestor</h2><p>${filtrado?'Gestores com loja no filtro':'GVO, GCVO/GPVO e GRVO do cadastro'} · a pessoa se identifica na primeira visita · <button class="lk" data-uso="1">atualizar</button></p></div><span class="icchip t-accent">${ic('activity')}</span></div>
   <div class="tw tall"><table><thead><tr>${sortTh('uso','nome','Gestor')}${sortTh('uso','papel','Papel')}${sortTh('uso','hoje','Hoje')}${sortTh('uso','ult','Último acesso')}${sortTh('uso','dias','Dias com acesso','r')}${sortTh('uso','n','Acessos','r')}${sortTh('uso','mes','Painel do mês','r')}${sortTh('uso','dia','Acomp. do dia','r')}${sortTh('uso','lojas','Lojas filtradas','r')}${sortTh('uso','acoes','Ações','r')}</tr></thead><tbody>
-  ${rows.map(r=>`<tr><td><p class="nm">${esc(r.p.nome)}</p><p class="sub">${r.p.outro?'nome digitado':r.p.interno?'time interno':`${r.p.lojas.length} loja${r.p.lojas.length===1?'':'s'} no painel`}</p></td>
+  ${rows.map(r=>`<tr class="click ${S.usoNome===r.p.nome?'sel':''}" data-usonome="${esc(r.p.nome)}"><td><p class="nm">${esc(r.p.nome)}</p><p class="sub">${r.p.outro?'nome digitado':r.p.interno?'time interno':`${r.p.lojas.length} loja${r.p.lojas.length===1?'':'s'} no painel`}</p></td>
    <td>${esc(r.p.papeis.join(', '))}</td>
    <td>${r.hoje?`<span class="pill p-ok">${ic('circle-check')}Acessou</span>`:'<span class="pill p-bad">Não acessou</span>'}</td>
    <td class="tnum">${quando(r.ult)}</td>
    <td class="r tnum"><b class="${r.dias>=diasCorridos*.6?'c-ok':r.dias>0?'c-warn':'c-bad'}">${r.dias}</b><span class="mf"> / ${diasCorridos}</span></td>
    <td class="r tnum">${r.n}</td><td class="r tnum">${r.mes}</td><td class="r tnum">${r.dia}</td><td class="r tnum">${r.lojas}</td><td class="r tnum">${r.acoes}</td></tr>`).join('')}
   </tbody></table></div></div>
+  ${usoDetalhe(acs.filter(a=>!filtrado||nomes.has(a.nome)||!(D.pessoas||[]).some(p=>p.nome===a.nome)))}
   <p class="mf" style="font-size:12px">Identificação declarada: cada pessoa escolhe o próprio nome na primeira visita (fica salvo no navegador). Acessos do computador local (testes) não contam.</p>
  </section>`;
 }
@@ -1962,9 +1984,10 @@ document.querySelector('.datas .pres').addEventListener('click',e=>{
 });
 function irFoco(id){if(S.foco!==id)S.acSel=null;S.foco=id;S.tab='lojas';render();requestAnimationFrame(()=>$('foco')?.scrollIntoView({behavior:'smooth',block:'start'}))}
 document.addEventListener('click',e=>{
- const t=e.target.closest('[data-tab],[data-reg],[data-foco],[data-del],[data-sort],[data-novo],[data-drill],[data-verc],[data-chart],[data-acsel],[data-pfil],[data-creg],[data-dec],[data-gvo],[data-uso]');if(!t)return;
+ const t=e.target.closest('[data-tab],[data-reg],[data-foco],[data-del],[data-sort],[data-novo],[data-drill],[data-verc],[data-chart],[data-acsel],[data-pfil],[data-creg],[data-dec],[data-gvo],[data-uso],[data-usonome]');if(!t)return;
  const d=t.dataset;
  if(d.uso){carregarUso(true).then(render);return}
+ if(d.usonome!=null){S.usoNome=S.usoNome===d.usonome?'':d.usonome;render();return}
  if(d.dec!=null){const x=DEC[+d.dec];if(!x)return;const cm=comoDecisao(x);abrir({loja:x.loja,g:x.g,meta:x.meta.replace(/^Meta: /,''),acao:cm.tipo});
   if(TIPOS[cm.tipo])$('dTipo').value=cm.tipo;$('dDesc').value=`${x.meta}${cm.txt?' · '+cm.txt:''}`;return}
  if(d.gvo!=null){const l=lojas.find(z=>z.gestor===d.gvo);if(l){S.reg=l.regional;S.praca=l.praca}S.gvo=d.gvo;S.loja='';S.foco=null;fillFiltros();lembrarFiltro();render();$('view').scrollIntoView({behavior:'smooth',block:'start'});return}
