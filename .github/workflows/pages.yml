@@ -40,11 +40,17 @@ jobs:
           mkdir -p site/data site/Ciclo
           cp prod/index.html prod/config.js site/
           cp prod/data/pulsar.json site/data/
+          if [ -f prod/hoje.html ]; then cp prod/hoje.html site/; fi
+          if [ -f prod/uso.js ]; then cp prod/uso.js site/; fi
+          if [ -f prod/data/hoje.json ]; then cp prod/data/hoje.json site/data/; fi
           cp prod/Ciclo/ciclo_atual.json site/Ciclo/
           if [ -f dev/index.html ]; then
             mkdir -p site/dev/data site/dev/Ciclo
             cp dev/index.html dev/config.js site/dev/
             cp prod/data/pulsar.json site/dev/data/
+            if [ -f dev/hoje.html ]; then cp dev/hoje.html site/dev/; fi
+            if [ -f dev/uso.js ]; then cp dev/uso.js site/dev/; fi
+            if [ -f prod/data/hoje.json ]; then cp prod/data/hoje.json site/dev/data/; fi
             if [ -f dev/Ciclo/ciclo_atual.json ]; then cp dev/Ciclo/ciclo_atual.json site/dev/Ciclo/; else cp prod/Ciclo/ciclo_atual.json site/dev/Ciclo/; fi
           fi
           touch site/.nojekyll
