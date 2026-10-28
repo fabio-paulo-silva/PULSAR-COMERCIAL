@@ -99,3 +99,10 @@ Primeiro a tabela dos consultores de loja e a dos digitais, com receita/dia, bol
 - **Perfil = volume × qualidade:** receita/dia ≥ 95% do time e qualidade ≥ 50 → No nível do time (ou Destaque, se ≥ 115%); volume alto e qualidade < 50 → **Vende muito, boleto fraco** (1:1 de BT no boleto de 1 item); volume baixo e qualidade ≥ 50 → **Poucos boletos**; volume baixo e qualidade < 50 → **Crítico: volume e boleto**. "Sem venda nos últimos 3 dias" continua à parte.
 - A tabela traz todos os consultores do filtro com rolagem (até 15 linhas, limitada a 80% da tela) e a linha "Total do filtro" fixa no rodapé, com o R$ em jogo somado e a qualidade média.
 - Tabela de consultores enxuta: R$ em jogo, qualidade, boletos/dia, IPB, %B1, BT · BP, preço médio e boleto médio. A cor de cada indicador vem do percentil no grupo; a referência do grupo, o detalhe do R$ em jogo e o perfil ficam na dica ao passar o mouse.
+
+## Uso do painel (quem acessa)
+- **Identificação:** na primeira visita, o painel do mês e a hoje.html pedem o nome (lista com todos os nomes distintos de GVO, GCVO/GPVO e GRVO do dCentros, ou "Outro nome"). Fica salvo no navegador; o selo "Usuário" no topo permite trocar. O autor do registro de ação vem preenchido com esse nome.
+- **Registro (`uso.js`):** cada página, aba ou filtro aberto grava um acesso na aba `acessos` da planilha (data e hora, nome, papel, aparelho, página, aba, regional, praça, GVO, loja, ambiente). A mesma tela não é gravada de novo antes de 30 minutos. No computador local (localhost) nada é gravado.
+- **Aba Uso:** por gestor, se acessou hoje, último acesso, dias com acesso no mês, acessos, uso do painel do mês e do acompanhamento do dia, lojas filtradas e ações registradas. Com filtro, mostra os gestores com loja no filtro.
+- **Requer** o `apps-script/Codigo.gs` atualizado (op `acesso` e `?tipo=acessos`): republicar em Implantar > Gerenciar implantações > editar > Nova versão.
+- A identificação é declarada pela própria pessoa (não há login).

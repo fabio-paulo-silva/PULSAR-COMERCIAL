@@ -172,6 +172,7 @@ tr.click{cursor:pointer} tr.click:hover td{background:var(--muted)}
 </main>
 
 <script src="config.js"></script>
+<script src="uso.js"></script>
 <script>
 /* ================= PULSAR · HOJE =================
    Meta de hoje (mesma conta do painel do mês): meta diarizada + gap até ontem ÷ dias que faltam com meta, contando hoje.
@@ -267,6 +268,7 @@ const chip=r=>{const[c,t,i]=st(r);return `<span class="ritmo ${c}">${ic(i)}${t} 
 const cor=r=>r>=1?'var(--primary)':r>=.9?'var(--warning)':'var(--destructive)';
 
 function render(){
+ if(window.PulsarUso)PulsarUso.registrar({pagina:'hoje',aba:'hoje',regional:S.reg,praca:S.praca,gvo:S.gvo,loja_id:S.loja});
  if(!DIA_OK){icons();return}
  const ls=filtra(4),a=agregar(ls),v=a.v,dA=TODAY+1<=DAYS?new Date(ANO-1,MES,TODAY+1):null;
  const lj=S.loja?LJ.find(l=>l.id===S.loja):null;
@@ -410,7 +412,9 @@ async function carregar(){
  preparar();cabecalho();
 }
 if(CONF.ambiente==='desenvolvimento'){$('hAmb').hidden=false;document.title='[DEV] '+document.title}
-carregar().then(()=>{filtroInicial();fillFiltros();render();
+carregar().then(async()=>{filtroInicial();fillFiltros();
+ await PulsarUso.iniciar({pessoas:P.pessoas||[],planilha:CONF.planilha||{url:'',chave:''},ambiente:CONF.ambiente,pagina:'hoje'});
+ render();
  // a página busca a venda de hoje de novo a cada 5 minutos (o arquivo é atualizado pelo processar_hoje.py)
  setInterval(()=>carregar().then(render).catch(()=>{}),ATUALIZA_MIN*60000);
 }).catch(err=>{

@@ -679,6 +679,7 @@ dialog .hd h3{font-size:18px}
 </dialog>
 
 <script src="config.js"></script>
+<script src="uso.js"></script>
 <script>
 /* ================= Configuração ================= */
 // Faixas: meta de %B1 da rede e BM alvo por loja (BM Alvo dos consultores do Plano BM ou BM do cluster), lidos em processar_dados.py.
@@ -1111,7 +1112,7 @@ function avaliar(ls){
 }
 
 /* ================= Estado e escopo ================= */
-const S={reg:'',praca:'',gvo:'',loja:'',cons:'',tab:'hoje',pfil:'',chart:'dia',acSel:null,foco:null,sort:{lojas:['gapR',1],cons:['emJogo',-1]}};
+const S={reg:'',praca:'',gvo:'',loja:'',cons:'',tab:'hoje',pfil:'',chart:'dia',acSel:null,foco:null,sort:{lojas:['gapR',1],cons:['emJogo',-1],uso:['ult',1]}};
 let FIRED=[];
 const $=id=>document.getElementById(id);
 // Hierarquia dos filtros: Regional -> Praça -> GVO -> Loja -> Consultor
@@ -1152,11 +1153,68 @@ function render(){
     <div><span>BT necessário</span><b>${pct(F.bt)}</b><small>hoje ${pct(a.pBT)}</small></div>
     <div><span>BP necessário</span><b>${pct(F.bp)}</b><small>hoje ${pct(a.pBP)} · boletos ≥ R$ 120</small></div>
    </div></div>`;
- const TABS=[['hoje','Hoje','zap'],['consultores','Consultores','users'],['lojas','Lojas','store'],['entender','Entender','search']];
+ const TABS=[['hoje','Hoje','zap'],['consultores','Consultores','users'],['lojas','Lojas','store'],['entender','Entender','search'],['uso','Uso','activity']];
  $('tabs').innerHTML=TABS.map(([id,l,i])=>`<button class="tab ${S.tab===id?'on':''}" data-tab="${id}">${ic(i)}<span>${l}</span></button>`).join('');
- ({hoje:vHoje,entender:vEntender,lojas:vLojas,consultores:vCons})[S.tab](ls,cs,a);
+ ({hoje:vHoje,entender:vEntender,lojas:vLojas,consultores:vCons,uso:vUso})[S.tab](ls,cs,a);
  icons();
+ // registra o acesso (página do mês, aba e filtro); o uso.js não repete a mesma tela antes de 30 minutos
+ if(window.PulsarUso)PulsarUso.registrar({pagina:'mes',aba:S.tab,regional:S.reg,praca:S.praca,gvo:S.gvo,loja_id:S.loja});
 }
+/* ================= Uso: quem está acessando o PULSAR ================= */
+// Lê a aba "acessos" da planilha (gravada pelo uso.js) e cruza com as pessoas do cadastro (GVO, GCVO/GPVO, GRVO).
+let USO={mes:null,dados:null,em:0,erro:''};
+async function carregarUso(force){
+ const mes=`${ANO}-${pad(MES+1)}`;
+ if(!force&&USO.mes===mes&&USO.dados&&Date.now()-USO.em<120000)return;
+ try{USO={mes,dados:await PulsarUso.acessos(mes),em:Date.now(),erro:''};if(!USO.dados)USO.erro='script'}
+ catch(e){USO={mes,dados:null,em:Date.now(),erro:'rede'}}
+}
+const dataLocal=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+function vUso(ls){
+ if(!USO.dados&&!USO.erro){$('view').innerHTML='<section class="sec"><p class="mf">Carregando os acessos…</p></section>';carregarUso().then(()=>{if(S.tab==='uso')render()});return}
+ if(!USO.dados){
+  $('view').innerHTML=`<section class="sec"><div class="card pad"><h2 style="font-size:18px">Os acessos ainda não estão disponíveis</h2><p class="mf">${USO.erro==='script'?'O Apps Script da planilha ainda é a versão antiga. Republique o <code>apps-script/Codigo.gs</code> (Implantar &gt; Gerenciar implantações &gt; editar &gt; Nova versão) para começar a registrar e ler os acessos.':'Não foi possível falar com a planilha agora. Tente de novo em alguns minutos.'}</p></div></section>`;
+  return;
+ }
+ const hojeStr=dataLocal(new Date()),ids=new Set(ls.map(l=>l.id)),filtrado=S.reg||S.praca||S.gvo||S.loja;
+ const acs=USO.dados;
+ // pessoas do cadastro no filtro (quem tem loja no filtro) + quem acessou com outro nome
+ const pessoas=(D.pessoas||[]).filter(p=>!filtrado||p.lojas.some(x=>ids.has(x)));
+ const nomes=new Set(pessoas.map(p=>p.nome));
+ const outros=[...new Set(acs.map(a=>a.nome))].filter(n=>n&&!(D.pessoas||[]).some(p=>p.nome===n)).map(n=>({nome:n,papeis:[(acs.find(a=>a.nome===n)||{}).papel||'Outro'],lojas:[],outro:true}));
+ const lista=[...pessoas,...(filtrado?[]:outros)];
+ const ac=acoesMes();
+ const rows=lista.map(p=>{
+  const a=acs.filter(x=>x.nome===p.nome),dias=new Set(a.map(x=>x.quando.slice(0,10))),ult=a.map(x=>x.quando).sort().pop()||'';
+  const lj=new Set(a.map(x=>x.loja_id).filter(Boolean)),ac_=ac.filter(x=>(x.autor||'').trim().toLowerCase()===p.nome.toLowerCase()).length;
+  return{p,n:a.length,dias:dias.size,hoje:dias.has(hojeStr),ult,mes:a.filter(x=>x.pagina==='mes').length,dia:a.filter(x=>x.pagina==='hoje').length,lojas:lj.size,acoes:ac_,disp:new Set(a.map(x=>x.dispositivo)).size};
+ });
+ const [k,dir]=S.sort.uso;
+ rows.sort((x,y)=>{const g=r=>k==='nome'?r.p.nome:k==='papel'?r.p.papeis[0]:k==='ult'?r.ult:r[k];const a=g(x),b=g(y);return(a>b?1:a<b?-1:0)*dir});
+ const hj=rows.filter(r=>r.hoje&&!r.p.outro).length,mesN=rows.filter(r=>r.n>0&&!r.p.outro).length,tot=pessoas.length;
+ const totAc=acs.filter(a=>!filtrado||nomes.has(a.nome)).length;
+ const diasCorridos=Math.min(new Date().getDate(),DAYS);
+ const quando=s=>s?`${s.slice(8,10)}/${s.slice(5,7)} ${s.slice(11,16)}`:'—';
+ $('view').innerHTML=`<section class="sec">
+  <div class="kpis" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
+   <div class="card kpi"><p class="lbl">Acessaram hoje</p><p class="val ${hj>=tot/2?'c-ok':'c-bad'}">${hj} de ${tot}</p><p class="kl">${pct(tot?hj/tot:0)} dos gestores${filtrado?' do filtro':''}</p></div>
+   <div class="card kpi"><p class="lbl">Acessaram no mês</p><p class="val">${mesN} de ${tot}</p><p class="kl">${tot-mesN} nunca abriram em ${MESES[MES]}</p></div>
+   <div class="card kpi"><p class="lbl">Acessos no mês</p><p class="val">${fx(totAc)}</p><p class="kl">painel do mês e acompanhamento do dia</p></div>
+   <div class="card kpi"><p class="lbl">Ações registradas</p><p class="val">${fx(rows.reduce((s,r)=>s+r.acoes,0))}</p><p class="kl">pelos gestores da lista, no mês</p></div>
+  </div>
+  <div class="card"><div class="card-hd"><div><h2>Uso por gestor</h2><p>${filtrado?'Gestores com loja no filtro':'GVO, GCVO/GPVO e GRVO do cadastro'} · a pessoa se identifica na primeira visita · <button class="lk" data-uso="1">atualizar</button></p></div><span class="icchip t-accent">${ic('activity')}</span></div>
+  <div class="tw tall"><table><thead><tr>${sortTh('uso','nome','Gestor')}${sortTh('uso','papel','Papel')}${sortTh('uso','hoje','Hoje')}${sortTh('uso','ult','Último acesso')}${sortTh('uso','dias','Dias com acesso','r')}${sortTh('uso','n','Acessos','r')}${sortTh('uso','mes','Painel do mês','r')}${sortTh('uso','dia','Acomp. do dia','r')}${sortTh('uso','lojas','Lojas filtradas','r')}${sortTh('uso','acoes','Ações','r')}</tr></thead><tbody>
+  ${rows.map(r=>`<tr><td><p class="nm">${esc(r.p.nome)}</p><p class="sub">${r.p.outro?'nome digitado':`${r.p.lojas.length} loja${r.p.lojas.length===1?'':'s'} no painel`}</p></td>
+   <td>${esc(r.p.papeis.join(', '))}</td>
+   <td>${r.hoje?`<span class="pill p-ok">${ic('circle-check')}Acessou</span>`:'<span class="pill p-bad">Não acessou</span>'}</td>
+   <td class="tnum">${quando(r.ult)}</td>
+   <td class="r tnum"><b class="${r.dias>=diasCorridos*.6?'c-ok':r.dias>0?'c-warn':'c-bad'}">${r.dias}</b><span class="mf"> / ${diasCorridos}</span></td>
+   <td class="r tnum">${r.n}</td><td class="r tnum">${r.mes}</td><td class="r tnum">${r.dia}</td><td class="r tnum">${r.lojas}</td><td class="r tnum">${r.acoes}</td></tr>`).join('')}
+  </tbody></table></div></div>
+  <p class="mf" style="font-size:12px">Identificação declarada: cada pessoa escolhe o próprio nome na primeira visita (fica salvo no navegador). Acessos do computador local (testes) não contam.</p>
+ </section>`;
+}
+
 // a loja já tem ação registrada hoje (por qualquer pessoa: vem da planilha)
 function feita(t){return acoesMes().some(x=>x.dia===TODAY&&x.loja===t.loja.id)}
 function sortTh(tbl,k,l,r=''){const[ak,dir]=S.sort[tbl],on=ak===k;return `<th class="s ${r} ${on?'on':''}" data-sort="${tbl}:${k}"><span class="si">${l}${ic(on?(dir>0?'chevron-up':'chevron-down'):'chevrons-up-down')}</span></th>`}
@@ -1813,7 +1871,7 @@ function abrir(t,lojaId,consId){
  $('dTipo').value=t?(t.acao||GT[t.g].acao):'Push do time';
  $('dDia').min=isoDia(1);$('dDia').max=isoDia(DAYS);$('dDia').value=isoDia(Math.min(TODAY,DAYS));$('dDesc').value='';
  $('dCtx').innerHTML=t?`<b>Gatilho:</b> ${GT[t.g].nome} · ${esc(t.loja.nome)}<br><b>Meta da ação:</b> ${t.meta}`:'Ação avulsa, sem gatilho associado.';
- try{$('dAutor').value=$('dAutor').value||localStorage.getItem(KEY_AUTOR)||''}catch(e){}
+ try{$('dAutor').value=$('dAutor').value||localStorage.getItem(KEY_AUTOR)||(window.PulsarUso&&PulsarUso.usuario()?PulsarUso.usuario().nome:'')}catch(e){}
  $('dlg').showModal();icons();
 }
 function fillCons(lid,v){const cs=cons.filter(c=>c.loja===lid&&c.m.dias>0).sort((a,b)=>a.nome.localeCompare(b.nome));$('dCons').innerHTML='<option value="">Loja inteira</option>'+cs.map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join('');$('dCons').value=v||''}
@@ -1895,8 +1953,9 @@ document.querySelector('.datas .pres').addEventListener('click',e=>{
 });
 function irFoco(id){if(S.foco!==id)S.acSel=null;S.foco=id;S.tab='lojas';render();requestAnimationFrame(()=>$('foco')?.scrollIntoView({behavior:'smooth',block:'start'}))}
 document.addEventListener('click',e=>{
- const t=e.target.closest('[data-tab],[data-reg],[data-foco],[data-del],[data-sort],[data-novo],[data-drill],[data-verc],[data-chart],[data-acsel],[data-pfil],[data-creg],[data-dec],[data-gvo]');if(!t)return;
+ const t=e.target.closest('[data-tab],[data-reg],[data-foco],[data-del],[data-sort],[data-novo],[data-drill],[data-verc],[data-chart],[data-acsel],[data-pfil],[data-creg],[data-dec],[data-gvo],[data-uso]');if(!t)return;
  const d=t.dataset;
+ if(d.uso){carregarUso(true).then(render);return}
  if(d.dec!=null){const x=DEC[+d.dec];if(!x)return;const cm=comoDecisao(x);abrir({loja:x.loja,g:x.g,meta:x.meta.replace(/^Meta: /,''),acao:cm.tipo});
   if(TIPOS[cm.tipo])$('dTipo').value=cm.tipo;$('dDesc').value=`${x.meta}${cm.txt?' · '+cm.txt:''}`;return}
  if(d.gvo!=null){const l=lojas.find(z=>z.gestor===d.gvo);if(l){S.reg=l.regional;S.praca=l.praca}S.gvo=d.gvo;S.loja='';S.foco=null;fillFiltros();lembrarFiltro();render();$('view').scrollIntoView({behavior:'smooth',block:'start'});return}
@@ -1923,7 +1982,10 @@ function cabecalho(){
  $('hBase').textContent=`${lojas.length} lojas · atualizado em ${D.geradoEm.slice(8,10)}/${D.geradoEm.slice(5,7)} às ${D.geradoEm.slice(11,16)}`;
 }
 fetch('Ciclo/ciclo_atual.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null).then(c=>{CICLO=c}).then(()=>fetch('data/pulsar.json',{cache:'no-store'})).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(j=>{
- init(j);cabecalho();filtroInicial();fillFiltros();render();
+ init(j);cabecalho();filtroInicial();fillFiltros();
+ // identificação de quem acessa (primeira visita) antes do primeiro registro de uso
+ PulsarUso.iniciar({pessoas:D.pessoas||[],planilha:PLANILHA,ambiente:CONF.ambiente,pagina:'mes'}).then(render);
+ render();
  sincronizar().then(render);setInterval(()=>sincronizar().then(render),120000);
 }).catch(err=>{
  $('view').innerHTML=`<div class="card pad"><h2 style="font-size:18px">Não foi possível carregar os dados</h2><p class="mf">Abra o PULSAR pelo atalho <b>Abrir PULSAR.bat</b>, que processa as planilhas e abre o painel. O arquivo <code>data/pulsar.json</code> precisa existir e a página precisa ser aberta por um servidor local (não direto do arquivo).</p></div>`;

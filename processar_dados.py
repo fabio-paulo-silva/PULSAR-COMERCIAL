@@ -178,7 +178,8 @@ def mes_do_arquivo(arq: Path):
 
 def ler_vendas() -> pd.DataFrame:
     # Dados/Hoje é a venda parcial do dia (processar_hoje.py): fica fora do fechamento D-1
-    arquivos = sorted(a for a in PASTA_VENDAS.rglob("*.xlsx") if not a.name.startswith("~$") and "Hoje" not in a.parts)
+    # só os exports de cupons (cupom_venda_*.xlsx): outras planilhas salvas em Dados/ ficam de fora
+    arquivos = sorted(a for a in PASTA_VENDAS.rglob("cupom_venda*.xlsx") if not a.name.startswith("~$") and "Hoje" not in a.parts)
     # só o mês atual e os meses de referência
     meses = [mes_do_arquivo(a) for a in arquivos]
     conhecidos = [m for m in meses if m]
@@ -196,7 +197,7 @@ def ler_ano_anterior(ini_mes):
     """Mesmo mês do ano anterior (ex.: Dados/Outubro 2025/cupom_venda_2025-10-01_a_2025-10-31.xlsx).
     Mesmas regras do mês atual (só efetivados, brinde fora, sacola descontada). None se não houver arquivo."""
     alvo = (ini_mes.year - 1, ini_mes.month)
-    arqs = sorted(a for a in PASTA_VENDAS.rglob("*.xlsx")
+    arqs = sorted(a for a in PASTA_VENDAS.rglob("cupom_venda*.xlsx")
                   if not a.name.startswith("~$") and "Hoje" not in a.parts and mes_do_arquivo(a) == alvo)
     if not arqs:
         return None, []
@@ -273,6 +274,26 @@ def ler_centros() -> pd.DataFrame:
     c = ler_excel(ARQ_CENTROS)
     c["loja"] = c["BCPS"].map(cod_loja)
     return c.drop_duplicates("loja").set_index("loja")
+
+
+def pessoas_do_cadastro(centros, ids_painel):
+    """Nomes distintos de GVO, GCVO/GPVO e GRVO do dCentros (todos os canais), com os papéis e as lojas do painel.
+    Usados na identificação de quem acessa o painel (aba Uso)."""
+    pessoas = {}
+    for loja, cad in centros.iterrows():
+        for col in ("GVO", "GCVO/GPVO", "GRVO"):
+            nome = txt(cad.get(col))
+            if not nome:
+                continue
+            pe = pessoas.setdefault(nome, {"nome": nome, "papeis": [], "lojas": []})
+            if col not in pe["papeis"]:
+                pe["papeis"].append(col)
+            if loja in ids_painel and loja not in pe["lojas"]:
+                pe["lojas"].append(loja)
+    ordem = {"GRVO": 0, "GCVO/GPVO": 1, "GVO": 2}
+    for pe in pessoas.values():
+        pe["papeis"].sort(key=ordem.get)
+    return sorted(pessoas.values(), key=lambda x: x["nome"])
 
 
 # ---------------------------------------------------------------- Plano de Ação de Boleto Médio
@@ -463,6 +484,7 @@ def main():
                        "diasComVenda": int(ref["data"].nunique())},
         "lojasSemMeta": [{"id": l, "nome": nomes_venda.get(l, l)} for l in sem_meta],
         "planoBM": plano_rede,
+        "pessoas": pessoas_do_cadastro(centros, {l["id"] for l in lojas_out}),
         "anoAnterior": None if aa is None else {"ano": ini_mes.year - 1, "ultimoDia": int(aa["data"].max().day),
                                                 "arquivos": [a.name for a in arqs_aa]},
         "lojas": lojas_out,
