@@ -1180,7 +1180,7 @@ function vUso(ls){
  const hojeStr=dataLocal(new Date()),ids=new Set(ls.map(l=>l.id)),filtrado=S.reg||S.praca||S.gvo||S.loja;
  const acs=USO.dados;
  // pessoas do cadastro no filtro (quem tem loja no filtro) + quem acessou com outro nome
- const pessoas=(D.pessoas||[]).filter(p=>!filtrado||p.lojas.some(x=>ids.has(x)));
+ const pessoas=(D.pessoas||[]).filter(p=>!filtrado||p.interno||p.lojas.some(x=>ids.has(x)));
  const nomes=new Set(pessoas.map(p=>p.nome));
  const outros=[...new Set(acs.map(a=>a.nome))].filter(n=>n&&!(D.pessoas||[]).some(p=>p.nome===n)).map(n=>({nome:n,papeis:[(acs.find(a=>a.nome===n)||{}).papel||'Outro'],lojas:[],outro:true}));
  const lista=[...pessoas,...(filtrado?[]:outros)];
@@ -1192,7 +1192,8 @@ function vUso(ls){
  });
  const [k,dir]=S.sort.uso;
  rows.sort((x,y)=>{const g=r=>k==='nome'?r.p.nome:k==='papel'?r.p.papeis[0]:k==='ult'?r.ult:r[k];const a=g(x),b=g(y);return(a>b?1:a<b?-1:0)*dir});
- const hj=rows.filter(r=>r.hoje&&!r.p.outro).length,mesN=rows.filter(r=>r.n>0&&!r.p.outro).length,tot=pessoas.length;
+ // TIME IAF e nomes digitados aparecem na tabela, mas não contam como gestores nos indicadores
+ const gest=rows.filter(r=>!r.p.outro&&!r.p.interno),hj=gest.filter(r=>r.hoje).length,mesN=gest.filter(r=>r.n>0).length,tot=gest.length;
  const totAc=acs.filter(a=>!filtrado||nomes.has(a.nome)).length;
  const diasCorridos=Math.min(new Date().getDate(),DAYS);
  const quando=s=>s?`${s.slice(8,10)}/${s.slice(5,7)} ${s.slice(11,16)}`:'—';
@@ -1205,7 +1206,7 @@ function vUso(ls){
   </div>
   <div class="card"><div class="card-hd"><div><h2>Uso por gestor</h2><p>${filtrado?'Gestores com loja no filtro':'GVO, GCVO/GPVO e GRVO do cadastro'} · a pessoa se identifica na primeira visita · <button class="lk" data-uso="1">atualizar</button></p></div><span class="icchip t-accent">${ic('activity')}</span></div>
   <div class="tw tall"><table><thead><tr>${sortTh('uso','nome','Gestor')}${sortTh('uso','papel','Papel')}${sortTh('uso','hoje','Hoje')}${sortTh('uso','ult','Último acesso')}${sortTh('uso','dias','Dias com acesso','r')}${sortTh('uso','n','Acessos','r')}${sortTh('uso','mes','Painel do mês','r')}${sortTh('uso','dia','Acomp. do dia','r')}${sortTh('uso','lojas','Lojas filtradas','r')}${sortTh('uso','acoes','Ações','r')}</tr></thead><tbody>
-  ${rows.map(r=>`<tr><td><p class="nm">${esc(r.p.nome)}</p><p class="sub">${r.p.outro?'nome digitado':`${r.p.lojas.length} loja${r.p.lojas.length===1?'':'s'} no painel`}</p></td>
+  ${rows.map(r=>`<tr><td><p class="nm">${esc(r.p.nome)}</p><p class="sub">${r.p.outro?'nome digitado':r.p.interno?'time interno':`${r.p.lojas.length} loja${r.p.lojas.length===1?'':'s'} no painel`}</p></td>
    <td>${esc(r.p.papeis.join(', '))}</td>
    <td>${r.hoje?`<span class="pill p-ok">${ic('circle-check')}Acessou</span>`:'<span class="pill p-bad">Não acessou</span>'}</td>
    <td class="tnum">${quando(r.ult)}</td>

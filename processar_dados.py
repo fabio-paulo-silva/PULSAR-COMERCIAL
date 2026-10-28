@@ -276,6 +276,10 @@ def ler_centros() -> pd.DataFrame:
     return c.drop_duplicates("loja").set_index("loja")
 
 
+# Usuários fora do cadastro de lojas que também aparecem na identificação (interno = não conta como gestor na aba Uso)
+USUARIOS_EXTRAS = [{"nome": "TIME IAF", "papeis": ["IAF"], "lojas": [], "interno": True}]
+
+
 def pessoas_do_cadastro(centros, ids_painel):
     """Nomes distintos de GVO, GCVO/GPVO e GRVO do dCentros (todos os canais), com os papéis e as lojas do painel.
     Usados na identificação de quem acessa o painel (aba Uso)."""
@@ -293,7 +297,7 @@ def pessoas_do_cadastro(centros, ids_painel):
     ordem = {"GRVO": 0, "GCVO/GPVO": 1, "GVO": 2}
     for pe in pessoas.values():
         pe["papeis"].sort(key=ordem.get)
-    return sorted(pessoas.values(), key=lambda x: x["nome"])
+    return sorted(pessoas.values(), key=lambda x: x["nome"]) + [dict(u) for u in USUARIOS_EXTRAS]
 
 
 # ---------------------------------------------------------------- Plano de Ação de Boleto Médio

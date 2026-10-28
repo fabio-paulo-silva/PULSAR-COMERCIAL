@@ -37,8 +37,8 @@
   const sem = t => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   function perguntar(trocar) {
     return new Promise(resolve => {
-      const u = usuario(), ordem = { 'GRVO': 0, 'GCVO/GPVO': 1, 'GVO': 2 };
-      const lista = [...(cfg.pessoas || [])].sort((a, b) => (ordem[(a.papeis || [])[0]] ?? 3) - (ordem[(b.papeis || [])[0]] ?? 3) || a.nome.localeCompare(b.nome, 'pt-BR'));
+      const u = usuario(), ordem = { 'IAF': 0, 'GRVO': 1, 'GCVO/GPVO': 2, 'GVO': 3 };
+      const lista = [...(cfg.pessoas || [])].sort((a, b) => (ordem[(a.papeis || [])[0]] ?? 4) - (ordem[(b.papeis || [])[0]] ?? 4) || a.nome.localeCompare(b.nome, 'pt-BR'));
       let escolhido = u && lista.find(p => p.nome === u.nome) ? u.nome : '';
       const d = document.createElement('dialog');
       d.style.cssText = 'border:1px solid var(--border);border-radius:20px;background:var(--card);color:var(--foreground);padding:24px;max-width:460px;width:calc(100% - 32px);box-shadow:0 20px 40px -16px rgba(0,0,0,.4)';
