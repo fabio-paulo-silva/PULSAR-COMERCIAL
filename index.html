@@ -616,6 +616,7 @@ dialog .hd{display:flex;justify-content:space-between;align-items:center;padding
 dialog .hd h3{font-size:18px}
 .ctx{grid-column:1/-1;border-radius:12px;background:var(--muted);padding:10px 12px;font-size:13px}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--foreground);color:var(--background);border-radius:12px;padding:10px 16px;font-weight:700;font-size:14px;box-shadow:var(--shadow-elevated);display:flex;gap:8px;align-items:center;z-index:50}
+.toast.erro{background:var(--destructive);color:#fff}
 @media (prefers-reduced-motion:no-preference){.fade{animation:fade .35s ease-out}}
 @keyframes fade{from{opacity:.4;transform:translateY(8px)}to{opacity:1;transform:none}}
 </style>
@@ -1045,11 +1046,17 @@ const paraPlanilha=a=>{const l=lojaById(a.loja),c=a.cons?consById(a.cons):null;
 const mesTxt=v=>{v=String(v||'').replace(/^'/,'');if(/^\d{4}-\d{2}$/.test(v))return v;const d=new Date(v);return isNaN(d)?v:`${d.getFullYear()}-${pad(d.getMonth()+1)}`};
 const daPlanilha=r=>({id:Number(r.id),autor:r.autor,mes:mesTxt(r.mes),dia:Number(String(r.dia).replace(/^'/,'')),loja:String(r.loja_id),cons:r.consultor_id||'',tipo:r.tipo,gat:r.gatilho||'',desc:r.descricao||''});
 // POST sem cabeçalho de conteúdo (text/plain) para o navegador não exigir pré-verificação de CORS
-const enviar=corpo=>fetch(PLANILHA.url,{method:'POST',body:JSON.stringify({chave:PLANILHA.chave,...corpo})}).then(r=>r.json()).then(j=>{if(!j.ok)throw new Error(j.erro||'erro');return j});
+// recusa da planilha (ação incompleta etc.) vira erro com .recusa: a fila descarta o item em vez de travar as próximas
+const enviar=corpo=>fetch(PLANILHA.url,{method:'POST',body:JSON.stringify({chave:PLANILHA.chave,...corpo})}).then(r=>r.json()).then(j=>{if(!j.ok){const e=new Error(j.erro||'erro');e.recusa=j.erro!=='chave inválida';throw e}return j});
 async function sincronizar(){
  if(!PLANILHA.url){statusPlan();return}
  try{
-  while(pendentes.length){await enviar(pendentes[0]);pendentes.shift();salvar()}
+  while(pendentes.length){
+   try{await enviar(pendentes[0])}
+   catch(e){if(!e.recusa)throw e;          // sem rede / planilha fora: tenta de novo depois
+    const p=pendentes[0];toast(`Ação não foi para a planilha (${e.message})${p.acao&&p.acao.loja?': '+p.acao.loja:''}`,true)}
+   pendentes.shift();salvar();
+  }
   // lê todas as ações ativas e filtra o mês aqui (não depende do formato em que o Sheets guardou o mês)
   const j=await fetch(`${PLANILHA.url}?chave=${encodeURIComponent(PLANILHA.chave)}`,{cache:'no-store'}).then(r=>r.json());
   if(!j.ok)throw new Error(j.erro);
@@ -1867,13 +1874,13 @@ let CTX=null;
 const isoDia=d=>`${ANO}-${pad(MES+1)}-${pad(d)}`;
 function abrir(t,lojaId,consId){
  CTX=t||null;
- const ls=escopo(),lid=t?t.loja.id:lojaId||S.foco;
- $('dLoja').innerHTML=ls.map(l=>`<option value="${l.id}">${esc(l.nome)}</option>`).join('');$('dLoja').value=lid;
+ const lid=t?t.loja.id:lojaId||S.foco,esc_=escopo(),ls=esc_.some(l=>l.id===lid)?esc_:lojas;
+ $('dLoja').innerHTML=ls.map(l=>`<option value="${l.id}">${esc(l.nome)}</option>`).join('');$('dLoja').value=lid||ls[0].id;
  fillCons(lid,consId||'');
  $('dTipo').value=t?(t.acao||GT[t.g].acao):'Push do time';
  $('dDia').min=isoDia(1);$('dDia').max=isoDia(DAYS);$('dDia').value=isoDia(Math.min(TODAY,DAYS));$('dDesc').value='';
  $('dCtx').innerHTML=t?`<b>Gatilho:</b> ${GT[t.g].nome} · ${esc(t.loja.nome)}<br><b>Meta da ação:</b> ${t.meta}`:'Ação avulsa, sem gatilho associado.';
- try{$('dAutor').value=$('dAutor').value||localStorage.getItem(KEY_AUTOR)||(window.PulsarUso&&PulsarUso.usuario()?PulsarUso.usuario().nome:'')}catch(e){}
+ try{const u=window.PulsarUso&&PulsarUso.usuario();$('dAutor').value=(u&&u.nome)||$('dAutor').value||localStorage.getItem(KEY_AUTOR)||''}catch(e){}
  $('dlg').showModal();icons();
 }
 function fillCons(lid,v){const cs=cons.filter(c=>c.loja===lid&&c.m.dias>0).sort((a,b)=>a.nome.localeCompare(b.nome));$('dCons').innerHTML='<option value="">Loja inteira</option>'+cs.map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join('');$('dCons').value=v||''}
@@ -1883,13 +1890,13 @@ $('dlgX').onclick=$('dlgCancel').onclick=()=>$('dlg').close();
 $('fAcao').addEventListener('submit',e=>{
  e.preventDefault();
  const v=$('dDia').value;if(!v||v.slice(0,7)!==`${ANO}-${pad(MES+1)}`)return;
- const loja=$('dLoja').value;
+ const loja=$('dLoja').value;if(!loja){$('dLoja').focus();return}
  const autor=$('dAutor').value.trim();if(!autor){$('dAutor').focus();return}
  try{localStorage.setItem(KEY_AUTOR,autor)}catch(e){}
  registrar({id:Date.now(),autor,mes:v.slice(0,7),dia:+v.slice(8,10),loja,cons:$('dCons').value,tipo:$('dTipo').value,gat:CTX&&CTX.loja.id===loja?CTX.g:'',desc:$('dDesc').value.trim()});
  $('dlg').close();render();toast(PLANILHA.url?'Ação registrada e enviada para a planilha':'Ação registrada neste navegador');
 });
-function toast(msg){const t=document.createElement('div');t.className='toast';t.innerHTML=`${ic('circle-check')}${esc(msg)}`;document.body.appendChild(t);icons();setTimeout(()=>t.remove(),2600)}
+function toast(msg,erro){const t=document.createElement('div');t.className='toast'+(erro?' erro':'');t.innerHTML=`${ic(erro?'circle-alert':'circle-check')}${esc(msg)}`;document.body.appendChild(t);icons();setTimeout(()=>t.remove(),erro?6000:2600)}
 
 /* ================= Eventos ================= */
 // Monta as opções de cada filtro a partir dos filtros acima dele; zera o que deixou de existir.
