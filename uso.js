@@ -33,23 +33,20 @@
     b.innerHTML = `<span style="opacity:.75">Usuário:</span> <b>${esc(u ? u.nome : 'identificar')}</b>`;
   }
 
-  // Janela de identificação (usa as cores do painel)
+  // Janela de identificação (usa as cores do painel): busca por nome, sem diferenciar acento e maiúscula
+  const sem = t => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   function perguntar(trocar) {
     return new Promise(resolve => {
-      const u = usuario();
-      const grupos = { 'GRVO': [], 'GCVO/GPVO': [], 'GVO': [] };
-      (cfg.pessoas || []).forEach(p => { const g = (p.papeis || ['GVO'])[0]; (grupos[g] = grupos[g] || []).push(p); });
-      const opt = p => `<option value="${esc(p.nome)}" data-papel="${esc((p.papeis || []).join(', '))}" ${u && u.nome === p.nome ? 'selected' : ''}>${esc(p.nome)}${p.papeis && p.papeis.length > 1 ? ' · ' + esc(p.papeis.join(', ')) : ''}</option>`;
+      const u = usuario(), ordem = { 'GRVO': 0, 'GCVO/GPVO': 1, 'GVO': 2 };
+      const lista = [...(cfg.pessoas || [])].sort((a, b) => (ordem[(a.papeis || [])[0]] ?? 3) - (ordem[(b.papeis || [])[0]] ?? 3) || a.nome.localeCompare(b.nome, 'pt-BR'));
+      let escolhido = u && lista.find(p => p.nome === u.nome) ? u.nome : '';
       const d = document.createElement('dialog');
-      d.style.cssText = 'border:1px solid var(--border);border-radius:20px;background:var(--card);color:var(--foreground);padding:24px;max-width:440px;width:calc(100% - 32px);box-shadow:0 20px 40px -16px rgba(0,0,0,.4)';
-      d.innerHTML = `<form method="dialog" style="display:flex;flex-direction:column;gap:14px">
+      d.style.cssText = 'border:1px solid var(--border);border-radius:20px;background:var(--card);color:var(--foreground);padding:24px;max-width:460px;width:calc(100% - 32px);box-shadow:0 20px 40px -16px rgba(0,0,0,.4)';
+      d.innerHTML = `<form method="dialog" style="display:flex;flex-direction:column;gap:12px">
         <h2 style="font-size:20px;margin:0">Quem está acessando?</h2>
-        <p style="margin:0;color:var(--muted-fg);font-size:14px">Escolha seu nome para acompanharmos o uso do PULSAR. A escolha fica salva neste navegador.</p>
-        <select id="usoNome" required style="height:40px;width:100%">
-          <option value="">Selecione…</option>
-          ${Object.entries(grupos).filter(([, l]) => l.length).map(([g, l]) => `<optgroup label="${g}">${l.map(opt).join('')}</optgroup>`).join('')}
-          <option value="__outro">Outro nome…</option>
-        </select>
+        <p style="margin:0;color:var(--muted-fg);font-size:14px">Digite parte do seu nome e clique nele. A escolha fica salva neste navegador.</p>
+        <input id="usoBusca" type="search" autocomplete="off" placeholder="Buscar nome…" value="${esc(escolhido)}" style="height:40px;width:100%">
+        <div id="usoLista" role="listbox" style="max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:12px;padding:4px"></div>
         <input id="usoOutro" placeholder="Seu nome e função" style="height:40px;width:100%;display:none">
         <p style="margin:0;color:var(--muted-fg);font-size:12px">Seu acesso (nome, data e hora, página e filtros usados) fica registrado na planilha do PULSAR.</p>
         <div style="display:flex;justify-content:flex-end;gap:8px">
@@ -57,20 +54,42 @@
           <button type="submit" class="btn" style="background:var(--primary);color:var(--primary-fg);border:0;border-radius:10px;padding:9px 16px;font-weight:700">Entrar</button>
         </div></form>`;
       document.body.appendChild(d);
-      const sel = d.querySelector('#usoNome'), outro = d.querySelector('#usoOutro');
-      sel.addEventListener('change', () => { outro.style.display = sel.value === '__outro' ? 'block' : 'none'; outro.required = sel.value === '__outro'; });
+      const busca = d.querySelector('#usoBusca'), box = d.querySelector('#usoLista'), outro = d.querySelector('#usoOutro');
+      const item = (nome, sub, val, on) => `<button type="button" role="option" data-v="${esc(val)}" style="display:flex;justify-content:space-between;gap:8px;width:100%;text-align:left;border:0;border-radius:8px;padding:8px 10px;cursor:pointer;background:${on ? 'var(--primary)' : 'transparent'};color:${on ? 'var(--primary-fg)' : 'inherit'};font-weight:${on ? 800 : 600}"><span>${esc(nome)}</span><small style="opacity:.7;font-weight:600">${esc(sub)}</small></button>`;
+      let visiveis = [];
+      const desenhar = () => {
+        const q = sem(busca.value).trim();
+        visiveis = lista.filter(p => !q || sem(p.nome).includes(q) || sem((p.papeis || []).join(' ')).includes(q));
+        box.innerHTML = visiveis.map(p => item(p.nome, (p.papeis || []).join(', '), p.nome, escolhido === p.nome)).join('') +
+          (visiveis.length ? '' : `<p style="margin:8px 10px;color:var(--muted-fg);font-size:13px">Nenhum nome encontrado.</p>`) +
+          item('Outro nome…', '', '__outro', escolhido === '__outro');
+      };
+      const escolher = v => {
+        escolhido = v;
+        outro.style.display = v === '__outro' ? 'block' : 'none'; outro.required = v === '__outro';
+        if (v && v !== '__outro') busca.value = v;
+        desenhar();
+        if (v === '__outro') outro.focus();
+      };
+      busca.addEventListener('input', () => { if (escolhido && busca.value !== escolhido) escolhido = ''; desenhar(); });
+      busca.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); if (visiveis.length) escolher(visiveis[0].nome); else escolher('__outro'); } });
+      box.addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (b) escolher(b.dataset.v); });
       d.addEventListener('cancel', e => { if (!trocar) e.preventDefault(); });
       const can = d.querySelector('#usoCancelar'); if (can) can.onclick = () => { d.close(); d.remove(); resolve(u); };
       d.querySelector('form').addEventListener('submit', e => {
-        const nome = sel.value === '__outro' ? outro.value.trim() : sel.value;
-        if (!nome) { e.preventDefault(); return; }
-        const papel = sel.value === '__outro' ? 'Outro' : (sel.selectedOptions[0].dataset.papel || '');
+        // sem clicar, vale o nome digitado se for exato (ou o único resultado da busca)
+        if (!escolhido) { const ex = lista.find(p => sem(p.nome) === sem(busca.value)) || (visiveis.length === 1 ? visiveis[0] : null); if (ex) escolhido = ex.nome; }
+        const nome = escolhido === '__outro' ? outro.value.trim() : escolhido;
+        if (!nome) { e.preventDefault(); busca.focus(); return; }
+        const pe = lista.find(p => p.nome === nome), papel = escolhido === '__outro' ? 'Outro' : (pe ? (pe.papeis || []).join(', ') : '');
         gravar(KEY_USUARIO, { nome, papel });
         gravar(KEY_ULT, {});                 // pessoa nova: o próximo acesso é registrado
         d.remove(); selo(); resolve(usuario());
         if (window.PulsarUso.aoTrocar) window.PulsarUso.aoTrocar(usuario());
       });
+      desenhar();
       d.showModal();
+      busca.focus(); busca.select();
     });
   }
 
