@@ -1166,6 +1166,7 @@ let USO={mes:null,dados:null,em:0,erro:''};
 async function carregarUso(force){
  const mes=`${ANO}-${pad(MES+1)}`;
  if(!force&&USO.mes===mes&&USO.dados&&Date.now()-USO.em<120000)return;
+ if(!window.PulsarUso){USO={mes,dados:null,em:Date.now(),erro:'uso'};return}
  try{USO={mes,dados:await PulsarUso.acessos(mes),em:Date.now(),erro:''};if(!USO.dados)USO.erro='script'}
  catch(e){USO={mes,dados:null,em:Date.now(),erro:'rede'}}
 }
@@ -1173,7 +1174,7 @@ const dataLocal=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())
 function vUso(ls){
  if(!USO.dados&&!USO.erro){$('view').innerHTML='<section class="sec"><p class="mf">Carregando os acessos…</p></section>';carregarUso().then(()=>{if(S.tab==='uso')render()});return}
  if(!USO.dados){
-  $('view').innerHTML=`<section class="sec"><div class="card pad"><h2 style="font-size:18px">Os acessos ainda não estão disponíveis</h2><p class="mf">${USO.erro==='script'?'O Apps Script da planilha ainda é a versão antiga. Republique o <code>apps-script/Codigo.gs</code> (Implantar &gt; Gerenciar implantações &gt; editar &gt; Nova versão) para começar a registrar e ler os acessos.':'Não foi possível falar com a planilha agora. Tente de novo em alguns minutos.'}</p></div></section>`;
+  $('view').innerHTML=`<section class="sec"><div class="card pad"><h2 style="font-size:18px">Os acessos ainda não estão disponíveis</h2><p class="mf">${USO.erro==='uso'?'O arquivo <code>uso.js</code> não foi publicado junto com o painel.':USO.erro==='script'?'O Apps Script da planilha ainda é a versão antiga. Republique o <code>apps-script/Codigo.gs</code> (Implantar &gt; Gerenciar implantações &gt; editar &gt; Nova versão) para começar a registrar e ler os acessos.':'Não foi possível falar com a planilha agora. Tente de novo em alguns minutos.'}</p></div></section>`;
   return;
  }
  const hojeStr=dataLocal(new Date()),ids=new Set(ls.map(l=>l.id)),filtrado=S.reg||S.praca||S.gvo||S.loja;
@@ -1984,7 +1985,8 @@ function cabecalho(){
 fetch('Ciclo/ciclo_atual.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null).then(c=>{CICLO=c}).then(()=>fetch('data/pulsar.json',{cache:'no-store'})).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(j=>{
  init(j);cabecalho();filtroInicial();fillFiltros();
  // identificação de quem acessa (primeira visita) antes do primeiro registro de uso
- PulsarUso.iniciar({pessoas:D.pessoas||[],planilha:PLANILHA,ambiente:CONF.ambiente,pagina:'mes'}).then(render);
+ // sem o uso.js (ex.: site publicado sem o arquivo), o painel funciona normalmente, só sem registrar o uso
+ if(window.PulsarUso)PulsarUso.iniciar({pessoas:D.pessoas||[],planilha:PLANILHA,ambiente:CONF.ambiente,pagina:'mes'}).then(render).catch(()=>{});
  render();
  sincronizar().then(render);setInterval(()=>sincronizar().then(render),120000);
 }).catch(err=>{
