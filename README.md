@@ -58,7 +58,7 @@ O indicador de boletos é **% dos boletos que a meta pede**: boletos de venda ÷
 - **Garantir (o número de hoje):** base = boletos do mesmo dia da semana da mesma semana do ano passado (364 dias antes: 14/10/2026, quarta = 15/10/2025, quarta). Boletos que a meta pede = meta de hoje ÷ BM alvo.
   - Se a meta pede até **+30%** de boletos sobre essa base: garantir esses boletos (no mínimo o mesmo do ano passado). Ação de fluxo: canal da loja ou item do ciclo.
   - Se pede mais de +30%: boletos ficam em +30% e o resto vem do **boleto médio** (BM = meta de hoje ÷ boletos com +30%, dividido entre IPB e PM na proporção atual). Ação: BT e BP no fechamento, combos presenteáveis e sarrafos do Compre e Ganhe do ciclo.
-  - **Boleto médio máximo de R$ 240** (`BM_MAX`): se o BM necessário passar disso, a meta é distribuída em mais boletos (além dos +30%) até o BM ficar em R$ 240. Vale também para os boletos e o BM necessários do card Meta de hoje e da hoje.html.
+  - **Boleto médio máximo = o maior BM do cluster** (BM de venda no mês, entre as lojas do mesmo cluster com 200+ boletos; QDB fora): se o BM necessário passar disso, a meta é distribuída em mais boletos (além dos +30%) até o BM ficar nesse máximo. Vale também para os boletos e o BM necessários do card Meta de hoje e da hoje.html.
   - Sem base do ano passado (loja nova ou fim do mês): o indicador abaixo do alvo que mais tira receita.
 - **Como:** canal da própria loja que mais rende contra o cluster (boletos) ou o item do ciclo; IPB sempre com BT e BP.
 - **Registro:** a ação registrada pelo card leva o indicador (coluna gatilho) e a meta ("Meta: 82 boletos hoje" na descrição). O **placar de ontem** compara essa meta com o que a loja (ou o consultor) fez no dia.

@@ -749,7 +749,7 @@ function init(json){
  cons=juntaDigitais(D.consultores);
  PB=D.planoBM||null;if(PB&&PB.b1Meta)F.b1=PB.b1Meta;
  SEL=new Set(Array.from({length:LAST},(_,i)=>i+1));
- recalc();
+ recalc();calcBmMax();
 }
 // Consultores digitais (WhatsApp, várias lojas; lista em processar_dados.py): as entradas de cada loja viram uma pessoa só.
 // A "loja" dela é a de maior receita; "lojas" guarda todas. Fica fora do time das lojas e é comparada com o grupo digital.
@@ -1433,8 +1433,15 @@ const IND={bol:{n:'Boletos',g:'fluxo'},ipb:{n:'IPB',g:'ipb'},pm:{n:'Preço médi
 const FMT={bol:v=>`${fx(v)} boletos`,ipb:v=>`IPB ${fx(v,2)}`,pm:v=>`PM ${brl(v,2)}`,bm:v=>`BM ${brl(v)}`};
 // Crescimento máximo de boletos contra o mesmo dia da semana do ano passado. Acima disso, o que falta vem do boleto médio.
 const CRESC_MAX_BOL=.30;
-// Boleto médio máximo que se pede no dia: acima disso a meta é distribuída em mais boletos (além dos +30%)
-const BM_MAX=240;
+// Boleto médio máximo que se pede no dia: o maior BM (de venda, no mês) entre as lojas do mesmo cluster
+// (QDB fora; só lojas com pelo menos 200 boletos). Acima dele, a meta é distribuída em mais boletos (além dos +30%).
+let BMMAX={};
+function calcBmMax(){
+ BMMAX={};
+ lojas.forEach(l=>{if(/^qdb/i.test(l.nome))return;const b=sum(l.bol);if(b<200)return;const v=sum(l.rec)/b,c=l.cluster||'—';
+  if(!BMMAX[c]||v>BMMAX[c].v)BMMAX[c]={v,loja:l}});
+}
+const bmMax=l=>{const x=BMMAX[l.cluster||'—'];return x?x:{v:Infinity,loja:null}};
 // Mesmo dia da semana da mesma semana do ano passado: 364 dias antes (14/10/2026, quarta = 15/10/2025, quarta).
 // Sem 29/02 no meio, é o dia seguinte do calendário do ano passado. Fora do mês do arquivo do ano passado: sem base.
 const diaAA=()=>TODAY+1<=DAYS?TODAY+1:null;
@@ -1452,9 +1459,9 @@ function decisao(l){
   const teto=bolAA*(1+CRESC_MAX_BOL),cresc=need/bolAA-1;
   if(need<=teto){const alvo=Math.max(need,bolAA);
    return{...base,k:'bol',g:'fluxo',alvo,atual:base.bol7,cresc:alvo/bolAA-1,meta:`Meta: ${FMT.bol(alvo)} hoje`}}
-  // BM acima de R$ 240: os boletos sobem até o BM ficar em R$ 240
-  const bolN=Math.max(teto,m.hoje/BM_MAX),bmN=m.hoje/bolN,kk=m.ipb&&m.pm?Math.sqrt(bmN/(m.ipb*m.pm)):1;
-  return{...base,k:'bm',g:'bmsaud',alvo:bmN,bolTeto:bolN,cresc,limBM:bolN>teto+.5,ipbN:m.ipb*kk,pmN:m.pm*kk,atual:m.bm,
+  // BM acima do maior BM do cluster: os boletos sobem até o BM ficar nesse máximo
+  const mx=bmMax(l),bolN=Math.max(teto,m.hoje/mx.v),bmN=m.hoje/bolN,kk=m.ipb&&m.pm?Math.sqrt(bmN/(m.ipb*m.pm)):1;
+  return{...base,k:'bm',g:'bmsaud',alvo:bmN,bolTeto:bolN,cresc,limBM:bolN>teto+.5,bmMax:mx,ipbN:m.ipb*kk,pmN:m.pm*kk,atual:m.bm,
    meta:`Meta: BM ${brl(bmN)} hoje (${fx(bolN)} boletos, IPB ${fx(m.ipb*kk,2)}, PM ${brl(m.pm*kk,2)})`};
  }
  // Sem ano passado (loja nova ou fim do mês): o indicador abaixo do alvo que mais tira receita
@@ -1469,8 +1476,8 @@ function necessarioHoje(ls,a){
  let bol=0,soma=0;const dA=diaAA();
  ls.forEach(l=>{const m=M[l.id];if(!(m.hoje>0))return;
   const bm=m.bmAlvoV||m.bm,need=bm?m.hoje/bm:0,aa=dA&&l.aa?l.aa.bol[dA-1]:0;
-  // mesma regra do "Garantir": até +30% sobre o ano passado; BM máximo de R$ 240 (acima disso, mais boletos)
-  bol+=Math.max(aa>0?Math.min(Math.max(need,aa),aa*(1+CRESC_MAX_BOL)):need,m.hoje/BM_MAX);soma+=m.hoje});
+  // mesma regra do "Garantir": até +30% sobre o ano passado; BM no máximo o maior do cluster (acima disso, mais boletos)
+  bol+=Math.max(aa>0?Math.min(Math.max(need,aa),aa*(1+CRESC_MAX_BOL)):need,m.hoje/bmMax(l).v);soma+=m.hoje});
  const bm=bol?soma/bol:(a.bmAlvoV||a.bm),kk=a.ipb&&a.pm?Math.sqrt(bm/(a.ipb*a.pm)):1;
  return{bol:bm?a.hoje/bm:0,bm,ipb:a.ipb*kk,pm:a.pm*kk};
 }
@@ -1484,7 +1491,7 @@ function b1Item(m,l){
 function garantirHTML(d){
  const m=M[d.loja.id],aa=d.bolAA>0?` vs ${fx(d.bolAA)} na ${dataAA()}`:'';
  if(d.k==='bol')return `<div class="mover"><span>Garantir</span><b>${FMT.bol(d.alvo)}</b><small>${d.bolAA>0?(d.cresc>.005?`${pct(d.cresc,0,true)}${aa}`:`no mínimo o mesmo da ${dataAA()} (a meta de hoje pede menos)`):`alvo pela meta e o BM alvo`} · média dos últimos 7 dias: ${fx(d.bol7)}</small></div>`;
- if(d.k==='bm')return `<div class="mover"><span>Garantir</span><b>${FMT.bol(d.bolTeto)} · BM ${brl(d.alvo)}</b><small>A meta pede ${pct(d.cresc,0,true)} de boletos${aa}. ${d.limBM?`Com o boleto médio máximo de ${brl(BM_MAX)}, a meta vira ${fx(d.bolTeto)} boletos (${pct(d.bolTeto/d.bolAA-1,0,true)})`:`Boletos até +${pct(CRESC_MAX_BOL)}; o resto vem do boleto médio`}: <b>IPB ${fx(d.ipbN,2)}</b> (hoje ${fx(m.ipb,2)}) e <b>PM ${brl(d.pmN,2)}</b> (hoje ${brl(m.pm,2)}).</small></div>`;
+ if(d.k==='bm')return `<div class="mover"><span>Garantir</span><b>${FMT.bol(d.bolTeto)} · BM ${brl(d.alvo)}</b><small>A meta pede ${pct(d.cresc,0,true)} de boletos${aa}. ${d.limBM?`O maior BM do cluster ${esc(nomeCluster(d.loja.cluster).toLowerCase())} é ${brl(d.bmMax.v)} (${esc(d.bmMax.loja.nome)}); com ele, a meta vira ${fx(d.bolTeto)} boletos (${pct(d.bolTeto/d.bolAA-1,0,true)})`:`Boletos até +${pct(CRESC_MAX_BOL)}; o resto vem do boleto médio`}: <b>IPB ${fx(d.ipbN,2)}</b> (hoje ${fx(m.ipb,2)}) e <b>PM ${brl(d.pmN,2)}</b> (hoje ${brl(m.pm,2)}).</small></div>`;
  return `<div class="mover"><span>Garantir</span><b>${FMT[d.k](d.alvo)}</b><small>no período: ${FMT[d.k](d.atual)}</small></div>`;
 }
 // Como fazer: canal da própria loja (boletos) ou o item do ciclo para o indicador; IPB sempre cita BT e BP

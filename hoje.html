@@ -181,7 +181,7 @@ tr.click{cursor:pointer} tr.click:hover td{background:var(--muted)}
    Boletos necessários: regra do "Garantir" (até +30% sobre o mesmo dia da semana do ano passado; o resto no boleto médio).
    BT: boletos com Boleto Turbinado ÷ boletos com item pago. BP: boletos com Boleto Promocional ÷ boletos a partir de R$ 120. */
 const CONF=window.PULSAR_CONFIG||{ambiente:'desenvolvimento'};
-const F={bt:.32,bp:.30},CRESC_MAX_BOL=.30,BM_MAX=240,ATUALIZA_MIN=5;   // BM_MAX: boleto médio máximo pedido no dia
+const F={bt:.32,bp:.30},CRESC_MAX_BOL=.30,ATUALIZA_MIN=5;
 // Time da loja: quem vendeu nos últimos 7 dias e tem receita no mês de pelo menos 20% da mediana dos colegas.
 // Abaixo disso é venda pontual (digital, apoio de outra loja) e o consultor não entra na divisão da meta.
 const MIN_TIME=.2;
@@ -215,6 +215,8 @@ const linear=()=>Array.from({length:24},(_,i)=>i>=9&&i<22?1/13:0);    // sem his
 function preparar(){
  const[y,mo,d]=P.ontem.split('-').map(Number);ANO=y;MES=mo-1;LAST=d;TODAY=d+1;DAYS=P.diasMes;
  LJ=P.lojas.filter(l=>sum(l.meta)>0);CURVA_REDE=H.curvaRede||linear();
+ // BM máximo pedido no dia = maior BM do mês entre as lojas do mesmo cluster (QDB fora; lojas com 200+ boletos)
+ const BMMAX={};LJ.forEach(l=>{if(/^qdb/i.test(l.nome))return;const b=sum(l.bol);if(b<200)return;const v=sum(l.rec)/b,c=l.cluster||'—';if(!BMMAX[c]||v>BMMAX[c])BMMAX[c]=v});
  const th={};H.lojas.forEach(t=>th[t.id]=t);
  X={};
  LJ.forEach(l=>{
@@ -224,7 +226,7 @@ function preparar(){
   const bolM=sum(l.bol),itM=sum(l.it),refBM=l.ref&&l.ref.bol?l.ref.rec/l.ref.bol:(bolM?rec/bolM:0);
   const fr=l.ref&&l.ref.bol?(l.ref.bol+(l.ref.br||0))/l.ref.bol:1,bmA=l.plano&&l.plano.bmAlvo?l.plano.bmAlvo*fr:refBM;
   const dA=TODAY+1<=DAYS?TODAY+1:null,bolAA=dA&&l.aa?l.aa.bol[dA-1]:0,recAA=dA&&l.aa?l.aa.rec[dA-1]:0;
-  const need=bmA?hoje/bmA:0,bolNec=Math.max(bolAA>0?Math.min(Math.max(need,bolAA),bolAA*(1+CRESC_MAX_BOL)):need,hoje/BM_MAX);
+  const need=bmA?hoje/bmA:0,bolNec=Math.max(bolAA>0?Math.min(Math.max(need,bolAA),bolAA*(1+CRESC_MAX_BOL)):need,BMMAX[l.cluster||'—']?hoje/BMMAX[l.cluster||'—']:0);
   const t=th[l.id]||{rec:0,bol:0,it:0,b1:0,br:0,bt:0,bp:0,bpe:0,h:Array(24).fill(0),curva:null};
   const curva=misturar(t.curva,CURVA_REDE);
   X[l.id]={l,mh,recup,hoje,ate,rec,bolNec,bmNec:bolNec?hoje/bolNec:0,ipbM:bolM?itM/bolM:0,pmM:itM?rec/itM:0,recAA,bolAA,t,curva,
