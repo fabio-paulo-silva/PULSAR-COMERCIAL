@@ -1481,12 +1481,6 @@ function necessarioHoje(ls,a){
  const bm=bol?soma/bol:(a.bmAlvoV||a.bm),kk=a.ipb&&a.pm?Math.sqrt(bm/(a.ipb*a.pm)):1;
  return{bol:bm?a.hoje/bm:0,bm,ipb:a.ipb*kk,pm:a.pm*kk};
 }
-// Item de "Como" para o %B1: o BT como 2º item do boleto de 1 item (2º item natural do ciclo, quando houver)
-function b1Item(m,l){
- const c=m.b1c;if(!c||c.gap<=.01)return '';
- const nat=acoesCiclo('b1').find(x=>/Body Spray|Shower|2º item/i.test(`${x.acao} ${x.detalhe||''}`));
- return `<li><span class="t">Baixar o %B1 de ${pct(c.v)} para ${pct(c.best.v)}</span> (${esc(c.best.loja.nome)}, melhor do cluster): em todo boleto de 1 item, BT no fechamento${nat?`; 2º item natural: ${esc(nat.acao)}`:''}.</li>`;
-}
 // Bloco "Garantir": o número de hoje e a base de comparação
 function garantirHTML(d){
  const m=M[d.loja.id],aa=d.bolAA>0?` vs ${fx(d.bolAA)} na ${dataAA()}`:'';
@@ -1494,23 +1488,15 @@ function garantirHTML(d){
  if(d.k==='bm')return `<div class="mover"><span>Garantir</span><b>${FMT.bol(d.bolTeto)} · BM ${brl(d.alvo)}</b><small>A meta pede ${pct(d.cresc,0,true)} de boletos${aa}. ${d.limBM?`O maior BM do cluster ${esc(nomeCluster(d.loja.cluster).toLowerCase())} é ${brl(d.bmMax.v)} (${esc(d.bmMax.loja.nome)}); com ele, a meta vira ${fx(d.bolTeto)} boletos (${pct(d.bolTeto/d.bolAA-1,0,true)})`:`Boletos até +${pct(CRESC_MAX_BOL)}; o resto vem do boleto médio`}: <b>IPB ${fx(d.ipbN,2)}</b> (hoje ${fx(m.ipb,2)}) e <b>PM ${brl(d.pmN,2)}</b> (hoje ${brl(m.pm,2)}).</small></div>`;
  return `<div class="mover"><span>Garantir</span><b>${FMT[d.k](d.alvo)}</b><small>no período: ${FMT[d.k](d.atual)}</small></div>`;
 }
-// Como fazer: canal da própria loja (boletos) ou o item do ciclo para o indicador; IPB sempre cita BT e BP
+// Como fazer: listas fixas e diretas para o gerente (boletos e IPB). Card de boletos + boleto médio mostra as duas.
+const ACOES_BOL=['Potencializar Calçada Perfumada','Ativação de clientes via WhatsApp','Prospecção de vendas in company','Potencialização da Sacola Premiada na rua'];
+const ACOES_IPB=['Grande foco em BP e BT','Diminuição do % de B1','Potencialização Boti Outlet','Revisar todas as alavancas do ciclo','Confecção de combos'];
 function comoDecisao(d){
- const m=M[d.loja.id];
- if(d.k==='bol'){const fl=acaoFluxoLoja({loja:d.loja}),pr=praticaPara(m,'fluxo');
-  if(fl&&pr)return{html:fl,tipo:TIPO_CANAL[pr.k]||'Calçada Perfumada',txt:`${PRAT[pr.k].n}: ${PRAT[pr.k].como}`}}
- if(d.k==='bm'){
-  const it=[acoesCiclo('ipb')[0]||{tipo:'BT e BP no fechamento',acao:'BT e BP no fechamento',detalhe:'BT em todo boleto e BP por sarrafo'},
-   ...acoesCiclo('pm').filter(x=>x.tipo!=='Transferência de mercadoria').slice(0,2)];
-  return{html:`<div class="do">${ic('shopping-bag')}<div><b>Boleto médio: BT e BP, combos presenteáveis e sarrafos do Compre e Ganhe</b>
-   <span>BT em ${pct(m.pBT)} dos boletos (saudável ${pct(F.bt)}) e BP em ${pct(m.pBP)} dos boletos a partir de R$ 120 (saudável ${pct(F.bp)}).</span>
-   <ul class="blt">${b1Item(m,d.loja)}${it.map(x=>`<li><span class="t">${esc(x.acao)}</span>${x.detalhe?': '+esc(x.detalhe):''}</li>`).join('')}</ul></div></div>`,
-   tipo:'Sarrafo do ciclo',txt:it.map(x=>x.acao).join(' · ')};
- }
- const c=acoesCiclo(d.g)[0],G=GT[d.g],p=c||{tipo:G.acao,acao:G.acao,detalhe:G.roteiro[0]};
- const b1=d.k==='ipb'&&m.b1c&&m.b1c.gap>.01?` Baixar o %B1 de ${pct(m.b1c.v)} para ${pct(m.b1c.best.v)} (${esc(m.b1c.best.loja.nome)}) com o BT no boleto de 1 item.`:'';
- const extra=d.k==='ipb'?`${b1} BT em ${pct(m.pBT)} dos boletos (saudável ${pct(F.bt)}) e BP em ${pct(m.pBP)} dos boletos a partir de R$ 120 (saudável ${pct(F.bp)}): oferecer no fechamento de todo boleto.`:'';
- return{html:`<div class="do">${ic(TIPOS[p.tipo]||'circle-dot')}<div><b>${esc(p.acao)}</b><span>${esc(p.detalhe||'')}${extra}</span></div></div>`,tipo:TIPOS[p.tipo]?p.tipo:G.acao,txt:`${p.acao}${p.detalhe?': '+p.detalhe:''}`};
+ const bloco=(icn,tit,l)=>`<div class="do">${ic(icn)}<div><b>${tit}</b><ul class="blt">${l.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></div>`;
+ const bol=d.k==='bol'||d.k==='bm',ipb=d.k!=='bol';
+ const html=(bol?bloco('receipt','Para mais boletos',ACOES_BOL):'')+(ipb?bloco('shopping-bag','Para mais IPB',ACOES_IPB):'');
+ const lista=[...(bol?ACOES_BOL:[]),...(ipb?ACOES_IPB:[])];
+ return{html,tipo:bol?'Calçada Perfumada':'BT e BP no fechamento',txt:lista.join(' · ')};
 }
 const sevDec=d=>{const r=d.valor/(M[d.loja.id].hoje||1);return r>=.25?'crit':r>=.1?'alto':'medio'};
 const acaoHoje=l=>acoesMes().some(x=>x.dia===TODAY&&x.loja===l.id);
