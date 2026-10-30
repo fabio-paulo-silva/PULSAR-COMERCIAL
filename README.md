@@ -109,5 +109,5 @@ Primeiro a tabela dos consultores de loja e a dos digitais, com receita/dia, bol
 - A identificação é declarada pela própria pessoa (não há login).
 
 ## Avaliação das ações (aba Lojas)
-- Cada ação registrada mostra **IPB, preço médio e BM do dia seguinte ao dia da ação** contra a média dos 7 dias com venda antes da ação. Se a ação foi para um consultor, a conta é com a venda dele; senão, a da loja.
+- Cada ação registrada mostra **IPB, preço médio e BM do dia seguinte ao dia da ação** contra a média dos **3 últimos dias iguais da semana** (ex.: quinta contra as 3 quintas anteriores; no começo do mês, os que houver). Se a ação foi para um consultor, a conta é com a venda dele; senão, a da loja.
 - Veredito: **Melhorou** (2 dos 3 indicadores subiram), **Piorou** (2 dos 3 caíram) ou **Misto**. Sem o dia seguinte fechado: "Aguardando"; sem venda no dia: "Sem venda para medir". A coluna Ação da tabela de lojas mostra o veredito da última ação.

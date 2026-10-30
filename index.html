@@ -1710,28 +1710,30 @@ function drawDaily(m,la,sel,el){
   g+=`<g class="mk ${on?'on':''}" data-acsel="${arr[0].id}" style="cursor:pointer"><title>${esc(arr.map(a=>`${dd(d)} · ${a.tipo}${a.desc?': '+a.desc:''}`).join('\n'))}</title><line x1="${xa}" x2="${xa}" y1="${T-14}" y2="${T+ih}"/><circle cx="${xa}" cy="${T-16}" r="${on?11:9}"/><text x="${xa}" y="${T-12.5}" text-anchor="middle">${arr.length}</text></g>`});
  $(el).innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Venda diária da loja em % da meta do dia, com o antes e o depois da ação selecionada"><defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ahp"/></marker></defs>${g}</svg>`;
 }
-// Avaliação direta da ação: IPB, preço médio e BM no DIA SEGUINTE ao dia da ação contra a média dos 7 dias com venda
-// antes da ação (da loja, ou do consultor quando a ação é para ele). Veredito: 2 de 3 subiram = melhorou; 2 de 3 caíram = piorou.
+// Avaliação direta da ação: IPB, preço médio e BM no DIA SEGUINTE ao dia da ação contra a média dos 3 últimos dias
+// iguais da semana (ex.: quinta contra as 3 quintas anteriores; no começo do mês, os que houver), da loja ou do consultor
+// quando a ação é para ele. Veredito: 2 de 3 subiram = melhorou; 2 de 3 caíram = piorou; senão, misto.
 function avaliarAcao(x){
  const l=lojaById(x.loja),c=x.cons?consById(x.cons):null,src=c||l;if(!src)return null;
  const d1=x.dia+1,ind=(r,b,i)=>({ipb:b?i/b:0,pm:i?r/i:0,bm:b?r/b:0});
  if(d1>LAST)return{wait:true,d1};
- let r=0,b=0,i=0,n=0;for(let d=x.dia-1;d>=1&&n<7;d--)if(src.bol[d-1]>0){r+=src.rec[d-1];b+=src.bol[d-1];i+=src.it[d-1];n++}
+ let r=0,b=0,i=0,n=0;for(let d=d1-7;d>=1&&n<3;d-=7)if(src.bol[d-1]>0){r+=src.rec[d-1];b+=src.bol[d-1];i+=src.it[d-1];n++}
  if(!b)return{semBase:true,d1};
  if(!(src.bol[d1-1]>0))return{semVenda:true,d1};
  const antes=ind(r,b,i),dep=ind(src.rec[d1-1],src.bol[d1-1],src.it[d1-1]),v={};
  for(const k in antes)v[k]=antes[k]?dep[k]/antes[k]-1:0;
  const sobe=Object.values(v).filter(z=>z>.005).length,cai=Object.values(v).filter(z=>z<-.005).length;
- return{d1,antes,dep,v,quem:c?c.nome:'loja',ver:sobe>=2?'melhorou':cai>=2?'piorou':'misto'};
+ return{d1,n,antes,dep,v,quem:c?c.nome:'loja',ver:sobe>=2?'melhorou':cai>=2?'piorou':'misto'};
 }
+const DSEM=['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
 const VER={melhorou:['p-ok','Melhorou','trending-up'],piorou:['p-bad','Piorou','trending-down'],misto:['p-warn','Misto','minus']};
 const avalPill=a=>!a?'':a.wait?`<span class="pill">Aguardando ${dd(a.d1)}</span>`:a.semBase||a.semVenda?`<span class="pill">Sem venda para medir</span>`:`<span class="pill ${VER[a.ver][0]}">${ic(VER[a.ver][2])}${VER[a.ver][1]}</span>`;
 function avalHTML(x){
  const a=avaliarAcao(x);if(!a)return '';
  if(a.wait)return `<p class="aval mf">${ic('hourglass')}Resultado em ${dd(a.d1)}, com o fechamento do dia seguinte</p>`;
- if(a.semBase||a.semVenda)return `<p class="aval mf">${ic('circle-slash')}${a.semVenda?`Sem venda em ${dd(a.d1)}`:'Sem venda nos 7 dias antes'} para medir</p>`;
+ if(a.semBase||a.semVenda)return `<p class="aval mf">${ic('circle-slash')}${a.semVenda?`Sem venda em ${dd(a.d1)}`:`Sem venda nas ${DSEM[new Date(ANO,MES,a.d1).getDay()]}s anteriores`} para medir</p>`;
  const f={ipb:v=>fx(v,2),pm:v=>brl(v,2),bm:v=>brl(v)},nm={ipb:'IPB',pm:'Preço médio',bm:'BM'};
- return `<div class="aval">${avalPill(a)}<span class="mf">${dd(a.d1)} × 7 dias antes${a.quem!=='loja'?' · '+esc(a.quem):''}</span>
+ return `<div class="aval">${avalPill(a)}<span class="mf">${DSEM[new Date(ANO,MES,a.d1).getDay()]} ${dd(a.d1)} × média de ${a.n===1?'1':a.n} ${DSEM[new Date(ANO,MES,a.d1).getDay()]}${a.n===1?'':'s'} anterior${a.n===1?'':'es'}${a.quem!=='loja'?' · '+esc(a.quem):''}</span>
   <div class="avg">${['ipb','pm','bm'].map(k=>`<span class="${a.v[k]>.005?'c-ok':a.v[k]<-.005?'c-bad':'mf'}" title="antes ${f[k](a.antes[k])}"><small>${nm[k]}</small><b>${f[k](a.dep[k])}</b><em>${a.v[k]>=0?'▲':'▼'} ${pct(Math.abs(a.v[k]),0)}</em></span>`).join('')}</div></div>`;
 }
 function efTag(e){return e?`<span class="delta ${e.d>=.05?'up':e.d<=-.05?'down':'flat'}" style="margin-top:6px">${ic(e.d>=0?'arrow-up-right':'arrow-down-right')}Ritmo ${pct(e.a)} → ${pct(e.b)} · ${e.inc>=0?'+':''}${kbrl(e.inc)}</span>`:`<span class="delta wait" style="margin-top:6px">${ic('hourglass')}Aguardando dias de venda para medir</span>`}
