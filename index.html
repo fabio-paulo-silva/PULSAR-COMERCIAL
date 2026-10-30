@@ -616,6 +616,12 @@ dialog .hd{display:flex;justify-content:space-between;align-items:center;padding
 dialog .hd h3{font-size:18px}
 .ctx{grid-column:1/-1;border-radius:12px;background:var(--muted);padding:10px 12px;font-size:13px}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--foreground);color:var(--background);border-radius:12px;padding:10px 16px;font-weight:700;font-size:14px;box-shadow:var(--shadow-elevated);display:flex;gap:8px;align-items:center;z-index:50}
+.aval{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-top:8px;font-size:12px}
+.aval svg{width:14px;height:14px}
+.avg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;width:100%}
+.avg span{display:flex;flex-direction:column;border-radius:10px;background:var(--muted);padding:6px 8px;min-width:0}
+.avg small{font-size:11px;font-weight:700;color:var(--muted-fg)} .avg b{font-family:var(--font-display);font-size:15px;font-variant-numeric:tabular-nums}
+.avg em{font-style:normal;font-size:12px;font-weight:800}
 .toast.erro{background:var(--destructive);color:#fff}
 @media (prefers-reduced-motion:no-preference){.fade{animation:fade .35s ease-out}}
 @keyframes fade{from{opacity:.4;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -1600,7 +1606,7 @@ function vLojas(ls){
  $('view').innerHTML=`<section class="sec">
   <div class="card"><div class="card-hd"><div><h2>Lojas</h2><p>${ls.length} lojas · ${perTxt()}</p></div><span class="icchip t-accent">${ic('store')}</span></div>
   <div class="tw tall"><table><thead><tr>${sortTh('lojas','nome','Loja')}${sortTh('lojas','atP','% meta')}${sortTh('lojas','yoy','vs '+AAtxt(),'r')}${sortTh('lojas','hoje','Meta hoje','r')}${sortTh('lojas','dBM','BM / alvo','r')}${sortTh('lojas','dIpb','IPB / alvo','r')}${sortTh('lojas','pb1','%B1','r')}${sortTh('lojas','perdaBTBP','BT / BP','r')}<th>Maior perda</th><th>Maior oportunidade</th><th>Ação</th></tr></thead><tbody>
-  ${rows.map(l=>{const m=M[l.id],dt=maiorDet(m),ua=acoesMes().filter(x=>x.loja===l.id).sort((a,b)=>b.dia-a.dia)[0],ef=ua?efeito(m,ua.dia):null;
+  ${rows.map(l=>{const m=M[l.id],dt=maiorDet(m),ua=acoesMes().filter(x=>x.loja===l.id).sort((a,b)=>b.dia-a.dia)[0];
    return `<tr class="click ${l.id===S.foco?'sel':''}" data-foco="${l.id}" tabindex="0"><td><p class="nm">${esc(l.nome)}</p><p class="sub">${esc(l.gestor)}</p></td>
    <td><div class="minibar"><span class="b"><i style="width:${Math.min(100,m.atP*80)}%;background:${m.atP>=1?'var(--primary)':m.atP>=.92?'var(--warning)':'var(--destructive)'}"></i></span><b class="tnum">${pct(m.atP)}</b></div></td>
    <td class="r tnum">${m.aa.ok?`<b class="${m.aa.d.rec>=0?'c-ok':'c-bad'}">${pct(m.aa.d.rec,1,true)}</b><p class="sub">${yoySelos(m.aa)}</p>`:'<span class="mf">loja nova</span>'}</td>
@@ -1611,7 +1617,7 @@ function vLojas(ls){
    <td class="r tnum"><b class="${m.pBT>=F.bt?'c-ok':'c-bad'}">${pct(m.pBT)}</b> / <b class="${m.pBP>=F.bp?'c-ok':'c-bad'}">${pct(m.pBP)}</b></td>
    <td>${dt?`<span class="pill p-bad">${DN[dt]} ${kbrl(m[IMPK[dt]])}</span>`:'<span class="pill p-ok">Sem detrator</span>'}</td>
    <td>${(()=>{const p=praticaPara(m);return p?`<b>${PRAT[p.k].n}: ${pctP(p.v)} → ${pctP(p.alvo)}</b><p class="sub">+${kbrl(p.ganho)} · ${p.meta?'meta da rede':`ex.: ${esc(p.ref.loja.nome)} ${pctP(p.ref.v)}`}</p>`:'<span class="mf">—</span>'})()}</td>
-   <td>${ua?`<span class="dchip">${dd(ua.dia)}</span> ${ef?`<span class="delta ${ef.d>=.05?'up':ef.d<=-.05?'down':'flat'}">${pp(ef.d)}</span>`:'<span class="sub">aguardando</span>'}`:m.proj<.96?'<span class="pill p-warn">Sem ação</span>':'<span class="mf">—</span>'}</td></tr>`}).join('')}
+   <td>${ua?`<span class="dchip">${dd(ua.dia)}</span> ${avalPill(avaliarAcao(ua))}`:m.proj<.96?'<span class="pill p-warn">Sem ação</span>':'<span class="mf">—</span>'}</td></tr>`}).join('')}
   </tbody></table></div></div>
   ${focoHTML()}</section>`;
  const la=acoesMes().filter(x=>x.loja===S.foco);
@@ -1627,7 +1633,7 @@ function focoHTML(){
     :`<div class="legend"><span><i class="bx"></i>Venda do dia ÷ meta do dia</span><span><i class="bx d"></i>Dias depois da ação</span><span><i class="e"></i>Média antes e depois</span><span><i class="a"></i>Ação registrada</span><span><i class="bx o"></i>Quanto precisa hoje</span></div>${impactoHTML(l,m)}`}
   </div>
   <div class="card pad"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3 style="font-size:15px">Ações da loja</h3><button class="btn sm" data-novo="${l.id}">${ic('plus')}Nova ação</button></div>
-   <div class="list">${la.length?la.map(x=>`<div class="it hist ${sel&&sel.id===x.id&&S.chart==='dia'?'on':''}" data-acsel="${x.id}" title="Ver o antes e depois desta ação no gráfico"><span class="dchip">${dd(x.dia)}</span><div><p style="font-weight:700">${esc(x.tipo)}${x.cons?' · '+esc(consById(x.cons)?.nome):''}</p><p class="mf" style="font-size:13px">${esc(x.desc||'Sem descrição')}</p>${efTag(efeito(m,x.dia))}</div><button class="btn ghost sm" data-del="${x.id}" aria-label="Remover ação">${ic('trash-2')}</button></div>`).join(''):'<p class="empty">Nenhuma ação registrada nesta loja no mês.</p>'}</div>
+   <div class="list">${la.length?la.map(x=>`<div class="it hist ${sel&&sel.id===x.id&&S.chart==='dia'?'on':''}" data-acsel="${x.id}" title="Ver o antes e depois desta ação no gráfico"><span class="dchip">${dd(x.dia)}</span><div><p style="font-weight:700">${esc(x.tipo)}${x.cons?' · '+esc(consById(x.cons)?.nome):''}</p><p class="mf" style="font-size:13px">${esc(x.desc||'Sem descrição')}</p>${avalHTML(x)}</div><button class="btn ghost sm" data-del="${x.id}" aria-label="Remover ação">${ic('trash-2')}</button></div>`).join(''):'<p class="empty">Nenhuma ação registrada nesta loja no mês.</p>'}</div>
    <button class="btn ghost sm" data-verc="${l.id}" style="align-self:flex-start">${ic('users')}Ver consultores desta loja</button>
   </div></div>${clusterHTML(l,m)}`;
 }
@@ -1703,6 +1709,30 @@ function drawDaily(m,la,sel,el){
  Object.entries(by).forEach(([d,arr])=>{d=+d;if(d>N)return;const on=sel&&arr.some(a=>a.id===sel.id),xa=xc(d)-cw/2;
   g+=`<g class="mk ${on?'on':''}" data-acsel="${arr[0].id}" style="cursor:pointer"><title>${esc(arr.map(a=>`${dd(d)} · ${a.tipo}${a.desc?': '+a.desc:''}`).join('\n'))}</title><line x1="${xa}" x2="${xa}" y1="${T-14}" y2="${T+ih}"/><circle cx="${xa}" cy="${T-16}" r="${on?11:9}"/><text x="${xa}" y="${T-12.5}" text-anchor="middle">${arr.length}</text></g>`});
  $(el).innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Venda diária da loja em % da meta do dia, com o antes e o depois da ação selecionada"><defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ahp"/></marker></defs>${g}</svg>`;
+}
+// Avaliação direta da ação: IPB, preço médio e BM no DIA SEGUINTE ao dia da ação contra a média dos 7 dias com venda
+// antes da ação (da loja, ou do consultor quando a ação é para ele). Veredito: 2 de 3 subiram = melhorou; 2 de 3 caíram = piorou.
+function avaliarAcao(x){
+ const l=lojaById(x.loja),c=x.cons?consById(x.cons):null,src=c||l;if(!src)return null;
+ const d1=x.dia+1,ind=(r,b,i)=>({ipb:b?i/b:0,pm:i?r/i:0,bm:b?r/b:0});
+ if(d1>LAST)return{wait:true,d1};
+ let r=0,b=0,i=0,n=0;for(let d=x.dia-1;d>=1&&n<7;d--)if(src.bol[d-1]>0){r+=src.rec[d-1];b+=src.bol[d-1];i+=src.it[d-1];n++}
+ if(!b)return{semBase:true,d1};
+ if(!(src.bol[d1-1]>0))return{semVenda:true,d1};
+ const antes=ind(r,b,i),dep=ind(src.rec[d1-1],src.bol[d1-1],src.it[d1-1]),v={};
+ for(const k in antes)v[k]=antes[k]?dep[k]/antes[k]-1:0;
+ const sobe=Object.values(v).filter(z=>z>.005).length,cai=Object.values(v).filter(z=>z<-.005).length;
+ return{d1,antes,dep,v,quem:c?c.nome:'loja',ver:sobe>=2?'melhorou':cai>=2?'piorou':'misto'};
+}
+const VER={melhorou:['p-ok','Melhorou','trending-up'],piorou:['p-bad','Piorou','trending-down'],misto:['p-warn','Misto','minus']};
+const avalPill=a=>!a?'':a.wait?`<span class="pill">Aguardando ${dd(a.d1)}</span>`:a.semBase||a.semVenda?`<span class="pill">Sem venda para medir</span>`:`<span class="pill ${VER[a.ver][0]}">${ic(VER[a.ver][2])}${VER[a.ver][1]}</span>`;
+function avalHTML(x){
+ const a=avaliarAcao(x);if(!a)return '';
+ if(a.wait)return `<p class="aval mf">${ic('hourglass')}Resultado em ${dd(a.d1)}, com o fechamento do dia seguinte</p>`;
+ if(a.semBase||a.semVenda)return `<p class="aval mf">${ic('circle-slash')}${a.semVenda?`Sem venda em ${dd(a.d1)}`:'Sem venda nos 7 dias antes'} para medir</p>`;
+ const f={ipb:v=>fx(v,2),pm:v=>brl(v,2),bm:v=>brl(v)},nm={ipb:'IPB',pm:'Preço médio',bm:'BM'};
+ return `<div class="aval">${avalPill(a)}<span class="mf">${dd(a.d1)} × 7 dias antes${a.quem!=='loja'?' · '+esc(a.quem):''}</span>
+  <div class="avg">${['ipb','pm','bm'].map(k=>`<span class="${a.v[k]>.005?'c-ok':a.v[k]<-.005?'c-bad':'mf'}" title="antes ${f[k](a.antes[k])}"><small>${nm[k]}</small><b>${f[k](a.dep[k])}</b><em>${a.v[k]>=0?'▲':'▼'} ${pct(Math.abs(a.v[k]),0)}</em></span>`).join('')}</div></div>`;
 }
 function efTag(e){return e?`<span class="delta ${e.d>=.05?'up':e.d<=-.05?'down':'flat'}" style="margin-top:6px">${ic(e.d>=0?'arrow-up-right':'arrow-down-right')}Ritmo ${pct(e.a)} → ${pct(e.b)} · ${e.inc>=0?'+':''}${kbrl(e.inc)}</span>`:`<span class="delta wait" style="margin-top:6px">${ic('hourglass')}Aguardando dias de venda para medir</span>`}
 function drawChart(m,la,el){

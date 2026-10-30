@@ -107,3 +107,7 @@ Primeiro a tabela dos consultores de loja e a dos digitais, com receita/dia, bol
 - **Aba Uso:** "Telas mais usadas" (acessos e pessoas por página e aba) e "Últimos acessos" (hora, quem, tela e filtro; clique num gestor para ver só os dele). Por gestor, se acessou hoje, último acesso, dias com acesso no mês, acessos, uso do painel do mês e do acompanhamento do dia, lojas filtradas e ações registradas. Com filtro, mostra os gestores com loja no filtro.
 - **Requer** o `apps-script/Codigo.gs` atualizado (op `acesso` e `?tipo=acessos`): republicar em Implantar > Gerenciar implantações > editar > Nova versão.
 - A identificação é declarada pela própria pessoa (não há login).
+
+## Avaliação das ações (aba Lojas)
+- Cada ação registrada mostra **IPB, preço médio e BM do dia seguinte ao dia da ação** contra a média dos 7 dias com venda antes da ação. Se a ação foi para um consultor, a conta é com a venda dele; senão, a da loja.
+- Veredito: **Melhorou** (2 dos 3 indicadores subiram), **Piorou** (2 dos 3 caíram) ou **Misto**. Sem o dia seguinte fechado: "Aguardando"; sem venda no dia: "Sem venda para medir". A coluna Ação da tabela de lojas mostra o veredito da última ação.
