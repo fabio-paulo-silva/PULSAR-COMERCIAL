@@ -110,8 +110,9 @@ select:focus-visible,input:focus-visible,textarea:focus-visible,button:focus-vis
 .dia b{font-family:var(--font-display);font-size:14px;color:var(--foreground);font-variant-numeric:tabular-nums}
 .dia small{font-size:10px;font-weight:600}
 .dia:hover{border-color:var(--muted-fg)}
-.dia.on{background:var(--primary);border-color:var(--primary);color:var(--primary-fg)}
-.dia.on b{color:var(--primary-fg)}
+.dia{opacity:.55}
+.dia.on{opacity:1;background:var(--card);border-color:var(--foreground);color:var(--foreground);box-shadow:var(--shadow-card)}
+.dia.on b{color:var(--foreground)}
 .dia.fds{border-style:dashed}
 .dica{font-size:11px;color:var(--muted-fg)}
 .kpi{padding:20px;transition:box-shadow .2s;min-width:0}
@@ -195,6 +196,11 @@ select:focus-visible,input:focus-visible,textarea:focus-visible,button:focus-vis
 /* Tabelas */
 .tw{overflow-x:auto}
 .tw.tall{max-height:36rem;overflow-y:auto}
+.tcons tfoot td{position:sticky;bottom:0;background:var(--card);border-top:2px solid var(--foreground);box-shadow:0 -6px 12px -10px oklch(0 0 0 / .4);z-index:1}
+.sc{display:inline-block;margin-left:5px;border-radius:6px;padding:0 5px;font-size:11px;font-weight:800;font-variant-numeric:tabular-nums;vertical-align:1px}
+.sc.pos{background:oklch(0.76 0.19 152 / .15);color:var(--success-ink)} .sc.neg{background:oklch(0.58 0.21 22 / .12);color:var(--destructive)}
+.scT{display:inline-block;min-width:46px;text-align:center;border-radius:8px;padding:2px 8px;font-weight:800;font-family:var(--font-display)}
+.scT.crit{background:var(--destructive);color:#fff} .scT.alto{background:var(--warning);color:oklch(0.25 0.06 70)} .scT.medio{background:var(--muted)} .scT.pos{background:var(--primary);color:var(--primary-fg)}
 table{width:100%;border-collapse:collapse;font-size:14px}
 thead{position:sticky;top:0;z-index:1;background:var(--card)}
 th{padding:12px 8px;text-align:left;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;color:var(--muted-fg);border-bottom:1px solid var(--border);white-space:nowrap}
@@ -382,6 +388,16 @@ td.hp{background:oklch(0.76 0.19 152 / .1)} td.hn{background:oklch(0.58 0.21 22 
 .kv span{color:var(--muted-fg)} .kv b{text-align:right;font-variant-numeric:tabular-nums}
 .chart .mb{fill:var(--muted-fg);opacity:.28} .chart .mb.on{fill:var(--chart-3);opacity:.35}
 .chart .rl{fill:none;stroke:var(--foreground);stroke-width:2.2;stroke-linejoin:round}
+.yos{display:inline-flex;flex-wrap:wrap;gap:4px;vertical-align:middle}
+.yo{display:inline-flex;align-items:center;gap:3px;border-radius:999px;padding:1px 7px;font-size:12px;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums}
+.yo.up{background:oklch(0.76 0.19 152 / .14);color:var(--success-ink)} .yo.dn{background:oklch(0.58 0.21 22 / .12);color:var(--destructive)}
+.ycard{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px;font-weight:700;color:var(--muted-fg)}
+.yrow{display:flex;gap:6px;align-items:flex-start;font-size:12px;border-top:1px dashed var(--border);padding-top:6px}
+.yrow svg{width:14px;height:14px;flex:none;margin-top:1px} .yrow.up{color:var(--success-ink)} .yrow.dn{color:var(--destructive)}
+.yrow b{font-weight:800}
+.kl.ky{margin-top:2px}
+.hnota.hy{display:flex;gap:6px;align-items:flex-start} .hnota.hy svg{width:14px;height:14px;flex:none;margin-top:2px}
+.lk{border:0;background:none;padding:0;font:inherit;font-weight:700;color:var(--foreground);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
 .chart .rd{stroke:var(--card);stroke-width:2} .chart .rd.ok{fill:var(--success-ink)} .chart .rd.no{fill:var(--destructive)} .chart .rd.na{fill:var(--muted-fg)}
 .chart .pl{font:800 11px var(--font-sans)} .chart .pl.ok{fill:var(--success-ink)} .chart .pl.no{fill:var(--destructive)} .chart .pl.na{fill:var(--muted-fg);font-weight:600;font-size:10px}
 .legend i.bx.mb{background:var(--chart-3);opacity:.45}
@@ -404,8 +420,15 @@ td.hp{background:oklch(0.76 0.19 152 / .1)} td.hn{background:oklch(0.58 0.21 22 
 .papel{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:12px;color:var(--muted-fg)}
 .papel .selo{margin-left:0}
 
-.btbp{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--muted-fg)}
-.btbp svg{width:14px;height:14px}
+.mix{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.mx{border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;background:var(--muted);border:1px solid transparent;min-width:0}
+.mx .l{display:flex;gap:5px;align-items:center;font-size:11px;font-weight:700;color:var(--muted-fg)}
+.mx .l svg{width:13px;height:13px}
+.mx b{font-family:var(--font-display);font-size:17px;font-variant-numeric:tabular-nums}
+.mx small{font-size:11px;line-height:1.3;color:var(--muted-fg)}
+.mx.ok b{color:var(--success-ink)} .mx.no b{color:var(--destructive)}
+.mixp{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--muted-fg)}
+.mixp svg{width:14px;height:14px;color:var(--destructive)} .mixp b{color:var(--destructive)}
 
 /* KPIs: status do ritmo e meta de hoje em destaque */
 .kpi.st-ok{border-color:var(--primary);background:linear-gradient(180deg,oklch(0.76 0.19 152 / .12),var(--card) 55%)}
@@ -428,6 +451,88 @@ td.hp{background:oklch(0.76 0.19 152 / .1)} td.hn{background:oklch(0.58 0.21 22 
 
 .kpi .kl{font-size:12px;color:var(--muted-fg);margin-top:8px}
 .kpi.hero .top{display:flex;justify-content:space-between;align-items:center}
+.hnota.hf{display:flex;flex-direction:column;gap:2px}
+.hnota.hf span{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:oklch(1 0 0 / .65)}
+.hnota.hf b{font-family:var(--font-display);font-size:16px;font-variant-numeric:tabular-nums;color:#fff}
+.hnota.hf small{font-size:12px;color:oklch(1 0 0 / .7)}
+.alvos small{font-size:11px;font-weight:600;color:var(--muted-fg)}
+.kpi.hero .hsub{font-family:var(--font-sans);font-size:15px;font-weight:700;color:oklch(1 0 0 / .75);white-space:nowrap}
+.d1{display:inline-block;margin-left:6px;border-radius:6px;padding:1px 6px;background:var(--muted);color:var(--muted-fg);font-size:11px;font-weight:800;letter-spacing:.02em;text-transform:none}
+
+/* Chips de data pintados pelo atingimento do dia (filete embaixo) */
+.dia{position:relative;overflow:hidden}
+.dia::after{content:"";position:absolute;left:0;right:0;bottom:0;height:4px;background:transparent}
+.dleg{font-size:11px;gap:10px} .dleg i{width:14px;border-top-width:4px} .dleg i.dl-ok{border-color:var(--success-ink)} .dleg i.dl-mid{border-color:var(--warning)} .dleg i.dl-no{border-color:var(--destructive)}
+.dia.r-ok::after{background:var(--success-ink)} .dia.r-mid::after{background:var(--warning)} .dia.r-no::after{background:var(--destructive)}
+
+
+/* Card de prioridade enxuto */
+.act .head{font-family:var(--font-display);font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.2}
+.act .head small{display:block;font-family:var(--font-sans);font-size:12px;font-weight:600;color:var(--muted-fg);margin-top:2px}
+.act details{border-top:1px solid var(--border);padding-top:10px}
+.act details>summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--muted-fg);list-style:none;display:flex;gap:6px;align-items:center}
+.act details>summary::-webkit-details-marker{display:none}
+.act details>summary svg{width:14px;height:14px;transition:transform .2s}
+.act details[open]>summary svg{transform:rotate(90deg)}
+.act details>div{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.puxam{font-size:13px;color:var(--muted-fg)}
+.puxam b{color:var(--foreground)}
+.status-do{display:inline-flex;gap:6px;align-items:center;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-fg)}
+.status-do.ok{color:var(--success-ink)}
+
+/* Decisão do dia */
+.visao{display:flex;gap:6px;align-items:center;font-size:13px;font-weight:700;color:var(--muted-fg)}
+.visao svg{width:16px;height:16px;color:var(--success-ink)}
+.mover{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;border-radius:12px;background:var(--muted);padding:10px 12px}
+.mover span{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-fg)}
+.mover b{font-family:var(--font-display);font-size:18px;font-variant-numeric:tabular-nums}
+.mover small{width:100%;font-size:12px;color:var(--muted-fg)}
+.do .blt{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--muted-fg)}
+.do .blt .t{font-weight:700;color:var(--foreground)}
+.mover small b{display:inline;font-family:inherit;font-size:inherit;font-weight:800;color:var(--foreground)}
+.resp{display:flex;gap:6px;align-items:flex-start;font-size:13px;color:var(--muted-fg)} .resp svg{width:15px;height:15px;flex:none;margin-top:1px}
+.placar-hd{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;justify-content:space-between}
+.placar-hd h2{font-size:16px;display:flex;gap:8px;align-items:center}
+.pl-n{font-size:14px;color:var(--muted-fg)} .pl-n b{font-family:var(--font-display);font-size:18px}
+tr.click[data-gvo]{cursor:pointer}
+.card:not(.todos) tr.mais{display:none}
+
+/* Ontem você priorizou */
+.ontem{display:flex;flex-direction:column;gap:8px}
+.ontem .it{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;border-radius:12px;background:var(--muted);padding:10px 12px;font-size:14px}
+.ontem .it svg{width:18px;height:18px}
+.ontem .it .r{font-family:var(--font-display);font-weight:800;font-variant-numeric:tabular-nums;text-align:right}
+.ontem .it small{display:block;color:var(--muted-fg);font-size:12px}
+
+/* Ciclo x lojas */
+.cl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:10px;margin-top:12px}
+.cl-box{border-radius:12px;border:1px solid var(--border);padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-size:13px}
+.cl-box h4{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-fg);display:flex;gap:6px;align-items:center}
+.cl-box h4 svg{width:14px;height:14px}
+.cl-box .ln{display:flex;justify-content:space-between;gap:8px}
+.cl-box .ln button{border:0;background:none;padding:0;color:var(--foreground);font-weight:700;text-align:left;cursor:pointer}
+.cl-box .ln button:hover{text-decoration:underline}
+
+/* Meta por consultor */
+.mc td,.mc th{white-space:nowrap} .mc .r{text-align:right}
+
+/* Celular: hero primeiro e nada abaixo de 12px */
+@media (max-width:640px){
+ .kpi.hero{order:-1}
+ .kpi{padding:16px}
+ .hgrid span,.hgrid small,.alvos span,.exemplo .ex-t,.imp small,.dc .l,.dc .s,.dica,.selo,.d1,.legend,.chart .ax.s{font-size:12px}
+ .chart .pl,.chart .ax{font-size:12px}
+ .act .head{font-size:18px}
+ .kpi.hero .val{font-size:40px}
+ /* filtros recolhidos: a primeira tela mostra a meta de hoje */
+ .filter:not(.open) .row,.filter:not(.open) .datas{display:none}
+ .filter .ttl .fres{display:inline;margin-left:auto;font-weight:600;font-size:12px;color:var(--muted-fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55vw}
+ .filter .ttl .fchev{display:inline-block}
+ .filter.open .fchev{transform:rotate(180deg)}
+ .glass:has(#hBase),#hPlan{display:none}
+}
+.filter .ttl{border:0;background:none;padding:0;width:100%;text-align:left;color:inherit;font-family:inherit;cursor:pointer}
+.filter .fres,.filter .fchev{display:none}
 
 .alvos{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
 @media (max-width:480px){.alvos{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -511,6 +616,13 @@ dialog .hd{display:flex;justify-content:space-between;align-items:center;padding
 dialog .hd h3{font-size:18px}
 .ctx{grid-column:1/-1;border-radius:12px;background:var(--muted);padding:10px 12px;font-size:13px}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--foreground);color:var(--background);border-radius:12px;padding:10px 16px;font-weight:700;font-size:14px;box-shadow:var(--shadow-elevated);display:flex;gap:8px;align-items:center;z-index:50}
+.aval{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-top:8px;font-size:12px}
+.aval svg{width:14px;height:14px}
+.avg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;width:100%}
+.avg span{display:flex;flex-direction:column;border-radius:10px;background:var(--muted);padding:6px 8px;min-width:0}
+.avg small{font-size:11px;font-weight:700;color:var(--muted-fg)} .avg b{font-family:var(--font-display);font-size:15px;font-variant-numeric:tabular-nums}
+.avg em{font-style:normal;font-size:12px;font-weight:800}
+.toast.erro{background:var(--destructive);color:#fff}
 @media (prefers-reduced-motion:no-preference){.fade{animation:fade .35s ease-out}}
 @keyframes fade{from{opacity:.4;transform:translateY(8px)}to{opacity:1;transform:none}}
 </style>
@@ -529,6 +641,7 @@ dialog .hd h3{font-size:18px}
       <div class="glass"><i data-lucide="calendar-days"></i><span id="hData">Carregando dados…</span></div>
       <div class="glass"><i data-lucide="database"></i><span id="hBase"></span></div>
       <div class="glass amb" id="hAmb" hidden><i data-lucide="flask-conical"></i><span>Desenvolvimento</span></div>
+      <a class="glass" href="hoje.html" style="text-decoration:none"><i data-lucide="activity"></i><span>Acompanhar o dia</span></a>
       <div class="glass" id="hPlan" title="Onde as ações registradas ficam salvas"><i data-lucide="sheet"></i><span id="hPlanTxt">Ações: neste navegador</span></div>
     </div>
   </div></div>
@@ -536,7 +649,7 @@ dialog .hd h3{font-size:18px}
 
 <main class="wrap">
   <section class="card filter">
-    <div class="ttl"><i data-lucide="sliders-horizontal"></i>Filtros</div>
+    <button type="button" class="ttl" id="fToggle" aria-expanded="false"><i data-lucide="sliders-horizontal"></i>Filtros<span class="fres" id="fRes"></span><i data-lucide="chevron-down" class="fchev"></i></button>
     <div class="row">
       <div class="fld"><label for="fReg">Regional</label><select id="fReg"></select></div>
       <div class="fld"><label for="fPraca">Praça</label><select id="fPraca"></select></div>
@@ -549,6 +662,7 @@ dialog .hd h3{font-size:18px}
       <div class="dh"><span class="dl"><i data-lucide="calendar-range"></i>Datas</span><span class="per" id="perTxt"></span>
         <span class="pres"><button type="button" data-pre="ontem">Ontem</button><button type="button" data-pre="7">Últimos 7 dias</button><button type="button" data-pre="mes">Mês até ontem</button></span></div>
       <div class="dias" id="fDias" role="group" aria-label="Datas selecionadas" title="Clique para marcar ou desmarcar. Shift + clique marca um intervalo."></div>
+      <div class="legend dleg"><span><i class="dl-ok"></i>Bateu a meta do dia</span><span><i class="dl-mid"></i>90 a 99%</span><span><i class="dl-no"></i>Abaixo de 90%</span></div>
     </div>
   </section>
 
@@ -572,6 +686,7 @@ dialog .hd h3{font-size:18px}
 </dialog>
 
 <script src="config.js"></script>
+<script src="uso.js"></script>
 <script>
 /* ================= Configuração ================= */
 // Faixas: meta de %B1 da rede e BM alvo por loja (BM Alvo dos consultores do Plano BM ou BM do cluster), lidos em processar_dados.py.
@@ -599,6 +714,8 @@ const GT={
     roteiro:['Oferta de BT/BP no fechamento de todo boleto, itens de impulso no caixa e briefing diário com o %B1 da véspera']},
   pm:{nome:'Preço médio abaixo do habitual',icon:'tag',acao:'Transferência de mercadoria',
     roteiro:['Checar ruptura de kits, lançamentos e itens foco; pedir transferência e levar para a área de maior fluxo']},
+  anoant:{nome:'Caindo vs ano passado',icon:'trending-down',acao:'Push do time',
+    roteiro:['Atacar o indicador que mais caiu contra o ano passado e combinar a meta do dia na abertura']},
   recup:{nome:'Ação gerando resultado',icon:'trophy',acao:'Reconhecimento',
     roteiro:['Reconhecer o time e registrar o que funcionou para replicar']}
 };
@@ -610,7 +727,7 @@ let D,ANO,MES,DAYS,LAST,TODAY,REFTXT,lojas=[],cons=[],M={},TEAM={};
 let PB=null;                                        // faixas da rede (meta de %B1)
 let CICLO=null;                                     // Ciclo/ciclo_atual.json: alavancas comerciais do ciclo vigente
 // Liga cada detrator (gatilho ou perfil) à alavanca do ciclo que ataca ele
-const CIC_MAPA={btbp:'b1',fluxo:'fluxo',ritmo:'fluxo',tendencia:'fluxo',ipb:'ipb',b1:'b1',pm:'pm',bmsaud:'bmsaud',atende:'fluxo',item:'b1',ticket:'pm',abaixo:'b1'};
+const CIC_MAPA={fraco:'b1',critico:'b1',btbp:'b1',fluxo:'fluxo',ritmo:'fluxo',tendencia:'fluxo',ipb:'ipb',b1:'b1',pm:'pm',bmsaud:'bmsaud',atende:'fluxo',item:'b1',ticket:'pm',abaixo:'b1'};
 function cicloAtivo(){if(!CICLO)return false;const h=`${ANO}-${pad(MES+1)}-${pad(Math.min(TODAY,DAYS))}`;return h>=CICLO.inicio&&h<=CICLO.fim}
 // Ações do ciclo vigentes hoje para o detrator, em ordem de prioridade (a 1ª é a principal)
 function acoesCiclo(k){
@@ -635,20 +752,37 @@ function init(json){
  const ri=+D.referencia.inicio.slice(5,7)-1,rf=+D.referencia.fim.slice(5,7)-1;
  REFTXT=`${MESES[ri].slice(0,3)}–${MESES[rf].slice(0,3)}`;
  lojas=D.lojas.filter(l=>sum(l.meta)>0);
- cons=D.consultores;
+ cons=juntaDigitais(D.consultores);
  PB=D.planoBM||null;if(PB&&PB.b1Meta)F.b1=PB.b1Meta;
  SEL=new Set(Array.from({length:LAST},(_,i)=>i+1));
- recalc();
+ recalc();calcBmMax();
 }
+// Consultores digitais (WhatsApp, várias lojas; lista em processar_dados.py): as entradas de cada loja viram uma pessoa só.
+// A "loja" dela é a de maior receita; "lojas" guarda todas. Fica fora do time das lojas e é comparada com o grupo digital.
+const SERIES=['rec','bol','it','b1','br','bt','bp','bpe'];
+function juntaDigitais(lst){
+ const out=[],dg={};
+ lst.forEach(c=>{if(!c.digital){out.push(c);return}
+  const cod=c.id.split('@')[0],g=dg[cod]=dg[cod]||{id:'dig:'+cod,nome:c.nome,digital:true,lojas:[],_rec:{}};
+  if(lojaById(c.loja)){g.lojas.push(c.loja);g._rec[c.loja]=sum(c.rec)}
+  SERIES.forEach(k=>{g[k]=g[k]||[];(c[k]||[]).forEach((v,i)=>g[k][i]=(g[k][i]||0)+v)})});
+ Object.values(dg).forEach(g=>{if(!g.lojas.length)return;g.loja=[...g.lojas].sort((a,b)=>g._rec[b]-g._rec[a])[0];
+  SERIES.forEach(k=>{for(let i=0;i<LAST;i++)g[k][i]=g[k][i]||0});out.push(g)});
+ return out;
+}
+const naEscopo=(c,ids)=>ids.has(c.loja)||(c.digital&&c.lojas.some(x=>ids.has(x)));
+let DIGTEAM=null;
 // Recalcula lojas, consultores e médias de time para as datas selecionadas.
 function recalc(){
  M={};TEAM={};
  lojas.forEach(l=>M[l.id]=aggL([l]));
  praticasCluster();
- cons.forEach(c=>{c.m=aggC(c);delete c._p});
- lojas.forEach(l=>{const cs=cons.filter(c=>c.loja===l.id&&c.m.dias>0),t={rec:0,bol:0,it:0,dias:0};
-  cs.forEach(c=>{t.rec+=c.m.rec;t.bol+=c.m.bol;t.it+=c.m.it;t.dias+=c.m.dias});
-  TEAM[l.id]={recDia:t.dias?t.rec/t.dias:0,bolDia:t.dias?t.bol/t.dias:0,ipb:t.bol?t.it/t.bol:0,pm:t.it?t.rec/t.it:0,n:cs.length}});
+ cons.forEach(c=>{c.m=aggC(c);delete c._p;delete c._q});
+ const media=cs=>{const t={rec:0,bol:0,it:0,b1:0,dias:0};cs.forEach(c=>{t.rec+=c.m.rec;t.bol+=c.m.bol;t.it+=c.m.it;t.b1+=c.m.b1;t.dias+=c.m.dias});
+  return{recDia:t.dias?t.rec/t.dias:0,bolDia:t.dias?t.bol/t.dias:0,ipb:t.bol?t.it/t.bol:0,pm:t.it?t.rec/t.it:0,bm:t.bol?t.rec/t.bol:0,pb1:t.bol?t.b1/t.bol:0,n:cs.length}};
+ lojas.forEach(l=>{TEAM[l.id]=media(cons.filter(c=>c.loja===l.id&&!c.digital&&c.m.dias>0))});
+ DIGTEAM=media(cons.filter(c=>c.digital&&c.m.dias>0));
+ calcQualidade();
 }
 // ---------- Boas práticas: cada loja contra as lojas do MESMO cluster que estão no ritmo ----------
 // Alavanca = % dos boletos de venda no período (conversão do brinde = vendas da Ação de Fluxo ÷ clientes da ação).
@@ -662,17 +796,20 @@ const PRAT={
  par:{n:'Parcerias',g:'fluxo',v:'bm',u:'boletos',d:'dos boletos vieram de parcerias e convênios',como:'visitar 1 empresa ou condomínio por semana para fechar convênio'},
  vic:{n:'VIC',g:'fluxo',v:'bm',u:'boletos',d:'dos boletos foram venda corporativa (VIC)',como:'oferecer kits corporativos às empresas do entorno'},
  fc:{n:'Conversão do brinde',g:'fluxo',v:'bm',u:'clientes do brinde comprando',d:'dos clientes do brinde da Ação de Fluxo compraram',como:'todo cliente do brinde sai com 1 item + Boleto Turbinado'},
- bt:{n:'Boleto Turbinado',g:'item',v:'pm',u:'boletos com BT',d:'dos boletos tiveram Boleto Turbinado',como:'oferecer o BT no fechamento de todo boleto (até 3 unidades iguais)'},
+ // BT e BP: comparados com a meta de penetração (F.bt e F.bp), não com o cluster; valor = preço médio do item de BT/BP
+ bt:{n:'Boleto Turbinado',g:'item',v:'bt',meta:true,u:'boletos com BT',d:'dos boletos tiveram Boleto Turbinado',como:'oferecer o BT no fechamento de todo boleto (até 3 unidades iguais)'},
+ bp:{n:'Boleto Promocional',g:'item',v:'bp',meta:true,u:'boletos com BP',d:'dos boletos a partir de R$ 120 tiveram Boleto Promocional',como:'oferecer o BP em todo boleto que passar de R$ 120 (1 PRM por sarrafo)'},
  cl:{n:'Compre e Leve',g:'item',v:'pm',u:'boletos com Compre e Leve',d:'dos boletos chegaram ao Compre e Leve',como:'mostrar o brinde acima de R$ 300 a todo cliente perto do sarrafo e sugerir o item que falta'},
  cb:{n:'Resgate de cashback',g:'fluxo',v:null,u:'boletos com resgate',d:'dos boletos tiveram resgate de cashback',como:'avisar pelo WhatsApp quem tem saldo de cashback a vencer'}};
 // Indicadores principais: loja contra a mediana das lojas do cluster no ritmo
 const CORE={
- bpm:{n:'Boletos',f:v=>fx(v,1),u:'boletos a cada R$ 10 mil de meta'},
+ bol:{n:'Boletos',f:v=>pct(v),u:'dos boletos que a meta pede'},
  bm:{n:'Boleto médio',f:v=>brl(v,2),u:''},
  ipb:{n:'Itens por boleto',f:v=>fx(v,2),u:''},
  pm:{n:'Preço médio',f:v=>brl(v,2),u:'por item'}};
-const valorCore=(m,k)=>k==='bpm'?(m.metaP?m.bol/m.metaP*1e4:null):m.bol?m[k]:null;
-const valorPrat=(m,k)=>k==='fc'?((m.al.fc||0)+m.br?(m.al.fc||0)/((m.al.fc||0)+m.br):null):k==='bt'?m.pBT:(m.bol?(m.al[k]||0)/m.bol:0);
+// Boletos: realizado ÷ boletos que a meta do período pede com o BM alvo (compara lojas de tamanhos diferentes)
+const valorCore=(m,k)=>k==='bol'?(m.bolEsp?m.bol/m.bolEsp:null):m.bol?m[k]:null;
+const valorPrat=(m,k)=>k==='fc'?((m.al.fc||0)+m.br?(m.al.fc||0)/((m.al.fc||0)+m.br):null):k==='bt'?m.pBT:k==='bp'?m.pBP:(m.bol?(m.al[k]||0)/m.bol:0);
 let CLU={};
 const nomeCluster=c=>c?c.charAt(0)+c.slice(1).toLowerCase():'—';
 function praticasCluster(){
@@ -693,13 +830,23 @@ function praticasCluster(){
    const top=[...vals].sort((x,y)=>y[1]-x[1])[0];
    b.core[k]={med:med(vals.map(([,v])=>v)),ref:top?{loja:top[0],v:top[1]}:null};
   }
+  // %B1: o melhor valor (menor) do cluster, entre as lojas com pelo menos 200 boletos no período (QDB fora; poucas vendas distorcem)
+  const vb=porC[c].filter(l=>M[l.id].bol>=200&&!/^qdb/i.test(l.nome)).sort((x,y)=>M[x.id].pb1-M[y.id].pb1)[0];
+  b.b1best=vb?{loja:vb,v:M[vb.id].pb1}:null;
   CLU[c]=b;
  }
  lojas.forEach(l=>{
   const m=M[l.id],b=CLU[l.cluster];m.prat=[];m.core={};
-  if(!b||b.nOk<2||!m.bol)return;
+  if(!m.bol)return;
+  const semCluster=!b||b.nOk<2;
   for(const k in PRAT){
-   const r=b[k],v=valorPrat(m,k);if(v==null||!r.ref)continue;
+   if(semCluster&&!PRAT[k].meta)continue;
+   const v=valorPrat(m,k);if(v==null)continue;
+   if(PRAT[k].meta){   // BT e BP: meta de penetração
+    const alvo=F[k],base=k==='bt'?m.bol:(m.bpe||0),pr=((CICLO&&CICLO.precos)||PRECO)[k],extra=Math.max(0,alvo-v)*base;
+    m.prat.push({k,v,alvo,meta:true,ref:null,extra,ganho:extra*pr});continue;
+   }
+   const r=b[k];if(!r.ref)continue;
    // referência: mediana do cluster. Se a maioria não usa (canais como Calçada e VFL): quem não usa mira metade
    // do que faz quem usa; quem já usa não tem cobrança
    const alvo=r.med>0?r.med:(v>0?v:(r.medUso||0)*.5),base=k==='fc'?(m.al.fc||0)+m.br:m.bol,val=PRAT[k].v==='pm'?m.pm:PRAT[k].v==='bm'?m.bm:0;
@@ -707,46 +854,66 @@ function praticasCluster(){
    m.prat.push({k,v,alvo,ref:r.ref,uso:r.uso,med:r.med,medUso:r.medUso,extra,ganho:extra*val});
   }
   m.prat.sort((x,y)=>y.ganho-x.ganho);
+  // %B1 contra o melhor do cluster: cada boleto de 1 item que vira 2 com o BT vale o preço do item de BT
+  if(b&&b.b1best){const bb=b.b1best,gap=Math.max(0,m.pb1-bb.v),extra=gap*m.bol;
+   m.b1c={v:m.pb1,best:bb,gap,extra,ganho:extra*((CICLO&&CICLO.precos)||PRECO).bt,porDia:extra/m.nd}}
+  if(semCluster)return;
   // indicadores principais: quanto falta para a mediana do cluster no ritmo e quanto vale
   for(const k in CORE){
    const r=b.core[k],v=valorCore(m,k);if(v==null||r.med==null)continue;
    const gap=Math.max(0,r.med-v);
-   const ganho=k==='bpm'?gap*m.metaP/1e4*m.bm:k==='ipb'?gap*m.bol*m.pm:k==='pm'?gap*m.it:gap*m.bol;
-   m.core[k]={v,med:r.med,ref:r.ref,gap,ganho,porDia:k==='bpm'?gap*m.metaP/1e4/m.nd:null};
+   const ganho=k==='bol'?gap*m.bolEsp*m.bm:k==='ipb'?gap*m.bol*m.pm:k==='pm'?gap*m.it:gap*m.bol;
+   m.core[k]={v,med:r.med,ref:r.ref,gap,ganho,porDia:k==='bol'?gap*m.bolEsp/m.nd:null};
   }
  });
 }
 // Frase de comparação: o que é, aqui x cluster, quanto falta, quanto vale e como fazer
 function frasePrat(p,l){
- const P=PRAT[p.k],cl=nomeCluster(l.cluster).toLowerCase(),ref=p.med>0?pctP(p.med):`${pctP(p.medUso)} entre as que usam`;
+ const P=PRAT[p.k];
+ if(p.meta)return `<b>${P.n}:</b> aqui ${pctP(p.v)} ${P.d}; a meta é ${pctP(p.alvo)}.`+
+  (p.ganho>0?` Chegar à meta = +${fx(p.extra)} ${P.u} ≈ <b>+${kbrl(p.ganho)}</b> no período. <b>Como:</b> ${P.como}.`:' Na meta.');
+ const cl=nomeCluster(l.cluster).toLowerCase(),ref=p.med>0?pctP(p.med):`${pctP(p.medUso)} entre as que usam`;
  return `<b>${P.n}:</b> aqui ${pctP(p.v)} ${P.d}; nas lojas ${cl} no ritmo, ${ref}${p.ref?` (${esc(p.ref.loja.nome)}: ${pctP(p.ref.v)})`:''}.`+
   (p.ganho>0?` Chegar a ${pctP(p.alvo)} = +${fx(p.extra)} ${P.u} ≈ <b>+${kbrl(p.ganho)}</b> no período. <b>Como:</b> ${P.como}.`:'');
 }
 function fraseCore(k,c,l){
  const C=CORE[k],cl=nomeCluster(l.cluster).toLowerCase();
- const falta=k==='bpm'?`faltam ≈ ${fx(c.porDia)} boletos por dia`:k==='ipb'?`+${fx(c.gap,2)} item por boleto`:k==='pm'?`+${brl(c.gap,2)} por item`:`+${brl(c.gap,2)} por boleto`;
+ const falta=k==='bol'?`faltam ≈ ${fx(c.porDia)} boletos por dia`:k==='ipb'?`+${fx(c.gap,2)} item por boleto`:k==='pm'?`+${brl(c.gap,2)} por item`:`+${brl(c.gap,2)} por boleto`;
  return `<b>${C.n}:</b> ${C.f(c.v)}${C.u?' '+C.u:''} aqui × ${C.f(c.med)} nas lojas ${cl} no ritmo${c.ref?` (melhor: ${esc(c.ref.loja.nome)}, ${C.f(c.ref.v)})`:''}.`+(c.gap>0?` Para chegar lá: ${falta} ≈ <b>+${kbrl(c.ganho)}</b> no período.`:' No nível do cluster.');
+}
+// Frase do %B1: aqui × melhor do cluster, quanto vale e como (BT no boleto de 1 item)
+function fraseB1(c,l){
+ const cl=nomeCluster(l.cluster).toLowerCase();
+ if(c.best.loja.id===l.id)return `<b>%B1:</b> ${pct(c.v,1)} dos boletos com 1 item, o melhor do cluster ${esc(cl)}.`;
+ return `<b>%B1:</b> ${pct(c.v,1)} dos boletos com 1 item aqui × ${pct(c.best.v,1)} na ${esc(c.best.loja.nome)} (melhor do cluster ${esc(cl)}).`+
+  (c.gap>0?` Chegar lá = ${fx(c.porDia)} boletos de 1 item por dia virando 2 com o BT ≈ <b>+${kbrl(c.ganho)}</b> no período. <b>Como:</b> em todo boleto de 1 item, oferecer o BT da mesma fragrância no fechamento.`:'');
 }
 const pctP=v=>v==null?'—':pct(v,v<.1?1:0);
 // melhor prática a copiar para um grupo de alavancas ('fluxo' = boletos, 'item' = item a mais)
-const praticaPara=(m,grupo)=>(m.prat||[]).find(p=>p.ganho>=300&&p.ref.v>=.01&&(!grupo||PRAT[p.k].g===grupo));
+const praticaPara=(m,grupo)=>(m.prat||[]).find(p=>p.ganho>=300&&(p.meta||p.ref&&p.ref.v>=.01)&&(!grupo||PRAT[p.k].g===grupo));
 // indicador principal ligado a cada gatilho: boletos, IPB ou preço médio
-const coreDoGatilho=g=>['ipb','b1','btbp'].includes(g)?'ipb':['pm','bmsaud'].includes(g)?'pm':'bpm';
+const coreDoGatilho=g=>['ipb','b1','btbp'].includes(g)?'ipb':['pm','bmsaud'].includes(g)?'pm':'bol';
 
 // Loja ou conjunto de lojas.
 // Mês: % da meta, projeção e meta de hoje (meta do dia + gap acumulado ÷ dias restantes com meta, contando hoje).
 // Período (datas selecionadas): realizado, meta, boletos, IPB, preço médio e o funil.
 function aggL(list){
  const ds=selArr();
- const a={al:{},recupLojas:0,nAtras:0,metaMes:0,metaAte:0,rec:0,recP:0,metaP:0,bol:0,it:0,b1:0,br:0,bt:0,bp:0,rRec:0,rBol:0,rIt:0,rB1:0,hoje:0,metaHoje:0,recup:0,
+ const a={al:{},recupLojas:0,nAtras:0,metaMes:0,metaAte:0,rec:0,recP:0,metaP:0,bol:0,it:0,b1:0,br:0,bt:0,bp:0,bpe:0,rRec:0,rBol:0,rIt:0,rB1:0,hoje:0,metaHoje:0,recup:0,
+  aa:{n:0,rec:0,bol:0,it:0,b1:0,recC:0,bolC:0,itC:0,b1C:0,ate:0,ateC:0,mes:0},aaDays:Array(DAYS).fill(0),aaBolDays:Array(DAYS).fill(0),
   days:Array(LAST).fill(0),bolD:Array(LAST).fill(0),itD:Array(LAST).fill(0),metaDays:Array(DAYS).fill(0)};
  list.forEach(l=>{
   const mt=l.meta,ate=sum(mt.slice(0,LAST)),rec=sum(l.rec);
   a.metaMes+=sum(mt);a.metaAte+=ate;a.rec+=rec;
-  ds.forEach(d=>{a.metaP+=mt[d-1];a.recP+=l.rec[d-1];a.bol+=l.bol[d-1];a.it+=l.it[d-1];a.b1+=l.b1[d-1];a.br+=(l.br?l.br[d-1]:0);a.bt+=(l.bt?l.bt[d-1]:0);a.bp+=(l.bp?l.bp[d-1]:0);if(l.alav)for(const k in l.alav)a.al[k]=(a.al[k]||0)+l.alav[k][d-1]});
+  ds.forEach(d=>{a.metaP+=mt[d-1];a.recP+=l.rec[d-1];a.bol+=l.bol[d-1];a.it+=l.it[d-1];a.b1+=l.b1[d-1];a.br+=(l.br?l.br[d-1]:0);a.bt+=(l.bt?l.bt[d-1]:0);a.bp+=(l.bp?l.bp[d-1]:0);a.bpe+=(l.bpe?l.bpe[d-1]:0);if(l.alav)for(const k in l.alav)a.al[k]=(a.al[k]||0)+l.alav[k][d-1]});
   mt.forEach((v,i)=>a.metaDays[i]+=v);
   l.rec.forEach((v,i)=>{a.days[i]+=v;a.bolD[i]+=l.bol[i];a.itD[i]+=l.it[i]});
   if(l.ref){a.rRec+=l.ref.rec;a.rBol+=l.ref.bol;a.rIt+=l.ref.it;a.rB1+=l.ref.b1}
+  // Ano anterior: só lojas com venda nos dois anos; mesmo dia do calendário
+  if(l.aa){const y=a.aa,x=l.aa;y.n++;
+   ds.forEach(d=>{y.rec+=x.rec[d-1];y.bol+=x.bol[d-1];y.it+=x.it[d-1];y.b1+=x.b1[d-1];y.recC+=l.rec[d-1];y.bolC+=l.bol[d-1];y.itC+=l.it[d-1];y.b1C+=l.b1[d-1]});
+   for(let i=0;i<DAYS;i++){a.aaDays[i]+=x.rec[i]||0;a.aaBolDays[i]+=x.bol[i]||0}
+   y.ate+=sum(x.rec.slice(0,LAST));y.ateC+=rec;y.mes+=sum(x.rec)}
   const mh=TODAY<=DAYS?mt[TODAY-1]:0,rest=mt.slice(TODAY-1).filter(v=>v>0).length,gap=Math.max(0,ate-rec);
   const rc=mh>0&&rest?gap/rest:0;
   a.metaHoje+=mh;a.recupLojas+=rc;if(rc>0)a.nAtras++;
@@ -788,19 +955,35 @@ function aggL(list){
  a.diasRest=a.metaDays.slice(TODAY-1).filter(v=>v>0).length;
  a.valorPP=.01*(a.bol/a.nd)*a.diasRest*a.pm;                           // 1 p.p. a menos de %B1 até o fim do mês
  btbpCalc(a);
+ yoyCalc(a.aa,list.length);a.yoy=a.aa.ok?a.aa.d.rec:-9;   // -9: sem ano anterior (vai para o fim na ordenação)
  return a;
 }
-// Penetração de BT e BP: % dos boletos de venda com a tag na coluna Campanhas.
+// Indicadores do ano anterior e variação (lojas comparáveis, mesmos dias)
+function yoyCalc(y,nTot){
+ y.nTot=nTot;if(!y.n||!y.rec){y.ok=false;return}
+ y.ok=true;
+ const ind=(r,b,i,b1)=>({rec:r,bol:b,bm:b?r/b:0,ipb:b?i/b:0,pm:i?r/i:0,b1:b?b1/b:0});
+ y.ant=ind(y.rec,y.bol,y.it,y.b1);y.atu=ind(y.recC,y.bolC,y.itC,y.b1C);
+ y.d={};for(const k in y.ant)y.d[k]=y.ant[k]?y.atu[k]/y.ant[k]-1:0;
+ y.d.b1=y.atu.b1-y.ant.b1;                                      // %B1 em p.p.
+ // variação da receita = efeito boletos + efeito boleto médio
+ y.eBol=(y.atu.bol-y.ant.bol)*y.ant.bm;y.eBm=y.atu.bol*(y.atu.bm-y.ant.bm);
+ // o efeito do BM dividido entre IPB e preço médio: boletos + IPB + PM = variação da receita
+ y.eIpb=y.atu.bol*(y.atu.ipb-y.ant.ipb)*y.ant.pm;y.ePm=y.atu.bol*y.atu.ipb*(y.atu.pm-y.ant.pm);
+ y.dAte=y.ate?y.ateC/y.ate-1:0;
+}
+// Penetração de BT e BP: boletos com a tag na coluna Campanhas ÷ boletos elegíveis.
 // Perda = boletos que faltaram para a penetração saudável × preço médio do item.
 function btbpCalc(a){
  const pr=(CICLO&&CICLO.precos)||PRECO;
- a.pBT=a.bol?a.bt/a.bol:0;a.pBP=a.bol?a.bp/a.bol:0;
- a.faltaBT=Math.max(0,F.bt*a.bol-a.bt);a.faltaBP=Math.max(0,F.bp*a.bol-a.bp);
+ // BT: elegível = boleto com item pago (brinde da Ação de Fluxo sem compra fica fora). BP: elegível = boleto a partir de R$ 120 (sarrafo).
+ a.pBT=a.bol?a.bt/a.bol:0;a.pBP=a.bpe?Math.min(1,a.bp/a.bpe):0;
+ a.faltaBT=Math.max(0,F.bt*a.bol-a.bt);a.faltaBP=Math.max(0,F.bp*(a.bpe||0)-a.bp);
  a.perdaBT=a.faltaBT*pr.bt;a.perdaBP=a.faltaBP*pr.bp;a.perdaBTBP=a.perdaBT+a.perdaBP;
 }
 function aggC(c){
- const m={rec:0,bol:0,it:0,b1:0,br:0,bt:0,bp:0,dias:0};
- selArr().forEach(d=>{m.rec+=c.rec[d-1];m.bol+=c.bol[d-1];m.it+=c.it[d-1];m.b1+=c.b1[d-1];m.br+=(c.br?c.br[d-1]:0);m.bt+=(c.bt?c.bt[d-1]:0);m.bp+=(c.bp?c.bp[d-1]:0);if(c.bol[d-1]>0)m.dias++});
+ const m={rec:0,bol:0,it:0,b1:0,br:0,bt:0,bp:0,bpe:0,dias:0};
+ selArr().forEach(d=>{m.rec+=c.rec[d-1];m.bol+=c.bol[d-1];m.it+=c.it[d-1];m.b1+=c.b1[d-1];m.br+=(c.br?c.br[d-1]:0);m.bt+=(c.bt?c.bt[d-1]:0);m.bp+=(c.bp?c.bp[d-1]:0);m.bpe+=(c.bpe?c.bpe[d-1]:0);if(c.bol[d-1]>0)m.dias++});
  btbpCalc(m);
  m.bmPlano=m.bol+m.br?m.rec/(m.bol+m.br):0;
  m.bm=m.bol?m.rec/m.bol:0;m.ipb=m.bol?m.it/m.bol:0;m.pb1=m.bol?m.b1/m.bol:0;m.pm=m.it?m.rec/m.it:0;
@@ -839,6 +1022,13 @@ function perTxt(){
  if(a[a.length-1]-a[0]===a.length-1)return `${dd(a[0])} a ${dd(a[a.length-1])}`;
  return `${a.length} dias selecionados`;
 }
+// Selos "maior / menor que o ano passado" (Boletos, IPB, PM)
+const YK={rec:['Receita',v=>kbrl(v)],bol:['Boletos',v=>fx(v)],bm:['BM',v=>brl(v,2)],ipb:['IPB',v=>fx(v,2)],pm:['PM',v=>brl(v,2)]};
+function yoySelos(y,ks=['bol','ipb','pm']){
+ if(!y||!y.ok)return '';
+ return `<span class="yos">${ks.map(k=>{const d=y.d[k],up=d>=0;return `<span class="yo ${up?'up':'dn'}" title="${YK[k][0]}: ${YK[k][1](y.atu[k])} × ${YK[k][1](y.ant[k])} em ${AAtxt()}">${YK[k][0]} ${up?'▲':'▼'} ${pct(d,0,true)}</span>`}).join('')}</span>`;
+}
+const AAtxt=()=>`${MESES[MES].slice(0,3)}/${String(ANO-1).slice(2)}`;   // ex.: out/25
 const metaHojeTxt=m=>m.recup>0?`Vender ${kbrl(m.hoje)} hoje: meta do dia ${kbrl(m.metaHoje)} + ${kbrl(m.recup)} para recuperar o gap`:`Vender ${kbrl(m.hoje)} hoje (meta do dia)`;
 
 /* ================= Ações (versão local: salvas neste navegador) ================= */
@@ -858,16 +1048,25 @@ function statusPlan(){
 }
 const paraPlanilha=a=>{const l=lojaById(a.loja),c=a.cons?consById(a.cons):null;
  return{id:a.id,autor:a.autor||'',mes:a.mes,dia:a.dia,loja_id:a.loja,loja:l?l.nome:'',consultor_id:a.cons||'',consultor:c?c.nome:'',tipo:a.tipo,gatilho:a.gat||'',descricao:a.desc||''}};
-const daPlanilha=r=>({id:Number(r.id),autor:r.autor,mes:r.mes,dia:Number(r.dia),loja:String(r.loja_id),cons:r.consultor_id||'',tipo:r.tipo,gat:r.gatilho||'',desc:r.descricao||''});
+// O Sheets pode devolver o mês como data ("Thu Oct 01 2026 ...") em vez de "2026-10": normaliza aqui
+const mesTxt=v=>{v=String(v||'').replace(/^'/,'');if(/^\d{4}-\d{2}$/.test(v))return v;const d=new Date(v);return isNaN(d)?v:`${d.getFullYear()}-${pad(d.getMonth()+1)}`};
+const daPlanilha=r=>({id:Number(r.id),autor:r.autor,mes:mesTxt(r.mes),dia:Number(String(r.dia).replace(/^'/,'')),loja:String(r.loja_id),cons:r.consultor_id||'',tipo:r.tipo,gat:r.gatilho||'',desc:r.descricao||''});
 // POST sem cabeçalho de conteúdo (text/plain) para o navegador não exigir pré-verificação de CORS
-const enviar=corpo=>fetch(PLANILHA.url,{method:'POST',body:JSON.stringify({chave:PLANILHA.chave,...corpo})}).then(r=>r.json()).then(j=>{if(!j.ok)throw new Error(j.erro||'erro');return j});
+// recusa da planilha (ação incompleta etc.) vira erro com .recusa: a fila descarta o item em vez de travar as próximas
+const enviar=corpo=>fetch(PLANILHA.url,{method:'POST',body:JSON.stringify({chave:PLANILHA.chave,...corpo})}).then(r=>r.json()).then(j=>{if(!j.ok){const e=new Error(j.erro||'erro');e.recusa=j.erro!=='chave inválida';throw e}return j});
 async function sincronizar(){
  if(!PLANILHA.url){statusPlan();return}
  try{
-  while(pendentes.length){await enviar(pendentes[0]);pendentes.shift();salvar()}
-  const j=await fetch(`${PLANILHA.url}?chave=${encodeURIComponent(PLANILHA.chave)}&mes=${ANO}-${pad(MES+1)}`).then(r=>r.json());
+  while(pendentes.length){
+   try{await enviar(pendentes[0])}
+   catch(e){if(!e.recusa)throw e;          // sem rede / planilha fora: tenta de novo depois
+    const p=pendentes[0];toast(`Ação não foi para a planilha (${e.message})${p.acao&&p.acao.loja?': '+p.acao.loja:''}`,true)}
+   pendentes.shift();salvar();
+  }
+  // lê todas as ações ativas e filtra o mês aqui (não depende do formato em que o Sheets guardou o mês)
+  const j=await fetch(`${PLANILHA.url}?chave=${encodeURIComponent(PLANILHA.chave)}`,{cache:'no-store'}).then(r=>r.json());
   if(!j.ok)throw new Error(j.erro);
-  const doMes=j.acoes.map(daPlanilha),outros=acoes.filter(a=>a.mes!==`${ANO}-${pad(MES+1)}`);
+  const doMes=j.acoes.map(daPlanilha).filter(a=>a.mes===`${ANO}-${pad(MES+1)}`),outros=acoes.filter(a=>a.mes!==`${ANO}-${pad(MES+1)}`);
   acoes=[...outros,...doMes];planOk=true;salvar();
  }catch(e){planOk=false}
  statusPlan();
@@ -900,8 +1099,8 @@ function avaliar(ls){
   if(m.bol&&m.perdaBTBP>.01*m.metaP){
    const longe=m.pBT<F.bt*.5||m.pBP<F.bp*.5;
    add('btbp',longe&&m.perdaBTBP>.03*m.metaP?'alto':'medio',{loja:l,imp:m.perdaBTBP,impL:`estimados em ${perTxt()}`,
-    evid:`<b>BT em ${pct(m.pBT,1)}</b> dos boletos (saudável ${pct(F.bt)}) e <b>BP em ${pct(m.pBP,1)}</b> (saudável ${pct(F.bp)}). Faltaram ${fx(m.faltaBT)} boletos com BT e ${fx(m.faltaBP)} com BP.`,
-    meta:`hoje, ${fx(F.bt*m.bol/m.nd)} boletos com BT e ${fx(F.bp*m.bol/m.nd)} com BP (${pct(F.bt)} e ${pct(F.bp)} dos boletos)`});
+    evid:`<b>BT em ${pct(m.pBT,1)}</b> dos boletos (saudável ${pct(F.bt)}) e <b>BP em ${pct(m.pBP,1)}</b> dos boletos a partir de R$ 120 (saudável ${pct(F.bp)}). Faltaram ${fx(m.faltaBT)} boletos com BT e ${fx(m.faltaBP)} com BP.`,
+    meta:`hoje, BT em ${pct(F.bt)} dos boletos e BP em ${pct(F.bp)} dos boletos a partir de R$ 120`});
   }
   if(m.bol&&m.bmSaud&&m.bm<m.bmAlvoV*.97){
    add('bmsaud',m.bm<m.bmAlvoV*.9?'alto':'medio',{loja:l,imp:m.potBM,impL:`potencial em ${perTxt()}`,
@@ -910,6 +1109,14 @@ function avaliar(ls){
   }
   if(m.bol&&m.iPm<-lim)add('pm',m.iPm<-3*lim?'alto':'medio',{loja:l,imp:-m.iPm,impL:PL,
    evid:`Preço médio por item de <b>${brl(m.pm,2)}</b> contra o alvo de <b>${brl(m.pmAlvo,2)}</b> (${brl(m.pmRef,2)} em ${REFTXT}). Mix puxado para itens de entrada.`,meta:`Preço médio ≥ ${brl(m.pmAlvo,2)} hoje`});
+  // Receita caindo contra o mesmo período do ano passado (lojas com venda nos dois anos).
+  // A ação vai para o indicador que mais tirou receita: boletos (fluxo), IPB ou preço médio.
+  if(m.aa.ok&&m.aa.d.rec<=-.05){const y=m.aa,ef=[['fluxo',y.eBol,'Boletos'],['ipb',y.eIpb,'IPB'],['pm',y.ePm,'Preço médio']].sort((p,q)=>p[1]-q[1])[0];
+   const hj=TODAY<=DAYS?l.aa.rec[TODAY-1]:0,bh=TODAY<=DAYS?l.aa.bol[TODAY-1]:0;
+   add('anoant',y.d.rec<=-.15?'crit':y.d.rec<=-.08?'alto':'medio',{loja:l,imp:y.ant.rec-y.atu.rec,impL:`abaixo de ${AAtxt()} (mesmos dias)`,cic:ef[0],
+    // os números de cada indicador já estão nos selos do card: aqui só o que mais pesou
+    evid:`o que mais pesou foi <b>${ef[2].toLowerCase()}</b> (${kbrl(ef[1])}).`,
+    meta:hj>0?`superar ${AAtxt()} hoje: ${kbrl(hj)} e ${fx(bh)} boletos`:`${ef[2]} acima de ${AAtxt()}`})}
   const ult=acoesMes().filter(a=>a.loja===l.id&&a.dia<=LAST).sort((a,b)=>b.dia-a.dia)[0];
   if(ult){const e=efeito(m,ult.dia);if(e&&e.d>=.1)add('recup','pos',{loja:l,imp:e.inc,impL:'a mais desde a ação',
    evid:`Depois de <b>${esc(ult.tipo)}</b> em ${dd(ult.dia)}, o ritmo diário foi de <b>${pct(e.a)}</b> para <b>${pct(e.b)}</b>.`,meta:'Reconhecer o time e anotar o que funcionou'})}
@@ -918,7 +1125,7 @@ function avaliar(ls){
 }
 
 /* ================= Estado e escopo ================= */
-const S={reg:'',praca:'',gvo:'',loja:'',cons:'',tab:'hoje',pfil:'',chart:'dia',acSel:null,foco:null,sort:{lojas:['gapR',1],cons:['idx',1]}};
+const S={reg:'',praca:'',gvo:'',loja:'',cons:'',tab:'hoje',pfil:'',chart:'dia',acSel:null,foco:null,sort:{lojas:['gapR',1],cons:['emJogo',-1],uso:['ult',1]},usoNome:''};
 let FIRED=[];
 const $=id=>document.getElementById(id);
 // Hierarquia dos filtros: Regional -> Praça -> GVO -> Loja -> Consultor
@@ -928,40 +1135,125 @@ function escopo(){return filtra(4)}
 /* ================= Render ================= */
 function render(){
  const ls=escopo(),ids=new Set(ls.map(l=>l.id)),a=aggL(ls);
- const cs=S.cons?cons.filter(c=>c.id===S.cons):cons.filter(c=>ids.has(c.loja)&&c.m.dias>=Math.min(2,SEL.size));
+ const cs=S.cons?cons.filter(c=>c.id===S.cons):cons.filter(c=>naEscopo(c,ids)&&c.m.dias>=Math.min(2,SEL.size));
  $('perTxt').textContent=perTxt();
+ const lj=S.loja&&lojaById(S.loja);$('fRes').textContent=`${lj?lj.nome:S.gvo||S.praca||S.reg||'Rede'} · ${perTxt()}`;
  FIRED=avaliar(ls);
  if(!S.foco||!ids.has(S.foco))S.foco=[...ls].sort((x,y)=>M[x.id].gapR-M[y.id].gapR)[0].id;
  // Status do conjunto contra o "deveria estar" (meta diarizada acumulada)
  const acima=a.gapPP>=0,stA=acima?'ok':'bad',stP=a.proj>=1?'ok':a.proj>=.96?'warn':'bad';
  const chip=(st,txt,i)=>`<span class="ritmo ${st}">${ic(i)}${txt}</span>`;
- const bmH=a.bmAlvoV||a.bm,bolH=bmH?a.hoje/bmH:0;
+ // Boletos, BM, IPB e PM necessários hoje: mesma regra do "Garantir" de cada loja
+ // (boletos até +30% sobre o mesmo dia da semana do ano passado; o resto no boleto médio)
+ const nec=necessarioHoje(ls,a);
+ fillDias(a);
+ const nAA=a.aa.ok?a.aa.dAte:null;
  $('kpis').innerHTML=`
-  <div class="card kpi st-${stA} fade"><p class="lbl">% da meta</p><p class="val ${acima?'c-ok':'c-bad'}">${pct(a.at,1)}</p>
-   ${chip(stA,`${acima?'Acima':'Abaixo'} do ritmo · ${pp(a.gapPP)}`,acima?'trending-up':'trending-down')}
+  <div class="card kpi st-${stA} fade"><p class="lbl">% da meta <span class="d1">D-1 · até ${dd(LAST)}</span></p><p class="val ${acima?'c-ok':'c-bad'}">${pct(a.at,1)}</p>
+   ${chip(stA,`Deveria estar ${pct(a.esp,1)}`,acima?'trending-up':'trending-down')}
    <div class="prog"><i style="width:${Math.min(100,a.at*100)}%;background:${acima?'var(--primary)':'var(--destructive)'}"></i><b style="left:${a.esp*100}%"></b></div>
-   <p class="kl"><b>Meta do mês ${kbrl(a.metaMes)}</b> · faltam ${kbrl(Math.max(0,a.metaMes-a.rec))}</p>
-   <p class="kl" style="margin-top:2px">Até ${dd(LAST)}: ${kbrl(a.rec)} de ${kbrl(a.metaAte)}</p></div>
+   <p class="kl"><b>Meta do mês ${kbrl(a.metaMes)}</b></p>
+   ${nAA!=null?`<p class="kl ky"><b class="${nAA>=0?'c-ok':'c-bad'}">${nAA>=0?'+':'−'}${fx(Math.abs(nAA)*100,1)}%</b> vs ${ANO-1}</p>`:''}</div>
   <div class="card kpi st-${stP} fade"><p class="lbl">Projeção</p><p class="val ${tone(a.proj>=1,a.proj>=.96)}">${pct(a.proj)}</p>
-   ${chip(stP,stP==='ok'?'Fecha acima':stP==='warn'?'No limite':'Fecha abaixo',stP==='ok'?'circle-check':'triangle-alert')}
-   <p class="kl">${a.gapR>=0?'+':''}${kbrl(a.gapR)} vs. meta até ${dd(LAST)}</p></div>
-  <div class="card kpi hero fade"><div class="top"><p class="lbl">Meta de hoje</p>${chip(a.recup>0?'bad':'ok',a.recup>0?'Recuperar':'No ritmo',a.recup>0?'alarm-clock':'circle-check')}</div>
-   <p class="val">${kbrl(a.hoje)}</p>
+   ${chip(stP,stP==='ok'?'Fecha acima':stP==='warn'?'No limite':'Fecha abaixo',stP==='ok'?'circle-check':'triangle-alert')}</div>
+  <div class="card kpi hero fade"><div class="top"><p class="lbl">Meta de hoje · ${dd(Math.min(TODAY,DAYS))}</p>${chip(a.recup>0?'bad':'ok',a.recup>0?'Recuperar':'No ritmo',a.recup>0?'alarm-clock':'circle-check')}</div>
+   <p class="val">${kbrl(a.hoje)} <small class="hsub">${fx(nec.bol)} boletos</small></p>
+   <p class="hnota hf"><span>Meta de hoje = meta diarizada + gap ÷ ${a.diasRest} dias que faltam</span><b>${brl(a.hoje)} = ${brl(a.metaHoje)} + ${brl(a.recup)}</b>
+    <small>${a.gapR<0?`Gap até ontem: ${brl(-a.gapR)} ÷ ${a.diasRest} dias = ${brl(a.recup)}`:`Sem gap: ${brl(a.gapR)} acima do deveria estar até ontem`}</small></p>
    <div class="hgrid">
-    <div><span>Meta do dia</span><b>${kbrl(a.metaHoje)}</b></div>
-    <div><span>Recuperação</span><b>${a.recup>0?'+'+kbrl(a.recup):'—'}</b></div>
-    <div><span>Boletos</span><b>${fx(bolH)}</b></div>
-    <div><span>BM alvo</span><b>${brl(bmH)}</b></div>
-    <div><span>IPB alvo</span><b>${fx(a.ipbAlvo||a.ipb,2)}</b></div>
-    <div><span>BT · BP</span><b>${fx(bolH*F.bt)} · ${fx(bolH*F.bp)}</b></div>
-   </div>
-   ${a.recup===0&&a.recupLojas>0?`<p class="hnota">${a.nAtras} loja(s) atrasada(s): +${kbrl(a.recupLojas)}</p>`:''}</div>`;
- const TABS=[['hoje','Hoje','zap'],['lojas','Lojas','store'],['consultores','Consultores','users']];
+    <div><span>BM necessário</span><b>${brl(nec.bm)}</b></div>
+    <div><span>IPB necessário</span><b>${fx(nec.ipb,2)}</b></div>
+    <div><span>BT necessário</span><b>${pct(F.bt)}</b><small>hoje ${pct(a.pBT)}</small></div>
+    <div><span>BP necessário</span><b>${pct(F.bp)}</b><small>hoje ${pct(a.pBP)} · boletos ≥ R$ 120</small></div>
+   </div></div>`;
+ const TABS=[['hoje','Hoje','zap'],['consultores','Consultores','users'],['lojas','Lojas','store'],['entender','Entender','search'],['uso','Uso','activity']];
  $('tabs').innerHTML=TABS.map(([id,l,i])=>`<button class="tab ${S.tab===id?'on':''}" data-tab="${id}">${ic(i)}<span>${l}</span></button>`).join('');
- ({hoje:vHoje,lojas:vLojas,consultores:vCons})[S.tab](ls,cs,a);
+ ({hoje:vHoje,entender:vEntender,lojas:vLojas,consultores:vCons,uso:vUso})[S.tab](ls,cs,a);
  icons();
+ // registra o acesso (página do mês, aba e filtro); o uso.js não repete a mesma tela antes de 30 minutos
+ if(window.PulsarUso)PulsarUso.registrar({pagina:'mes',aba:S.tab,regional:S.reg,praca:S.praca,gvo:S.gvo,loja_id:S.loja||(S.tab==='lojas'&&S.foco?S.foco:'')});
 }
-function feita(t){return acoesMes().some(x=>x.dia===TODAY&&x.loja===t.loja.id&&x.gat===t.g)}
+/* ================= Uso: quem está acessando o PULSAR ================= */
+// Lê a aba "acessos" da planilha (gravada pelo uso.js) e cruza com as pessoas do cadastro (GVO, GCVO/GPVO, GRVO).
+let USO={mes:null,dados:null,em:0,erro:''};
+async function carregarUso(force){
+ const mes=`${ANO}-${pad(MES+1)}`;
+ if(!force&&USO.mes===mes&&USO.dados&&Date.now()-USO.em<120000)return;
+ if(!window.PulsarUso){USO={mes,dados:null,em:Date.now(),erro:'uso'};return}
+ try{USO={mes,dados:await PulsarUso.acessos(mes),em:Date.now(),erro:''};if(!USO.dados)USO.erro='script'}
+ catch(e){USO={mes,dados:null,em:Date.now(),erro:'rede'}}
+}
+const dataLocal=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+// Detalhe do uso: telas mais usadas e histórico dos últimos acessos (página, aba e filtro), com filtro por pessoa
+const ABAS_TXT={hoje:'Hoje',consultores:'Consultores',lojas:'Lojas',entender:'Entender',uso:'Uso'};
+function filtroTxt(a){
+ const l=a.loja_id&&lojaById(a.loja_id);
+ return l?`${l.nome}${a.aba==='lojas'&&!a.gvo?' (loja aberta)':''}`:a.gvo?`GVO ${a.gvo}`:a.praca?`Praça ${a.praca}`:a.regional?a.regional:'Todas as lojas';
+}
+function usoDetalhe(acs){
+ const sel=S.usoNome?acs.filter(a=>a.nome===S.usoNome):acs;
+ const tela=a=>`${a.pagina==='hoje'?'Acompanhamento do dia':'Painel do mês · '+(ABAS_TXT[a.aba]||a.aba)}`;
+ const g={};sel.forEach(a=>{const k=tela(a),x=g[k]=g[k]||{n:0,p:new Set()};x.n++;x.p.add(a.nome)});
+ const telas=Object.entries(g).sort((a,b)=>b[1].n-a[1].n),max=telas.length?telas[0][1].n:1;
+ const hist=[...sel].sort((a,b)=>b.quando.localeCompare(a.quando)).slice(0,200);
+ return `<div class="focus" style="grid-template-columns:minmax(0,1fr) minmax(0,2fr)">
+  <div class="card"><div class="card-hd"><div><h2>Telas mais usadas</h2><p>${S.usoNome?esc(S.usoNome):'Todos'} · ${sel.length} acessos</p></div></div>
+   <div class="pad" style="display:flex;flex-direction:column;gap:10px">${telas.map(([k,x])=>`<div><div style="display:flex;justify-content:space-between;gap:8px;font-size:13px"><b>${esc(k)}</b><span class="mf tnum">${x.n} · ${x.p.size} pessoa${x.p.size>1?'s':''}</span></div>
+    <div class="minibar" style="margin-top:4px"><span class="b" style="flex:1"><i style="width:${Math.round(x.n/max*100)}%;background:var(--accent)"></i></span></div></div>`).join('')||'<p class="mf">Sem acessos.</p>'}</div></div>
+  <div class="card"><div class="card-hd"><div><h2>Últimos acessos</h2><p>${S.usoNome?`${esc(S.usoNome)} · <button class="lk" data-usonome="">ver todos</button>`:'Clique num gestor na tabela acima para ver só os acessos dele'}</p></div></div>
+   <div class="tw tall"><table><thead><tr><th>Quando</th><th>Quem</th><th>Tela</th><th>Filtro</th></tr></thead><tbody>
+   ${hist.map(a=>`<tr><td class="tnum">${a.quando.slice(8,10)}/${a.quando.slice(5,7)} ${a.quando.slice(11,16)}</td><td>${esc(a.nome)}</td><td>${esc(tela(a))}</td><td>${esc(filtroTxt(a))}</td></tr>`).join('')||'<tr><td colspan="4" class="mf">Sem acessos.</td></tr>'}
+   </tbody></table></div></div></div>`;
+}
+function vUso(ls){
+ if(!USO.dados&&!USO.erro){$('view').innerHTML='<section class="sec"><p class="mf">Carregando os acessos…</p></section>';carregarUso().then(()=>{if(S.tab==='uso')render()});return}
+ if(!USO.dados){
+  $('view').innerHTML=`<section class="sec"><div class="card pad"><h2 style="font-size:18px">Os acessos ainda não estão disponíveis</h2><p class="mf">${USO.erro==='uso'?'O arquivo <code>uso.js</code> não foi publicado junto com o painel.':USO.erro==='script'?'O Apps Script da planilha ainda é a versão antiga. Republique o <code>apps-script/Codigo.gs</code> (Implantar &gt; Gerenciar implantações &gt; editar &gt; Nova versão) para começar a registrar e ler os acessos.':'Não foi possível falar com a planilha agora. Tente de novo em alguns minutos.'}</p></div></section>`;
+  return;
+ }
+ const hojeStr=dataLocal(new Date()),ids=new Set(ls.map(l=>l.id)),filtrado=S.reg||S.praca||S.gvo||S.loja;
+ const acs=USO.dados;
+ // pessoas do cadastro no filtro (quem tem loja no filtro) + quem acessou com outro nome
+ const pessoas=(D.pessoas||[]).filter(p=>!filtrado||p.interno||p.lojas.some(x=>ids.has(x)));
+ const nomes=new Set(pessoas.map(p=>p.nome));
+ const outros=[...new Set(acs.map(a=>a.nome))].filter(n=>n&&!(D.pessoas||[]).some(p=>p.nome===n)).map(n=>({nome:n,papeis:[(acs.find(a=>a.nome===n)||{}).papel||'Outro'],lojas:[],outro:true}));
+ const lista=[...pessoas,...(filtrado?[]:outros)];
+ const ac=acoesMes();
+ const rows=lista.map(p=>{
+  const a=acs.filter(x=>x.nome===p.nome),dias=new Set(a.map(x=>x.quando.slice(0,10))),ult=a.map(x=>x.quando).sort().pop()||'';
+  const lj=new Set(a.map(x=>x.loja_id).filter(Boolean)),ac_=ac.filter(x=>(x.autor||'').trim().toLowerCase()===p.nome.toLowerCase()).length;
+  return{p,n:a.length,dias:dias.size,hoje:dias.has(hojeStr),ult,mes:a.filter(x=>x.pagina==='mes').length,dia:a.filter(x=>x.pagina==='hoje').length,lojas:lj.size,acoes:ac_,disp:new Set(a.map(x=>x.dispositivo)).size};
+ });
+ const [k,dir]=S.sort.uso;
+ rows.sort((x,y)=>{const g=r=>k==='nome'?r.p.nome:k==='papel'?r.p.papeis[0]:k==='ult'?r.ult:r[k];const a=g(x),b=g(y);return(a>b?1:a<b?-1:0)*dir});
+ // TIME IAF e nomes digitados aparecem na tabela, mas não contam como gestores nos indicadores
+ const gest=rows.filter(r=>!r.p.outro&&!r.p.interno),hj=gest.filter(r=>r.hoje).length,mesN=gest.filter(r=>r.n>0).length,tot=gest.length;
+ const totAc=acs.filter(a=>!filtrado||nomes.has(a.nome)).length;
+ const diasCorridos=Math.min(new Date().getDate(),DAYS);
+ const quando=s=>s?`${s.slice(8,10)}/${s.slice(5,7)} ${s.slice(11,16)}`:'—';
+ $('view').innerHTML=`<section class="sec">
+  <div class="kpis" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
+   <div class="card kpi"><p class="lbl">Acessaram hoje</p><p class="val ${hj>=tot/2?'c-ok':'c-bad'}">${hj} de ${tot}</p><p class="kl">${pct(tot?hj/tot:0)} dos gestores${filtrado?' do filtro':''}</p></div>
+   <div class="card kpi"><p class="lbl">Acessaram no mês</p><p class="val">${mesN} de ${tot}</p><p class="kl">${tot-mesN} nunca abriram em ${MESES[MES]}</p></div>
+   <div class="card kpi"><p class="lbl">Acessos no mês</p><p class="val">${fx(totAc)}</p><p class="kl">painel do mês e acompanhamento do dia</p></div>
+   <div class="card kpi"><p class="lbl">Ações registradas</p><p class="val">${fx(rows.reduce((s,r)=>s+r.acoes,0))}</p><p class="kl">pelos gestores da lista, no mês</p></div>
+  </div>
+  <div class="card"><div class="card-hd"><div><h2>Uso por gestor</h2><p>${filtrado?'Gestores com loja no filtro':'GVO, GCVO/GPVO e GRVO do cadastro'} · a pessoa se identifica na primeira visita · <button class="lk" data-uso="1">atualizar</button></p></div><span class="icchip t-accent">${ic('activity')}</span></div>
+  <div class="tw tall"><table><thead><tr>${sortTh('uso','nome','Gestor')}${sortTh('uso','papel','Papel')}${sortTh('uso','hoje','Hoje')}${sortTh('uso','ult','Último acesso')}${sortTh('uso','dias','Dias com acesso','r')}${sortTh('uso','n','Acessos','r')}${sortTh('uso','mes','Painel do mês','r')}${sortTh('uso','dia','Acomp. do dia','r')}${sortTh('uso','lojas','Lojas filtradas','r')}${sortTh('uso','acoes','Ações','r')}</tr></thead><tbody>
+  ${rows.map(r=>`<tr class="click ${S.usoNome===r.p.nome?'sel':''}" data-usonome="${esc(r.p.nome)}"><td><p class="nm">${esc(r.p.nome)}</p><p class="sub">${r.p.outro?'nome digitado':r.p.interno?'time interno':`${r.p.lojas.length} loja${r.p.lojas.length===1?'':'s'} no painel`}</p></td>
+   <td>${esc(r.p.papeis.join(', '))}</td>
+   <td>${r.hoje?`<span class="pill p-ok">${ic('circle-check')}Acessou</span>`:'<span class="pill p-bad">Não acessou</span>'}</td>
+   <td class="tnum">${quando(r.ult)}</td>
+   <td class="r tnum"><b class="${r.dias>=diasCorridos*.6?'c-ok':r.dias>0?'c-warn':'c-bad'}">${r.dias}</b><span class="mf"> / ${diasCorridos}</span></td>
+   <td class="r tnum">${r.n}</td><td class="r tnum">${r.mes}</td><td class="r tnum">${r.dia}</td><td class="r tnum">${r.lojas}</td><td class="r tnum">${r.acoes}</td></tr>`).join('')}
+  </tbody></table></div></div>
+  ${usoDetalhe(acs.filter(a=>!filtrado||nomes.has(a.nome)||!(D.pessoas||[]).some(p=>p.nome===a.nome)))}
+  <p class="mf" style="font-size:12px">Identificação declarada: cada pessoa escolhe o próprio nome na primeira visita (fica salvo no navegador). Acessos do computador local (testes) não contam.</p>
+ </section>`;
+}
+
+// a loja já tem ação registrada hoje (por qualquer pessoa: vem da planilha)
+function feita(t){return acoesMes().some(x=>x.dia===TODAY&&x.loja===t.loja.id)}
 function sortTh(tbl,k,l,r=''){const[ak,dir]=S.sort[tbl],on=ak===k;return `<th class="s ${r} ${on?'on':''}" data-sort="${tbl}:${k}"><span class="si">${l}${ic(on?(dir>0?'chevron-up':'chevron-down'):'chevrons-up-down')}</span></th>`}
 function sorter(tbl,get){const[k,d]=S.sort[tbl];return(x,y)=>{const a=get(x,k),b=get(y,k);return(a>b?1:a<b?-1:0)*d}}
 
@@ -983,7 +1275,9 @@ function node(k,a){
   pm:['Preço médio','tag',brl(a.pm,2),`alvo ${brl(a.pmAlvo,2)} · ${REFTXT} ${brl(a.pmRef,2)}`,a.dPm,a.iPm]}[k];
  const tg=e==='det'?'<span class="pill p-bad">Detrator</span>':e==='ala'?'<span class="pill p-ok">Alavanca</span>':'';
  return `<div class="node ${k==='rec'?'rootn':e}"><div class="lb"><span>${ic(icn)}${lb}</span>${tg}</div><div class="vv">${v}</div>
-  <div class="ln"><span class="delta ${d>=.005?'up':d<=-.005?'down':'flat'}">${ic(d>=0?'arrow-up-right':'arrow-down-right')}${pct(d,1,true)}</span><span>${ref}</span></div>
+  <div class="ln"><span class="delta ${d>=.005?'up':d<=-.005?'down':'flat'}">${ic(d>=0?'arrow-up-right':'arrow-down-right')}${pct(d,1,true)} vs ${k==='rec'?'meta':'alvo'}</span><span>${ref}</span></div>
+  ${a.aa.ok?(()=>{const y=a.aa,dy=y.d[k],up=dy>=0,ef={rec:y.atu.rec-y.ant.rec,bol:y.eBol,bm:y.eBm,ipb:y.eIpb,pm:y.ePm}[k];
+   return `<div class="yrow ${up?'up':'dn'}">${ic(up?'trending-up':'trending-down')}<span><b>${up?'Maior':'Menor'} que ${AAtxt()}</b> · ${pct(dy,1,true)} (${YK[k][1](y.ant[k])}) · ${ef>=0?'+':''}${kbrl(ef)}</span></div>`})():''}
   ${k==='rec'?'':`<div class="im ${imp<0?'c-bad':'c-ok'}">${imp<0?'':'+'}${kbrl(imp)}</div>`}</div>`;
 }
 const maiorDet=m=>{const k=['bol','ipb','pm'].reduce((x,y)=>m[IMPK[y]]<m[IMPK[x]]?y:x);return m[IMPK[k]]<-.01*m.metaP?k:null};
@@ -991,37 +1285,25 @@ const maiorDet=m=>{const k=['bol','ipb','pm'].reduce((x,y)=>m[IMPK[y]]<m[IMPK[x]
 /* ================= Hoje: funil + 3 prioridades ================= */
 // Uma prioridade por loja. Se a loja está abaixo da meta e tem um detrator específico
 // (boletos, IPB, B1 ou preço médio), a prioridade é o detrator, com a gravidade do ritmo.
-const ESPEC=['fluxo','ipb','b1','pm','bmsaud','btbp'];
-function prioridades(){
- const by={};FIRED.forEach((t,i)=>{if(t.g==='tendencia'||t.g==='recup')return;(by[t.loja.id]=by[t.loja.id]||[]).push([t,i])});
- return Object.values(by).map(arr=>{
-  const esp=arr.filter(([t])=>ESPEC.includes(t.g)).sort((x,y)=>y[0].imp-x[0].imp)[0],rit=arr.find(([t])=>t.g==='ritmo');
-  if(esp&&rit)return[{...esp[0],sev:SEV[rit[0].sev].o<SEV[esp[0].sev].o?rit[0].sev:esp[0].sev,rit:1,meta:esp[0].meta+` · vender ${kbrl(M[esp[0].loja.id].hoje)} hoje`},esp[1]];
-  return esp||rit;
- }).filter(Boolean).sort(([a],[b])=>SEV[a.sev].o-SEV[b.sev].o||b.imp-a.imp);
-}
+const ESPEC=['fluxo','ipb','b1','pm','bmsaud','btbp','anoant'];
 const semAcao=l=>M[l.id].proj<.92&&!acoesMes().some(a=>a.loja===l.id&&a.dia>=TODAY-3);
 // 1ª frase da evidência, sem as explicações seguintes
 const curta=h=>{const i=h.search(/\.(<\/b>)?\s+[A-ZÁÉÍÓÚÂÊÔÃÕÇ<]/);return i>0?h.slice(0,i+1).replace(/<b>([^<]*)$/,'$1')+(h.slice(0,i+1).split('<b>').length>h.slice(0,i+1).split('</b>').length?'</b>':''):h};
 // Alvos de hoje: boletos = meta de hoje ÷ BM alvo; BT e BP nas penetrações saudáveis
-const alvosHoje=m=>{const bm=m.bmAlvoV||m.bm,b=bm?m.hoje/bm:0;return{b,bm,ipb:m.ipbAlvo||m.ipb,bt:b*F.bt,bp:b*F.bp}};
-const alvosHTML=m=>{const x=alvosHoje(m);return `<div class="alvos"><span>Boletos<b>${fx(x.b)}</b></span><span>BM alvo<b>${brl(x.bm)}</b></span><span>IPB alvo<b>${fx(x.ipb,2)}</b></span><span>BT · BP<b>${fx(x.bt)} · ${fx(x.bp)}</b></span></div>`};
-function prioCard(t,i,n){
- const g=GT[t.g],s=SEV[t.sev];
- return `<article class="card act ${t.sev} fade">
-  <div class="hd"><div class="l"><span class="num">${n}</span><span class="sev ${t.sev}">${ic(s.ic)}${s.n}</span></div><div class="imp"><b>${kbrl(t.imp)}</b><small>em jogo</small></div></div>
-  <h3>${ic(g.icon)}${esc(t.loja.nome)}</h3>
-  <p class="evid"><b>${g.nome}:</b> ${curta(t.evid)}</p>
-  ${semAcao(t.loja)?`<p class="flag">${ic('bell-ring')}Sem ação há 3 dias</p>`:''}
-  ${acaoBloco(t.g,{tipo:t.acao||g.acao,acao:t.acao||g.acao,detalhe:t.rot||g.roteiro[0]})}
-  <div class="goal">${ic('flag')}<span>${t.meta.split(' · vender')[0]} · <b>vender ${kbrl(M[t.loja.id].hoje)} hoje</b></span></div>
-  ${alvosHTML(M[t.loja.id])}
-  ${(()=>{const m=M[t.loja.id],k=coreDoGatilho(t.g),co=m.core||{};
-   const ks=[k];if(k!=='pm'&&co.pm&&co.pm.gap>0)ks.push('pm');else if(k!=='ipb'&&co.ipb&&co.ipb.gap>0)ks.push('ipb');
-   const linhas=ks.filter(x=>co[x]&&co[x].gap>0).map(x=>`<p>${fraseCore(x,co[x],t.loja)}</p>`);
-   const p=praticaPara(m,k==='bpm'?'fluxo':'item')||praticaPara(m);if(p)linhas.push(`<p>${frasePrat(p,t.loja)}</p>`);
-   return linhas.length?`<div class="exemplo">${ic('lightbulb')}<div><p class="ex-t">Comparado com as lojas ${esc(nomeCluster(t.loja.cluster).toLowerCase())} no ritmo</p>${linhas.join('')}</div></div>`:''})()}
-  <div class="ft">${feita(t)?`<span class="done">${ic('circle-check')}Registrada</span>`:`<button class="btn" data-reg="${i}">${ic('plus')}Registrar</button>`}<button class="btn ghost sm" data-foco="${t.loja.id}">Ver loja ${ic('arrow-right')}</button></div></article>`;
+const alvosHoje=m=>{const bm=m.bmAlvoV||m.bm,b=bm?m.hoje/bm:0;return{b,bm,ipb:m.ipbAlvo||m.ipb}};
+const alvosHTML=m=>{const x=alvosHoje(m);return `<div class="alvos"><span>Boletos<b>${fx(x.b)}</b></span><span>BM alvo<b>${brl(x.bm)}</b></span><span>IPB alvo<b>${fx(x.ipb,2)}</b></span><span>BT · BP<b>${pct(F.bt)} · ${pct(F.bp)}</b><small>hoje ${pct(m.pBT)} · ${pct(m.pBP)}</small></span></div>`};
+// Consultores que mais puxam a loja para baixo (receita por dia abaixo do time)
+function puxamBaixo(lid){
+ return cons.filter(c=>c.loja===lid&&!c.digital&&c.m.dias>=Math.min(3,SEL.size)).map(c=>[c,perfil(c)])
+  .filter(([,p])=>['atende','item','ticket','abaixo'].includes(p.k)).sort((x,y)=>x[1].idx-y[1].idx).slice(0,2);
+}
+// Ação de fluxo da própria loja: o canal (Calçada, VFL, WhatsApp...) com mais ganho contra o cluster no ritmo
+const TIPO_CANAL={cal:'Calçada Perfumada',vfl:'Venda fora de loja',wpp:'Carteira no WhatsApp',cb:'Carteira no WhatsApp',fc:'Conversão da Ação de Fluxo',par:'Ação externa / empresas',vic:'Ação externa / empresas',exp:'Treinamento com o time'};
+function acaoFluxoLoja(t){
+ const m=M[t.loja.id],p=praticaPara(m,'fluxo'),cic=acoesCiclo('fluxo')[0];
+ if(!p||p.ganho<1000)return null;          // ganho pequeno: fica a ação do ciclo
+ const P=PRAT[p.k];
+ return `<div class="do">${ic(TIPOS[TIPO_CANAL[p.k]]||'footprints')}<div><b>${esc(P.n)}: ${pctP(p.v)} aqui × ${pctP(p.alvo)} alvo do cluster</b><span>${esc(P.como)} (+${fx(p.extra)} ${esc(P.u)} ≈ +${kbrl(p.ganho)} no período)${cic?` · Ciclo: ${esc(cic.acao)}`:''}</span></div></div>`;
 }
 // Barras = meta do dia; linha = realizado do dia; rótulo = atingimento (verde se bateu).
 function drawMetaDia(a,el){
@@ -1037,14 +1319,15 @@ function drawMetaDia(a,el){
   const mt=a.metaDays[d-1],dow=DS[new Date(ANO,MES,d).getDay()],on=SEL.has(d);
   g+=`<text class="ax" x="${xc(d)}" y="${H-22}" text-anchor="middle">${pad(d)}</text><text class="ax s" x="${xc(d)}" y="${H-8}" text-anchor="middle">${d===TODAY?'hoje':dow}</text>`;
   if(d===TODAY){
-   if(a.hoje>0)g+=`<rect class="bo" x="${xc(d)-bw/2}" y="${y(a.hoje)}" width="${bw}" height="${y(0)-y(a.hoje)}" rx="4"><title>Hoje: meta do dia ${kbrl(a.metaHoje)} + ${kbrl(a.recup)} de recuperação</title></rect><text class="bl o" x="${xc(d)}" y="${y(a.hoje)-8}" text-anchor="middle">${kbrl(a.hoje)}</text>`;
+   if(a.hoje>0)g+=`<rect class="bo" x="${xc(d)-bw/2}" y="${y(a.hoje)}" width="${bw}" height="${y(0)-y(a.hoje)}" rx="4"><title>Hoje: meta do dia ${kbrl(a.metaHoje)} + ${kbrl(a.recup)} de recuperação${a.aa.ok?` · ${AAtxt()} neste dia: ${kbrl(a.aaDays[d-1])}`:''}</title></rect><text class="bl o" x="${xc(d)}" y="${y(a.hoje)-8}" text-anchor="middle">${kbrl(a.hoje)}</text>`;
    continue;
   }
   const rv=a.days[d-1];pts.push([xc(d),y(rv),d]);
   if(mt>0)g+=`<rect class="mb ${on?'on':''}" x="${xc(d)-bw/2}" y="${y(mt)}" width="${bw}" height="${y(0)-y(mt)}" rx="4"/>`;
   const at=mt>0?rv/mt:null,top=Math.min(mt>0?y(mt):y(0),y(rv))-10;
-  g+=`<text class="pl ${at==null?'na':at>=1?'ok':'no'}" x="${xc(d)}" y="${top}" text-anchor="middle">${at==null?'s/ meta':pct(at)}</text>`;
-  g+=`<rect x="${xc(d)-cw/2}" y="${T}" width="${cw}" height="${ih}" fill="transparent"><title>${dd(d)} (${dow}) · meta ${kbrl(mt)} · realizado ${kbrl(rv)}${at!=null?' · '+pct(at,1):''}</title></rect>`;
+  const rot=at==null?'s/ meta':pct(at);
+  g+=`<text class="pl ${at==null?'na':at>=1?'ok':'no'}" x="${xc(d)}" y="${top}" text-anchor="middle">${rot}</text>`;
+  g+=`<rect x="${xc(d)-cw/2}" y="${T}" width="${cw}" height="${ih}" fill="transparent"><title>${dd(d)} (${dow}) · meta ${kbrl(mt)} · realizado ${kbrl(rv)}${a.aa.ok?` · ${AAtxt()} ${kbrl(a.aaDays[d-1])}`:''}${at!=null?' · '+pct(at,1):''}</title></rect>`;
  }
  if(pts.length){g+=`<polyline class="rl" points="${pts.map(p=>p[0]+','+p[1]).join(' ')}"/>`;
   pts.forEach(([x,yy,d])=>{const mt=a.metaDays[d-1];g+=`<circle class="rd ${mt>0?(a.days[d-1]>=mt?'ok':'no'):'na'}" cx="${x}" cy="${yy}" r="4.5"/>`})}
@@ -1057,33 +1340,262 @@ function agendaHTML(){
  if(!ag.length)return '';
  return `<div class="agenda">${ag.map(x=>`<div class="ag ${x.inicio<=h?'agora':''}"><b>${x.inicio===x.fim?f(x.inicio):f(x.inicio)+' a '+f(x.fim)}</b><span>${esc(x.texto)}</span>${x.inicio<=h?'<em>acontecendo</em>':''}</div>`).join('')}</div>`;
 }
-function cicloCard(){
+// Ciclo × lojas: o que está ativo hoje e onde aplicar primeiro (lojas com maior folga de boletos e de IPB)
+function cicloCard(ls){
  if(!cicloAtivo())return '';
- const ag=agendaHTML();
- return ag?`<div class="card pad"><h2 style="font-size:16px;display:flex;gap:8px;align-items:center">${ic('sparkles')} ${esc(CICLO.nome)}</h2>${ag}</div>`:'';
+ const h=`${ANO}-${pad(MES+1)}-${pad(Math.min(TODAY,DAYS))}`;
+ const ativos=[...(CICLO.agenda||[]).filter(x=>x.inicio<=h&&x.fim>=h).map(x=>x.texto),
+  ...['fluxo','ipb'].map(k=>acoesCiclo(k)[0]).filter(Boolean).map(x=>x.acao)].filter((v,i,s)=>s.indexOf(v)===i).slice(0,4);
+ const linha=(l,txt,v)=>`<div class="ln"><button data-foco="${l.id}">${esc(l.nome)}</button><span>${txt} · <b class="c-bad">${kbrl(v)}</b></span></div>`;
+ const fb=ls.length>1?ls.filter(l=>M[l.id].iBol<0&&M[l.id].bolEsp).sort((x,y)=>M[x.id].iBol-M[y.id].iBol).slice(0,3):[];
+ const fi=ls.length>1?ls.filter(l=>M[l.id].iIpb<0).sort((x,y)=>M[x.id].iIpb-M[y.id].iIpb).slice(0,3):[];
+ const cb=acoesCiclo('fluxo')[0],ci=acoesCiclo('ipb')[0];
+ const prox=(CICLO.agenda||[]).filter(x=>x.inicio>h).slice(0,2);
+ return `<div class="card pad"><h2 style="font-size:16px;display:flex;gap:8px;align-items:center">${ic('sparkles')} ${esc(CICLO.nome)} · ativo hoje</h2>
+  ${ativos.length?`<p class="mf" style="margin-top:6px">${ativos.map(esc).join(' · ')}</p>`:''}
+  <div class="cl-grid">
+   ${fb.length?`<div class="cl-box"><h4>${ic('receipt')}Mais boletos faltando${cb?` → ${esc(cb.acao)}`:''}</h4>${fb.map(l=>{const m=M[l.id];return linha(l,`−${fx((m.bolEsp-m.bol)/m.nd)} boletos/dia`,m.iBol)}).join('')}</div>`:''}
+   ${fi.length?`<div class="cl-box"><h4>${ic('shopping-bag')}Mais folga de IPB${ci?` → ${esc(ci.acao)}`:''}</h4>${fi.map(l=>{const m=M[l.id];return linha(l,`IPB ${fx(m.ipb,2)} / ${fx(m.ipbAlvo,2)} · BT ${pct(m.pBT)} · BP ${pct(m.pBP)}`,m.iIpb)}).join('')}</div>`:''}
+   ${prox.length?`<div class="cl-box"><h4>${ic('calendar-clock')}Próximas datas</h4>${prox.map(x=>`<div class="ln"><span>${esc(x.texto)}</span><b>${x.inicio.slice(8,10)}/${x.inicio.slice(5,7)}</b></div>`).join('')}</div>`:''}
+  </div></div>`;
 }
+// Placar de ontem: quantas lojas bateram a meta do dia e, para cada ação registrada ontem,
+// o indicador combinado (gravado em "Meta: ..." na descrição) contra o que a loja fez.
+const numMeta=t=>{const x=(t||'').match(/Meta:\D*?(\d[\d.]*(?:,\d+)?)/);return x?parseFloat(x[1].replace(/\./g,'').replace(',','.')):null};
+const KDOGAT={fluxo:'bol',ritmo:'bol',ipb:'ipb',b1:'ipb',btbp:'ipb',pm:'pm',bmsaud:'bm'};
+function placarHTML(ls){
+ const d=LAST,ids=new Set(ls.map(l=>l.id));
+ const comMeta=ls.filter(l=>l.meta[d-1]>0),bat=comMeta.filter(l=>l.rec[d-1]>=l.meta[d-1]);
+ const ac=acoesMes().filter(x=>x.dia===d&&ids.has(x.loja));
+ const linhas=ac.slice(0,6).map(x=>{
+  const l=lojaById(x.loja);if(!l)return '';const c=x.cons?consById(x.cons):null,src=c||l;
+  const b=src.bol[d-1],it=src.it[d-1],r=src.rec[d-1],k=KDOGAT[x.gat],alvo=numMeta(x.desc);
+  const real={bol:b,ipb:b?it/b:0,pm:it?r/it:0,bm:b?r/b:0}[k],f=FMT[k];
+  let ok,txt;
+  if(k&&alvo!=null){ok=real>=alvo;txt=`${f(real)} de ${f(alvo)} combinados`}
+  else{const mt=c?0:l.meta[d-1];ok=mt>0?r>=mt:null;txt=mt>0?`${kbrl(r)} de ${kbrl(mt)} (${pct(r/mt)} da meta do dia)`:`${kbrl(r)} vendidos`}
+  return `<div class="it">${ic(ok==null?'circle-dot':ok?'circle-check':'circle-x',ok==null?'':ok?'c-ok':'c-bad')}<div><b>${esc(l.nome)}${c?' · '+esc(c.nome):''}</b> · ${esc(x.tipo)}<small>${txt}${x.autor?' · por '+esc(x.autor):''}</small></div>
+   <div class="r ${ok?'c-ok':ok==null?'':'c-bad'}">${ok==null?'—':ok?'Bateu':'Não bateu'}</div></div>`}).join('');
+ const semAc=ls.length>1?ls.filter(l=>l.meta[d-1]>0&&l.rec[d-1]<l.meta[d-1]&&!ac.some(x=>x.loja===l.id)).length:0;
+ return `<div class="card pad ontem"><div class="placar-hd"><h2>${ic('history')} Placar de ontem · ${dd(d)}</h2>
+   <span class="pl-n"><b class="${bat.length>=comMeta.length/2?'c-ok':'c-bad'}">${bat.length} de ${comMeta.length}</b> ${comMeta.length===1?'loja bateu':'lojas bateram'} a meta do dia</span></div>
+  ${linhas||`<p class="mf">Nenhuma ação registrada ontem${ls.length>1?' neste filtro':''}.</p>`}
+  ${semAc?`<p class="mf">${semAc} loja(s) abaixo da meta ontem sem ação registrada.</p>`:''}</div>`;
+}
+// Ações registradas no mês para as lojas do filtro (vêm da planilha: todo mundo vê as mesmas)
+function acoesRegHTML(ids){
+ const ac=acoesMes().filter(x=>ids.has(x.loja)).sort((a,b)=>b.dia-a.dia||b.id-a.id),lim=S.loja?20:8;
+ const fonte=!PLANILHA.url?'só neste navegador':planOk===false?'planilha fora do ar: mostrando o que está neste navegador':'da planilha compartilhada';
+ return `<div class="card"><div class="card-hd"><div><h2>Ações registradas no mês (${ac.length})</h2><p>${S.loja?esc(lojaById(S.loja).nome):'Lojas do filtro'} · ${fonte}</p></div>
+  <button class="btn sm" data-novo="${S.loja||S.foco||''}">${ic('plus')}Registrar ação</button></div>
+  ${ac.length?`<div class="ontem" style="padding:0 20px 20px">${ac.slice(0,lim).map(x=>{const l=lojaById(x.loja),c=x.cons?consById(x.cons):null,m=l?M[l.id]:null,e=m?efeito(m,x.dia):null;
+   return `<div class="it">${ic(TIPOS[x.tipo]||'circle-dot')}<div><b>${esc(x.tipo)}</b> · ${esc(l?l.nome:x.loja)}${c?' · '+esc(c.nome):''}<small>${dd(x.dia)}${x.autor?' · por '+esc(x.autor):''}${x.desc?' · '+esc(x.desc.slice(0,120)):''}</small></div>
+    <div class="r">${e?`<span class="${e.d>=0?'c-ok':'c-bad'}">${pct(e.a)} → ${pct(e.b)}</span><small>ritmo antes → depois</small>`:`<small>${x.dia>LAST?'resultado amanhã':''}</small>`}</div></div>`}).join('')}
+   ${ac.length>lim?`<p class="mf">+${ac.length-lim} ações: filtre uma loja para ver todas.</p>`:''}</div>`
+  :`<p class="empty" style="padding:0 20px 20px">Nenhuma ação registrada neste mês para este filtro.</p>`}</div>`;
+}
+// Comparação com o mesmo mês do ano anterior: mesmos dias do calendário, só lojas com venda nos dois anos
+function anoAntHTML(ls,a){
+ const y=a.aa;if(!y.ok)return '';
+ const T=AAtxt(),A=String(ANO),B=String(ANO-1);
+ const lin=(n,k,f,pp)=>{const d=y.d[k],bom=k==='b1'?d<=0:d>=0;return `<tr><td class="nm">${n}</td><td class="r tnum"><b>${f(y.atu[k])}</b></td><td class="r tnum">${f(y.ant[k])}</td><td class="r tnum"><b class="${bom?'c-ok':'c-bad'}">${pp?pp(d):pct(d,1,true)}</b></td><td><span class="yo ${bom?'up':'dn'}">${d>=0?'▲ Maior':'▼ Menor'}</span></td></tr>`};
+ const dR=y.atu.rec-y.ant.rec;
+ const quedas=ls.length>1?ls.filter(l=>M[l.id].aa.ok).map(l=>[l,M[l.id].aa]).sort((p,q)=>(p[1].atu.rec-p[1].ant.rec)-(q[1].atu.rec-q[1].ant.rec)).slice(0,3).filter(([,x])=>x.atu.rec<x.ant.rec):[];
+ return `<div class="card"><div class="card-hd"><div><h2>Comparação com ${MESES[MES]} de ${B}</h2><p>${perTxt()} × mesmos dias de ${B} · ${y.n} de ${y.nTot} lojas com venda nos dois anos</p></div><span class="icchip t-accent">${ic('calendar-sync')}</span></div>
+  <div class="tw"><table class="mc"><thead><tr><th>Indicador</th><th class="r">${A}</th><th class="r">${B}</th><th class="r">Variação</th><th>vs ${B}</th></tr></thead><tbody>
+   ${lin('Receita','rec',kbrl)}${lin('Boletos','bol',v=>fx(v))}${lin('Boleto médio','bm',v=>brl(v,2))}${lin('Itens por boleto','ipb',v=>fx(v,2))}${lin('Preço médio','pm',v=>brl(v,2))}${lin('%B1','b1',v=>pct(v,1),pp)}
+  </tbody></table></div>
+  <div style="padding:0 20px 20px;display:flex;flex-direction:column;gap:8px">
+   <p class="evid">Receita <b class="${dR>=0?'c-ok':'c-bad'}">${dR>=0?'+':''}${kbrl(dR)}</b> vs ${T}: boletos ${y.eBol>=0?'+':''}${kbrl(y.eBol)}, IPB ${y.eIpb>=0?'+':''}${kbrl(y.eIpb)} e preço médio ${y.ePm>=0?'+':''}${kbrl(y.ePm)}.${y.mes?` ${T} fechou em <b>${kbrl(y.mes)}</b>.`:''}</p>
+   ${quedas.length?`<p class="puxam">${ic('trending-down')} Maiores quedas vs ${T}: ${quedas.map(([l,x])=>`<button class="lk" data-foco="${l.id}">${esc(l.nome)}</button> (${pct(x.d.rec,0,true)}, ${kbrl(x.atu.rec-x.ant.rec)})`).join(', ')}</p>`:''}
+  </div></div>`;
+}
+// Time da loja: quem vendeu nos últimos 7 dias e tem receita no mês de pelo menos 20% da mediana dos colegas.
+// Abaixo disso é venda pontual (digital, apoio de outra loja): fora da divisão da meta.
+const MIN_TIME=.2;
+function timeDaLoja(lid){
+ const at=cons.filter(c=>c.loja===lid&&!c.digital&&sum(c.rec)>0&&c.bol.slice(Math.max(0,LAST-7),LAST).some(v=>v>0));
+ const rs=at.map(c=>sum(c.rec)).sort((a,b)=>a-b),n=rs.length,med=n?(n%2?rs[(n-1)/2]:(rs[n/2-1]+rs[n/2])/2):0;
+ return{time:at.filter(c=>sum(c.rec)>=MIN_TIME*med),fora:at.filter(c=>sum(c.rec)<MIN_TIME*med)};
+}
+// Meta de hoje da loja dividida em partes iguais entre os consultores do time
+function metaConsHTML(l){
+ const m=M[l.id],{time,fora}=timeDaLoja(l.id);if(!time.length)return '';
+ const bm=m.bmAlvoV||m.bm,mh=m.hoje/time.length;
+ const rows=[...time].sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+ return `<div class="card"><div class="card-hd"><div><h2>Meta de hoje por consultor</h2><p>${esc(l.nome)} · ${kbrl(m.hoje)} ÷ ${time.length} consultores = <b>${kbrl(mh)}</b> e ${fx(bm?mh/bm:0)} boletos para cada um</p></div><span class="icchip t-accent">${ic('users')}</span></div>
+  <div class="tw"><table class="mc"><thead><tr><th>Consultor</th><th class="r">Meta hoje</th><th class="r">Boletos</th><th class="r">Média atual/dia</th></tr></thead><tbody>
+  ${rows.map(c=>`<tr><td><p class="nm">${esc(c.nome)}</p></td><td class="r tnum"><b>${kbrl(mh)}</b></td><td class="r tnum">${fx(bm?mh/bm:0)}</td><td class="r tnum ${c.m.recDia>=mh?'c-ok':'c-bad'}">${kbrl(c.m.recDia)} · ${fx(c.m.bolDia,1)} bol.</td></tr>`).join('')}
+  </tbody></table></div>
+  ${fora.length?`<p class="mf" style="padding:0 20px 16px">Fora do time (venda pontual no mês, ex.: digital): ${fora.map(c=>`${esc(c.nome)} (${kbrl(sum(c.rec))})`).join(', ')}.</p>`:''}</div>`;
+}
+/* ================= Hoje: uma decisão por loja ================= */
+// Régua única: a meta. Cada loja recebe UMA meta de hoje e UM indicador para mover.
+// Ranking em uma unidade só: R$ em risco hoje = meta de hoje − venda esperada se repetir o ritmo dos últimos 7 dias.
+// Loja sem risco contra a meta, mas 8% ou mais abaixo do ano passado: em risco = venda do mesmo dia do ano passado − esperada.
+function ritmoRecente(l){let r=0,mt=0,n=0;for(let d=LAST;d>=1&&n<7;d--)if(l.meta[d-1]>0){r+=l.rec[d-1];mt+=l.meta[d-1];n++}return mt?r/mt:1}
+function bolRecente(l){let b=0,n=0;for(let d=LAST;d>=1&&n<7;d--)if(l.meta[d-1]>0&&l.rec[d-1]>0){b+=l.bol[d-1];n++}return n?b/n:0}
+const IND={bol:{n:'Boletos',g:'fluxo'},ipb:{n:'IPB',g:'ipb'},pm:{n:'Preço médio',g:'pm'},bm:{n:'Boleto médio',g:'bmsaud'}};
+const FMT={bol:v=>`${fx(v)} boletos`,ipb:v=>`IPB ${fx(v,2)}`,pm:v=>`PM ${brl(v,2)}`,bm:v=>`BM ${brl(v)}`};
+// Crescimento máximo de boletos contra o mesmo dia da semana do ano passado. Acima disso, o que falta vem do boleto médio.
+const CRESC_MAX_BOL=.30;
+// Boleto médio máximo que se pede no dia: o maior BM (de venda, no mês) entre as lojas do mesmo cluster
+// (QDB fora; só lojas com pelo menos 200 boletos). Acima dele, a meta é distribuída em mais boletos (além dos +30%).
+let BMMAX={};
+function calcBmMax(){
+ BMMAX={};
+ lojas.forEach(l=>{if(/^qdb/i.test(l.nome))return;const b=sum(l.bol);if(b<200)return;const v=sum(l.rec)/b,c=l.cluster||'—';
+  if(!BMMAX[c]||v>BMMAX[c].v)BMMAX[c]={v,loja:l}});
+}
+const bmMax=l=>{const x=BMMAX[l.cluster||'—'];return x?x:{v:Infinity,loja:null}};
+// Mesmo dia da semana da mesma semana do ano passado: 364 dias antes (14/10/2026, quarta = 15/10/2025, quarta).
+// Sem 29/02 no meio, é o dia seguinte do calendário do ano passado. Fora do mês do arquivo do ano passado: sem base.
+const diaAA=()=>TODAY+1<=DAYS?TODAY+1:null;
+const dataAA=()=>{const d=diaAA();if(!d)return '';const x=new Date(ANO-1,MES,d);return `${['dom','seg','ter','qua','qui','sex','sáb'][x.getDay()]} ${pad(d)}/${pad(MES+1)}/${String(ANO-1).slice(2)}`};
+let DEC=[];
+function decisao(l){
+ const m=M[l.id],mh=TODAY<=DAYS?l.meta[TODAY-1]:0;if(!(mh>0))return null;
+ const rr=ritmoRecente(l),esp=mh*rr;let valor=m.hoje-esp,ref='meta';
+ if(valor<=0&&m.aa.ok&&m.aa.d.rec<=-.08&&l.aa){const v=l.aa.rec[TODAY-1]||0;if(v>esp){valor=v-esp;ref='aa'}}
+ if(valor<=0)return null;
+ const bm=m.bmAlvoV||m.bm,need=bm?m.hoje/bm:0,dA=diaAA(),bolAA=dA&&l.aa?l.aa.bol[dA-1]:0;
+ const base={loja:l,valor,ref,esp,rr,bolAA,bol7:bolRecente(l)};
+ // Com base do ano passado: boletos crescem até 30% sobre o mesmo dia da semana; o resto vem do boleto médio (IPB e PM)
+ if(bolAA>0){
+  const teto=bolAA*(1+CRESC_MAX_BOL),cresc=need/bolAA-1;
+  if(need<=teto){const alvo=Math.max(need,bolAA);
+   return{...base,k:'bol',g:'fluxo',alvo,atual:base.bol7,cresc:alvo/bolAA-1,meta:`Meta: ${FMT.bol(alvo)} hoje`}}
+  // BM acima do maior BM do cluster: os boletos sobem até o BM ficar nesse máximo
+  const mx=bmMax(l),bolN=Math.max(teto,m.hoje/mx.v),bmN=m.hoje/bolN,kk=m.ipb&&m.pm?Math.sqrt(bmN/(m.ipb*m.pm)):1;
+  return{...base,k:'bm',g:'bmsaud',alvo:bmN,bolTeto:bolN,cresc,limBM:bolN>teto+.5,bmMax:mx,ipbN:m.ipb*kk,pmN:m.pm*kk,atual:m.bm,
+   meta:`Meta: BM ${brl(bmN)} hoje (${fx(bolN)} boletos, IPB ${fx(m.ipb*kk,2)}, PM ${brl(m.pm*kk,2)})`};
+ }
+ // Sem ano passado (loja nova ou fim do mês): o indicador abaixo do alvo que mais tira receita
+ const ALVO={bol:alvosHoje(m).b,ipb:m.ipbAlvo,pm:m.pmAlvo},ATU={bol:base.bol7,ipb:m.ipb,pm:m.pm},peso={bol:m.iBol,ipb:m.iIpb,pm:m.iPm};
+ const abaixo=['bol','ipb','pm'].filter(x=>ALVO[x]>0&&ATU[x]<ALVO[x]);
+ const k=abaixo.length?abaixo.sort((p,q)=>peso[p]-peso[q])[0]:['bol','ipb','pm'].sort((p,q)=>ATU[p]/ALVO[p]-ATU[q]/ALVO[q])[0];
+ return{...base,k,g:IND[k].g,alvo:ALVO[k],atual:ATU[k],meta:`Meta: ${FMT[k](ALVO[k])} hoje`};
+}
+// Necessário hoje para o conjunto filtrado: soma dos boletos do "Garantir" de cada loja; BM = meta de hoje ÷ boletos;
+// IPB e PM dividem o BM na proporção atual do período
+function necessarioHoje(ls,a){
+ let bol=0,soma=0;const dA=diaAA();
+ ls.forEach(l=>{const m=M[l.id];if(!(m.hoje>0))return;
+  const bm=m.bmAlvoV||m.bm,need=bm?m.hoje/bm:0,aa=dA&&l.aa?l.aa.bol[dA-1]:0;
+  // mesma regra do "Garantir": até +30% sobre o ano passado; BM no máximo o maior do cluster (acima disso, mais boletos)
+  bol+=Math.max(aa>0?Math.min(Math.max(need,aa),aa*(1+CRESC_MAX_BOL)):need,m.hoje/bmMax(l).v);soma+=m.hoje});
+ const bm=bol?soma/bol:(a.bmAlvoV||a.bm),kk=a.ipb&&a.pm?Math.sqrt(bm/(a.ipb*a.pm)):1;
+ return{bol:bm?a.hoje/bm:0,bm,ipb:a.ipb*kk,pm:a.pm*kk};
+}
+// Bloco "Garantir": o número de hoje e a base de comparação
+function garantirHTML(d){
+ const m=M[d.loja.id],aa=d.bolAA>0?` vs ${fx(d.bolAA)} na ${dataAA()}`:'';
+ if(d.k==='bol')return `<div class="mover"><span>Garantir</span><b>${FMT.bol(d.alvo)}</b><small>${d.bolAA>0?(d.cresc>.005?`${pct(d.cresc,0,true)}${aa}`:`no mínimo o mesmo da ${dataAA()} (a meta de hoje pede menos)`):`alvo pela meta e o BM alvo`} · média dos últimos 7 dias: ${fx(d.bol7)}</small></div>`;
+ if(d.k==='bm')return `<div class="mover"><span>Garantir</span><b>${FMT.bol(d.bolTeto)} · BM ${brl(d.alvo)}</b><small>A meta pede ${pct(d.cresc,0,true)} de boletos${aa}. ${d.limBM?`O maior BM do cluster ${esc(nomeCluster(d.loja.cluster).toLowerCase())} é ${brl(d.bmMax.v)} (${esc(d.bmMax.loja.nome)}); com ele, a meta vira ${fx(d.bolTeto)} boletos (${pct(d.bolTeto/d.bolAA-1,0,true)})`:`Boletos até +${pct(CRESC_MAX_BOL)}; o resto vem do boleto médio`}: <b>IPB ${fx(d.ipbN,2)}</b> (hoje ${fx(m.ipb,2)}) e <b>PM ${brl(d.pmN,2)}</b> (hoje ${brl(m.pm,2)}).</small></div>`;
+ return `<div class="mover"><span>Garantir</span><b>${FMT[d.k](d.alvo)}</b><small>no período: ${FMT[d.k](d.atual)}</small></div>`;
+}
+// Como fazer: listas fixas e diretas para o gerente (boletos e IPB). Card de boletos + boleto médio mostra as duas.
+const ACOES_BOL=['Potencializar Calçada Perfumada','Ativação de clientes via WhatsApp','Prospecção de vendas in company','Potencialização da Sacola Premiada na rua'];
+const ACOES_IPB=['Grande foco em BP e BT','Diminuição do % de B1','Potencialização Boti Outlet','Revisar todas as alavancas do ciclo','Confecção de combos'];
+function comoDecisao(d){
+ const bloco=(icn,tit,l)=>`<div class="do">${ic(icn)}<div><b>${tit}</b><ul class="blt">${l.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></div>`;
+ const bol=d.k==='bol'||d.k==='bm',ipb=d.k!=='bol';
+ const html=(bol?bloco('receipt','Para mais boletos',ACOES_BOL):'')+(ipb?bloco('shopping-bag','Para mais IPB',ACOES_IPB):'');
+ const lista=[...(bol?ACOES_BOL:[]),...(ipb?ACOES_IPB:[])];
+ return{html,tipo:bol?'Calçada Perfumada':'BT e BP no fechamento',txt:lista.join(' · ')};
+}
+const sevDec=d=>{const r=d.valor/(M[d.loja.id].hoje||1);return r>=.25?'crit':r>=.1?'alto':'medio'};
+const acaoHoje=l=>acoesMes().some(x=>x.dia===TODAY&&x.loja===l.id);
+function decCard(d,n){
+ const l=d.loja,m=M[l.id],ok=acaoHoje(l),px=puxamBaixo(l.id),cm=comoDecisao(d),i=DEC.indexOf(d);
+ const co=m.core||{},kc=d.k==='bm'?'ipb':d.k,linhas=co[kc]&&co[kc].gap>0?[`<p>${fraseCore(kc,co[kc],l)}</p>`]:[];
+ const pr=praticaPara(m,d.k==='bol'?'fluxo':'item');if(pr)linhas.push(`<p>${frasePrat(pr,l)}</p>`);
+ if(m.b1c&&m.b1c.gap>.01)linhas.push(`<p>${fraseB1(m.b1c,l)}</p>`);
+ return `<article class="card act ${sevDec(d)} fade dec">
+  <div class="hd"><div class="l"><span class="num">${n}</span><span class="tag">${esc(l.gestor)}</span>${ok?`<span class="status-do ok">${ic('circle-check')}Ação registrada hoje</span>`:''}</div>
+   <div class="imp"><b>${kbrl(d.valor)}</b><small>em risco hoje</small></div></div>
+  <h3>${ic('store')}${esc(l.nome)}</h3>
+  <p class="head">Vender ${kbrl(m.hoje)} hoje</p>
+  ${garantirHTML(d)}
+  ${cm.html}
+  <p class="resp">${ic('user-check')}<span>Responsável: gerente da loja · conferir às 14h e às 18h${d.ref==='aa'?` · <b class="c-bad">abaixo de ${AAtxt()}</b>`:''}</span></p>
+  <details><summary>${ic('chevron-right')}Por quê</summary><div>
+   <p class="evid">Nos últimos 7 dias a loja fez <b>${pct(d.rr)}</b> da meta do dia: sem mudar nada, vende ≈ <b>${kbrl(d.esp)}</b> hoje${d.ref==='aa'?`, abaixo dos ${kbrl(l.aa.rec[TODAY-1])} de ${dd(TODAY)}/${String(ANO-1).slice(2)}`:''}.</p>
+   ${m.aa.ok?`<p class="ycard"><span>vs ${AAtxt()}:</span> ${yoySelos(m.aa,['rec','bol','ipb','pm'])}</p>`:''}
+   ${alvosHTML(m)}
+   ${px.length?`<p class="puxam">${ic('user-round-x')} Puxam para baixo: ${px.map(([c,p])=>`<b>${esc(c.nome.split(' ')[0])}</b> (${pct(p.idx)} do time · ${PERFIS[p.k].n.toLowerCase()})`).join(', ')}</p>`:''}
+   ${linhas.length?`<div class="exemplo">${ic('lightbulb')}<div><p class="ex-t">${pr&&pr.meta&&linhas.length===1?'Contra a meta':pr&&pr.meta?`Lojas ${esc(nomeCluster(l.cluster).toLowerCase())} no ritmo e meta`:`Lojas ${esc(nomeCluster(l.cluster).toLowerCase())} no ritmo`}</p>${linhas.join('')}</div></div>`:''}
+  </div></details>
+  <div class="ft"><button class="btn" data-dec="${i}">${ic('plus')}Registrar ação</button><button class="btn ghost sm" data-foco="${l.id}">Ver loja ${ic('arrow-right')}</button></div></article>`;
+}
+// Loja sem risco hoje: reconhecer e manter
+function okCard(l){
+ const m=M[l.id];
+ return `<article class="card act pos fade"><div class="hd"><div class="l"><span class="sev pos">${ic('circle-check')}No ritmo</span></div></div>
+  <h3>${ic('store')}${esc(l.nome)}</h3><p class="head">Vender ${kbrl(m.hoje)} hoje</p>
+  <p class="evid">Nos últimos 7 dias a loja fez <b>${pct(ritmoRecente(l))}</b> da meta do dia. Manter a rotina e reconhecer o time.</p>
+  ${m.aa.ok?`<p class="ycard"><span>vs ${AAtxt()}:</span> ${yoySelos(m.aa,['rec','bol','ipb','pm'])}</p>`:''}
+  <div class="ft"><button class="btn" data-novo="${l.id}">${ic('plus')}Registrar ação</button></div></article>`;
+}
+// Linha compacta (lojas além das 3 primeiras)
+const decLinha=d=>{const l=d.loja,i=DEC.indexOf(d);
+ return `<div class="nx"><span class="sev ${sevDec(d)}" style="padding:3px 6px">${ic(d.k==='bol'?'receipt':d.k==='pm'?'tag':'shopping-bag')}</span><div><b>${esc(l.nome)} · garantir ${d.k==='bm'?`${FMT.bol(d.bolTeto)} e BM ${brl(d.alvo)}`:FMT[d.k](d.alvo)}</b><span>${kbrl(d.valor)} em risco hoje · vender ${kbrl(M[l.id].hoje)}${l.gestor?' · '+esc(l.gestor):''}</span></div>${acaoHoje(l)?`<span class="done">${ic('circle-check')}</span>`:`<button class="btn sm" data-dec="${i}">Registrar ação</button>`}</div>`};
+// Rede, regional ou praça: quais GVOs estão fora do trilho
+function gvoHTML(ls){
+ const g={};ls.forEach(l=>{const k=l.gestor||'Sem gestor',m=M[l.id],x=g[k]=g[k]||{n:0,rec:0,ate:0,risco:0,nr:0,hoje:0,ontem:0,sem:0};
+  x.n++;x.rec+=sum(l.rec);x.ate+=sum(l.meta.slice(0,LAST));
+  const d=DEC.find(z=>z.loja===l);if(d){x.risco+=d.valor;x.nr++;if(!acoesMes().some(a=>a.loja===l.id&&a.dia>=TODAY-2))x.sem++}
+  x.hoje+=acoesMes().filter(a=>a.loja===l.id&&a.dia===TODAY).length;x.ontem+=acoesMes().filter(a=>a.loja===l.id&&a.dia===LAST).length});
+ const rows=Object.entries(g).sort((a,b)=>b[1].risco-a[1].risco);
+ return `<div class="card"><div class="card-hd"><div><h2>GVOs: quem está fora do trilho</h2><p>Ordenado por R$ em risco hoje · clique para ver as lojas do GVO</p></div><span class="icchip t-accent">${ic('users')}</span></div>
+  <div class="tw"><table class="mc"><thead><tr><th>GVO</th><th class="r">% meta até ${dd(LAST)}</th><th class="r">Em risco hoje</th><th class="r">Lojas em risco</th><th class="r">Sem ação (3 dias)</th><th class="r">Ações ontem · hoje</th></tr></thead><tbody>
+  ${rows.map(([k,x],i)=>{const at=x.ate?x.rec/x.ate:0;return `<tr class="click ${i>=8?'mais':''}" data-gvo="${esc(k)}" tabindex="0"><td><p class="nm">${esc(k)}</p><p class="sub">${x.n} lojas</p></td>
+   <td class="r tnum"><b class="${at>=1?'c-ok':at>=.96?'c-warn':'c-bad'}">${pct(at)}</b></td><td class="r tnum"><b class="${x.risco>0?'c-bad':'c-ok'}">${x.risco>0?kbrl(x.risco):'—'}</b></td>
+   <td class="r tnum">${x.nr} de ${x.n}</td><td class="r tnum ${x.sem?'c-bad':''}">${x.sem||'—'}</td><td class="r tnum">${x.ontem} · ${x.hoje}</td></tr>`}).join('')}
+  </tbody></table></div>${rows.length>8?`<p style="padding:0 20px 16px"><button class="lk" onclick="this.closest('.card').classList.toggle('todos');this.textContent=this.closest('.card').classList.contains('todos')?'Mostrar só os 8 primeiros':'Ver os ${rows.length} GVOs'">Ver os ${rows.length} GVOs</button></p>`:''}</div>`;
+}
+const NIVEL=()=>S.loja?'loja':S.gvo?'gvo':'rede';
 function vHoje(ls,cs,a){
- const PR=prioridades(),top=PR.slice(0,3),prox=PR.slice(3,8);
+ DEC=ls.map(decisao).filter(Boolean).sort((x,y)=>y.valor-x.valor);
+ const nv=NIVEL(),ids=new Set(ls.map(l=>l.id)),top=DEC.slice(0,3),resto=DEC.slice(3);
+ const titulo={loja:'O que fazer hoje',gvo:'Suas 3 lojas de hoje',rede:'As 3 lojas de hoje'}[nv];
+ const sub={loja:'Uma meta e um indicador para mover',gvo:`${DEC.length} de ${ls.length} lojas com venda em risco hoje · total ${kbrl(sum(DEC.map(d=>d.valor)))}`,
+  rede:`${DEC.length} de ${ls.length} lojas com venda em risco hoje · total ${kbrl(sum(DEC.map(d=>d.valor)))}`}[nv];
+ const lj=nv==='loja'?lojaById(S.loja):null;
+ $('view').innerHTML=`<section class="sec">
+  <p class="visao">${ic(nv==='loja'?'store':nv==='gvo'?'user-round':'map')}Visão ${nv==='loja'?'do gerente da loja':nv==='gvo'?'do GVO':'da rede, regional e praça'} · ${esc(lj?lj.nome:S.gvo||S.praca||S.reg||'todas as lojas')}</p>
+  ${placarHTML(ls)}
+  <div class="plan-hd"><div><h2>${titulo}</h2><p>${sub}</p></div></div>
+  <div class="acts3">${lj?(DEC[0]?decCard(DEC[0],1):okCard(lj)):top.map((d,n)=>decCard(d,n+1)).join('')||'<p class="empty">Nenhuma loja com venda em risco hoje. Reconheça o time.</p>'}</div>
+  ${!lj&&resto.length?`<details class="card" ${nv==='gvo'?'open':''}><summary class="card-hd" style="cursor:pointer"><div><h2>Demais lojas em risco (${resto.length})</h2></div></summary><div class="next">${resto.slice(0,nv==='gvo'?40:15).map(decLinha).join('')}</div></details>`:''}
+  ${nv==='rede'?gvoHTML(ls):''}
+  ${lj?metaConsHTML(lj):''}
+  ${lj?acoesRegHTML(ids):''}
+  <p class="mf" style="text-align:center">Diagnóstico completo (onde está a perda, ${a.aa.ok?`comparação com ${AAtxt()}, `:''}ciclo e histórico) na aba <button class="lk" data-tab="entender">Entender</button>.</p>
+ </section>`;
+}
+// Entender: o porquê (árvore da perda, ano passado, ciclo, histórico e ações do mês)
+function vEntender(ls,cs,a){
+ const ids=new Set(ls.map(l=>l.id));
  const ritmoRest=(a.metaMes-a.metaAte)*a.proj,k=ritmoRest>0?(a.metaMes-a.rec)/ritmoRest:0;
  const ab=[];for(let d=1;d<=LAST;d++)if(a.metaDays[d-1]>0)ab.push(a.days[d-1]>=a.metaDays[d-1]);
  $('view').innerHTML=`<section class="sec">
+  <div class="card pad">
+   <div class="crumb" style="justify-content:space-between"><div><h2 style="font-size:18px">Onde está a perda</h2><p class="mf">${perTxt()} · cada variação é contra o alvo (receita contra a meta do período)</p></div></div>
+   <div class="root">${node('rec',a)}</div><div class="conn"></div>
+   <div class="lvl l2"><div class="br">${node('bol',a)}</div><div class="op">×</div>
+    <div class="br">${node('bm',a)}<div class="conn"></div><div class="lvl l3"><div class="br">${node('ipb',a)}</div><div class="op">×</div><div class="br">${node('pm',a)}</div></div></div></div>
+   <div class="close">${k<=1?`${ic('circle-check')}<b>Acumulado do mês: no ritmo atual, a meta fecha.</b>`
+    :`${ic('target')}<b>Acumulado do mês (${a.diasRest} dias que faltam), para fechar 100%:</b><span class="lv">+${pct(k-1,1)} boletos</span><span class="ou">ou</span><span class="lv">IPB ${fx(a.ipb*k,2)}</span><span class="ou">ou</span><span class="lv">PM ${brl(a.pm*k,2)}</span>`}</div>
+  </div>
+  ${anoAntHTML(ls,a)}
   <div class="card pad">
    <div class="crumb" style="justify-content:space-between"><div><h2 style="font-size:18px">Meta × realizado por dia</h2><p class="mf">Bateu a meta em <b>${ab.filter(Boolean).length} de ${ab.length} dias</b></p></div></div>
    <div class="tw"><div class="chart" id="chartMeta"></div></div>
    <div class="legend"><span><i class="bx mb"></i>Meta</span><span><i class="ln"></i>Realizado</span><span><i class="bx o"></i>Hoje</span></div>
   </div>
-  <div class="card pad">
-   <div class="crumb" style="justify-content:space-between"><div><h2 style="font-size:18px">Onde está a perda</h2></div></div>
-   <div class="root">${node('rec',a)}</div><div class="conn"></div>
-   <div class="lvl l2"><div class="br">${node('bol',a)}</div><div class="op">×</div>
-    <div class="br">${node('bm',a)}<div class="conn"></div><div class="lvl l3"><div class="br">${node('ipb',a)}</div><div class="op">×</div><div class="br">${node('pm',a)}</div></div></div></div>
-   <div class="close">${k<=1?`${ic('circle-check')}<b>No ritmo, a meta fecha.</b>`
-    :`${ic('target')}<b>Para fechar a meta:</b><span class="lv">+${pct(k-1,1)} boletos</span><span class="ou">ou</span><span class="lv">IPB ${fx(a.ipb*k,2)}</span><span class="ou">ou</span><span class="lv">PM ${brl(a.pm*k,2)}</span>`}</div>
-  </div>
-  ${cicloCard()}
-  <div class="plan-hd"><div><h2>Prioridades de hoje</h2></div></div>
-  <div class="acts3">${top.map(([t,i],n)=>prioCard(t,i,n+1)).join('')||'<p class="empty">Nenhuma prioridade: tudo no ritmo. Reconheça o time.</p>'}</div>
-  ${prox.length?`<div class="card"><div class="card-hd"><div><h2>Na sequência</h2></div></div><div class="next">${prox.map(([t,i])=>`<div class="nx"><span class="sev ${t.sev}" style="padding:3px 6px">${ic(GT[t.g].icon)}</span><div><b>${esc(t.loja.nome)} · ${GT[t.g].nome}</b><span>${kbrl(t.imp)} em jogo</span></div>${feita(t)?`<span class="done">${ic('circle-check')}</span>`:`<button class="btn sm" data-reg="${i}">Registrar</button>`}</div>`).join('')}</div></div>`:''}
+  ${cicloCard(ls)}
+  ${acoesRegHTML(ids)}
  </section>`;
  drawMetaDia(a,'chartMeta');
 }
@@ -1093,17 +1605,19 @@ function vLojas(ls){
  const rows=[...ls].sort(sorter('lojas',(l,k)=>k==='nome'?l.nome:M[l.id][k]));
  $('view').innerHTML=`<section class="sec">
   <div class="card"><div class="card-hd"><div><h2>Lojas</h2><p>${ls.length} lojas · ${perTxt()}</p></div><span class="icchip t-accent">${ic('store')}</span></div>
-  <div class="tw tall"><table><thead><tr>${sortTh('lojas','nome','Loja')}${sortTh('lojas','atP','% meta')}${sortTh('lojas','hoje','Meta hoje','r')}${sortTh('lojas','dBM','BM / alvo','r')}${sortTh('lojas','dIpb','IPB / alvo','r')}${sortTh('lojas','perdaBTBP','BT / BP','r')}<th>Maior perda</th><th>Copiar do cluster</th><th>Ação</th></tr></thead><tbody>
-  ${rows.map(l=>{const m=M[l.id],dt=maiorDet(m),ua=acoesMes().filter(x=>x.loja===l.id).sort((a,b)=>b.dia-a.dia)[0],ef=ua?efeito(m,ua.dia):null;
+  <div class="tw tall"><table><thead><tr>${sortTh('lojas','nome','Loja')}${sortTh('lojas','atP','% meta')}${sortTh('lojas','yoy','vs '+AAtxt(),'r')}${sortTh('lojas','hoje','Meta hoje','r')}${sortTh('lojas','dBM','BM / alvo','r')}${sortTh('lojas','dIpb','IPB / alvo','r')}${sortTh('lojas','pb1','%B1','r')}${sortTh('lojas','perdaBTBP','BT / BP','r')}<th>Maior perda</th><th>Maior oportunidade</th><th>Ação</th></tr></thead><tbody>
+  ${rows.map(l=>{const m=M[l.id],dt=maiorDet(m),ua=acoesMes().filter(x=>x.loja===l.id).sort((a,b)=>b.dia-a.dia)[0];
    return `<tr class="click ${l.id===S.foco?'sel':''}" data-foco="${l.id}" tabindex="0"><td><p class="nm">${esc(l.nome)}</p><p class="sub">${esc(l.gestor)}</p></td>
    <td><div class="minibar"><span class="b"><i style="width:${Math.min(100,m.atP*80)}%;background:${m.atP>=1?'var(--primary)':m.atP>=.92?'var(--warning)':'var(--destructive)'}"></i></span><b class="tnum">${pct(m.atP)}</b></div></td>
+   <td class="r tnum">${m.aa.ok?`<b class="${m.aa.d.rec>=0?'c-ok':'c-bad'}">${pct(m.aa.d.rec,1,true)}</b><p class="sub">${yoySelos(m.aa)}</p>`:'<span class="mf">loja nova</span>'}</td>
    <td class="r tnum"><b>${kbrl(m.hoje)}</b><p class="sub">${fx(alvosHoje(m).b)} boletos${m.recup>0?` · +${kbrl(m.recup)} gap`:''}</p></td>
    <td class="r tnum"><b class="${m.bm>=m.bmAlvoV?'c-ok':m.bm>=m.bmAlvoV*.97?'c-warn':'c-bad'}">${brl(m.bm)}</b><p class="sub">alvo ${brl(m.bmAlvoV)}</p></td>
    <td class="r tnum"><b class="${m.ipb>=m.ipbAlvo?'c-ok':m.ipb>=m.ipbAlvo*.97?'c-warn':'c-bad'}">${fx(m.ipb,2)}</b><p class="sub">alvo ${fx(m.ipbAlvo,2)}</p></td>
+   <td class="r tnum">${m.b1c?`<b class="${m.b1c.gap<=.01?'c-ok':m.b1c.gap<=.05?'c-warn':'c-bad'}">${pct(m.pb1)}</b><p class="sub">melhor ${pct(m.b1c.best.v)}</p>`:`<b>${pct(m.pb1)}</b>`}</td>
    <td class="r tnum"><b class="${m.pBT>=F.bt?'c-ok':'c-bad'}">${pct(m.pBT)}</b> / <b class="${m.pBP>=F.bp?'c-ok':'c-bad'}">${pct(m.pBP)}</b></td>
    <td>${dt?`<span class="pill p-bad">${DN[dt]} ${kbrl(m[IMPK[dt]])}</span>`:'<span class="pill p-ok">Sem detrator</span>'}</td>
-   <td>${(()=>{const p=praticaPara(m);return p?`<b>${PRAT[p.k].n}: ${pctP(p.v)} → ${pctP(p.alvo)}</b><p class="sub">+${kbrl(p.ganho)} · ex.: ${esc(p.ref.loja.nome)} ${pctP(p.ref.v)}</p>`:'<span class="mf">—</span>'})()}</td>
-   <td>${ua?`<span class="dchip">${dd(ua.dia)}</span> ${ef?`<span class="delta ${ef.d>=.05?'up':ef.d<=-.05?'down':'flat'}">${pp(ef.d)}</span>`:'<span class="sub">aguardando</span>'}`:m.proj<.96?'<span class="pill p-warn">Sem ação</span>':'<span class="mf">—</span>'}</td></tr>`}).join('')}
+   <td>${(()=>{const p=praticaPara(m);return p?`<b>${PRAT[p.k].n}: ${pctP(p.v)} → ${pctP(p.alvo)}</b><p class="sub">+${kbrl(p.ganho)} · ${p.meta?'meta da rede':`ex.: ${esc(p.ref.loja.nome)} ${pctP(p.ref.v)}`}</p>`:'<span class="mf">—</span>'})()}</td>
+   <td>${ua?`<span class="dchip">${dd(ua.dia)}</span> ${avalPill(avaliarAcao(ua))}`:m.proj<.96?'<span class="pill p-warn">Sem ação</span>':'<span class="mf">—</span>'}</td></tr>`}).join('')}
   </tbody></table></div></div>
   ${focoHTML()}</section>`;
  const la=acoesMes().filter(x=>x.loja===S.foco);
@@ -1119,7 +1633,7 @@ function focoHTML(){
     :`<div class="legend"><span><i class="bx"></i>Venda do dia ÷ meta do dia</span><span><i class="bx d"></i>Dias depois da ação</span><span><i class="e"></i>Média antes e depois</span><span><i class="a"></i>Ação registrada</span><span><i class="bx o"></i>Quanto precisa hoje</span></div>${impactoHTML(l,m)}`}
   </div>
   <div class="card pad"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3 style="font-size:15px">Ações da loja</h3><button class="btn sm" data-novo="${l.id}">${ic('plus')}Nova ação</button></div>
-   <div class="list">${la.length?la.map(x=>`<div class="it hist ${sel&&sel.id===x.id&&S.chart==='dia'?'on':''}" data-acsel="${x.id}" title="Ver o antes e depois desta ação no gráfico"><span class="dchip">${dd(x.dia)}</span><div><p style="font-weight:700">${esc(x.tipo)}${x.cons?' · '+esc(consById(x.cons)?.nome):''}</p><p class="mf" style="font-size:13px">${esc(x.desc||'Sem descrição')}</p>${efTag(efeito(m,x.dia))}</div><button class="btn ghost sm" data-del="${x.id}" aria-label="Remover ação">${ic('trash-2')}</button></div>`).join(''):'<p class="empty">Nenhuma ação registrada nesta loja no mês.</p>'}</div>
+   <div class="list">${la.length?la.map(x=>`<div class="it hist ${sel&&sel.id===x.id&&S.chart==='dia'?'on':''}" data-acsel="${x.id}" title="Ver o antes e depois desta ação no gráfico"><span class="dchip">${dd(x.dia)}</span><div><p style="font-weight:700">${esc(x.tipo)}${x.cons?' · '+esc(consById(x.cons)?.nome):''}</p><p class="mf" style="font-size:13px">${esc(x.desc||'Sem descrição')}</p>${avalHTML(x)}</div><button class="btn ghost sm" data-del="${x.id}" aria-label="Remover ação">${ic('trash-2')}</button></div>`).join(''):'<p class="empty">Nenhuma ação registrada nesta loja no mês.</p>'}</div>
    <button class="btn ghost sm" data-verc="${l.id}" style="align-self:flex-start">${ic('users')}Ver consultores desta loja</button>
   </div></div>${clusterHTML(l,m)}`;
 }
@@ -1130,16 +1644,19 @@ function clusterHTML(l,m){
  const linhas=(m.prat||[]).filter(p=>p.v>0||p.alvo>0).sort((x,y)=>y.ganho-x.ganho||(y.alvo-x.alvo));
  return `<div class="card"><div class="card-hd"><div><h2>Comparação com as lojas ${esc(cl)} no ritmo</h2><p>${b.nOk} de ${b.n} lojas do cluster estão no ritmo · ${perTxt()}</p></div><span class="icchip t-primary">${ic('lightbulb')}</span></div>
   <div class="tw"><table><thead><tr><th>Indicador</th><th class="r">Esta loja</th><th class="r">Lojas no ritmo</th><th>Melhor do cluster</th><th>O que falta</th><th class="r">Vale no período</th></tr></thead><tbody>
+  ${m.b1c?(()=>{const c=m.b1c;return `<tr><td class="nm">%B1<p class="sub">boletos com 1 item (menor é melhor)</p></td><td class="r tnum ${c.gap>.01?'c-bad':'c-ok'}"><b>${pct(c.v,1)}</b></td><td class="r tnum">${pct(c.best.v,1)}<p class="sub">melhor do cluster</p></td>
+   <td>${esc(c.best.loja.nome)} <span class="sub">${pct(c.best.v,1)}</span></td><td style="white-space:normal;min-width:200px">${c.gap>.01?`≈ ${fx(c.porDia)} boletos de 1 item por dia virando 2 com o BT`:'<span class="mf">no nível do melhor</span>'}</td>
+   <td class="r tnum">${c.gap>.01?`<b class="c-ok">+${kbrl(c.ganho)}</b>`:'—'}</td></tr>`})():''}
   ${core.map(k=>{const c=m.core[k],C=CORE[k];return `<tr><td class="nm">${C.n}${C.u?`<p class="sub">${C.u}</p>`:''}</td><td class="r tnum ${c.gap>0?'c-bad':'c-ok'}"><b>${C.f(c.v)}</b></td><td class="r tnum">${C.f(c.med)}</td>
    <td>${c.ref?`${esc(c.ref.loja.nome)} <span class="sub">${C.f(c.ref.v)}</span>`:'—'}</td>
-   <td>${c.gap>0?(k==='bpm'?`≈ ${fx(c.porDia)} boletos por dia`:k==='ipb'?`+${fx(c.gap,2)} item por boleto`:k==='pm'?`+${brl(c.gap,2)} por item`:`+${brl(c.gap,2)} por boleto`):'<span class="mf">no nível</span>'}</td>
+   <td>${c.gap>0?(k==='bol'?`≈ ${fx(c.porDia)} boletos por dia`:k==='ipb'?`+${fx(c.gap,2)} item por boleto`:k==='pm'?`+${brl(c.gap,2)} por item`:`+${brl(c.gap,2)} por boleto`):'<span class="mf">no nível</span>'}</td>
    <td class="r tnum">${c.gap>0?`<b class="c-ok">+${kbrl(c.ganho)}</b>`:'—'}</td></tr>`}).join('')}
   </tbody></table></div>
-  <div class="tw"><table><thead><tr><th>Alavanca</th><th class="r">Esta loja</th><th class="r">Lojas no ritmo</th><th>Exemplo</th><th>Como fazer</th><th class="r">Vale no período</th></tr></thead><tbody>
+  <div class="tw"><table><thead><tr><th>Alavanca</th><th class="r">Esta loja</th><th class="r">Lojas no ritmo ou meta</th><th>Exemplo</th><th>Como fazer</th><th class="r">Vale no período</th></tr></thead><tbody>
   ${linhas.map(p=>`<tr><td class="nm">${PRAT[p.k].n}<p class="sub">% ${PRAT[p.k].d.replace(/^dos /,'dos ')}</p></td><td class="r tnum ${p.v>=p.alvo?'c-ok':'c-bad'}"><b>${pctP(p.v)}</b></td>
-   <td class="r tnum">${p.med>0?pctP(p.med):`${pctP(p.medUso)}<p class="sub">entre as ${pct(p.uso)} que usam</p>`}</td>
+   <td class="r tnum">${p.meta?`${pctP(p.alvo)}<p class="sub">meta</p>`:p.med>0?pctP(p.med):`${pctP(p.medUso)}<p class="sub">entre as ${pct(p.uso)} que usam</p>`}</td>
    <td>${p.ref?`${esc(p.ref.loja.nome)} <span class="sub">${pctP(p.ref.v)}</span>`:'—'}</td>
-   <td style="white-space:normal;min-width:220px;font-size:12px">${p.ganho>0?`Chegar a ${pctP(p.alvo)} = +${fx(p.extra)} ${PRAT[p.k].u}. ${PRAT[p.k].como}.`:p.v>=p.alvo?'<span class="mf">no nível do cluster</span>':PRAT[p.k].como}</td>
+   <td style="white-space:normal;min-width:220px;font-size:12px">${p.ganho>0?`Chegar a ${pctP(p.alvo)} = +${fx(p.extra)} ${PRAT[p.k].u}. ${PRAT[p.k].como}.`:p.v>=p.alvo?`<span class="mf">${p.meta?'na meta':'no nível do cluster'}</span>`:PRAT[p.k].como}</td>
    <td class="r tnum">${p.ganho>0?`<b class="c-ok">+${kbrl(p.ganho)}</b>`:PRAT[p.k].v?'—':'<span class="mf">traz cliente de volta</span>'}</td></tr>`).join('')}
   </tbody></table></div></div>`;
 }
@@ -1193,6 +1710,32 @@ function drawDaily(m,la,sel,el){
   g+=`<g class="mk ${on?'on':''}" data-acsel="${arr[0].id}" style="cursor:pointer"><title>${esc(arr.map(a=>`${dd(d)} · ${a.tipo}${a.desc?': '+a.desc:''}`).join('\n'))}</title><line x1="${xa}" x2="${xa}" y1="${T-14}" y2="${T+ih}"/><circle cx="${xa}" cy="${T-16}" r="${on?11:9}"/><text x="${xa}" y="${T-12.5}" text-anchor="middle">${arr.length}</text></g>`});
  $(el).innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Venda diária da loja em % da meta do dia, com o antes e o depois da ação selecionada"><defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ahp"/></marker></defs>${g}</svg>`;
 }
+// Avaliação direta da ação: IPB, preço médio e BM no DIA SEGUINTE ao dia da ação contra a média dos 3 últimos dias
+// iguais da semana (ex.: quinta contra as 3 quintas anteriores; no começo do mês, os que houver), da loja ou do consultor
+// quando a ação é para ele. Veredito: 2 de 3 subiram = melhorou; 2 de 3 caíram = piorou; senão, misto.
+function avaliarAcao(x){
+ const l=lojaById(x.loja),c=x.cons?consById(x.cons):null,src=c||l;if(!src)return null;
+ const d1=x.dia+1,ind=(r,b,i)=>({ipb:b?i/b:0,pm:i?r/i:0,bm:b?r/b:0});
+ if(d1>LAST)return{wait:true,d1};
+ let r=0,b=0,i=0,n=0;for(let d=d1-7;d>=1&&n<3;d-=7)if(src.bol[d-1]>0){r+=src.rec[d-1];b+=src.bol[d-1];i+=src.it[d-1];n++}
+ if(!b)return{semBase:true,d1};
+ if(!(src.bol[d1-1]>0))return{semVenda:true,d1};
+ const antes=ind(r,b,i),dep=ind(src.rec[d1-1],src.bol[d1-1],src.it[d1-1]),v={};
+ for(const k in antes)v[k]=antes[k]?dep[k]/antes[k]-1:0;
+ const sobe=Object.values(v).filter(z=>z>.005).length,cai=Object.values(v).filter(z=>z<-.005).length;
+ return{d1,n,antes,dep,v,quem:c?c.nome:'loja',ver:sobe>=2?'melhorou':cai>=2?'piorou':'misto'};
+}
+const DSEM=['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+const VER={melhorou:['p-ok','Melhorou','trending-up'],piorou:['p-bad','Piorou','trending-down'],misto:['p-warn','Misto','minus']};
+const avalPill=a=>!a?'':a.wait?`<span class="pill">Aguardando ${dd(a.d1)}</span>`:a.semBase||a.semVenda?`<span class="pill">Sem venda para medir</span>`:`<span class="pill ${VER[a.ver][0]}">${ic(VER[a.ver][2])}${VER[a.ver][1]}</span>`;
+function avalHTML(x){
+ const a=avaliarAcao(x);if(!a)return '';
+ if(a.wait)return `<p class="aval mf">${ic('hourglass')}Resultado em ${dd(a.d1)}, com o fechamento do dia seguinte</p>`;
+ if(a.semBase||a.semVenda)return `<p class="aval mf">${ic('circle-slash')}${a.semVenda?`Sem venda em ${dd(a.d1)}`:`Sem venda nas ${DSEM[new Date(ANO,MES,a.d1).getDay()]}s anteriores`} para medir</p>`;
+ const f={ipb:v=>fx(v,2),pm:v=>brl(v,2),bm:v=>brl(v)},nm={ipb:'IPB',pm:'Preço médio',bm:'BM'};
+ return `<div class="aval">${avalPill(a)}<span class="mf">${DSEM[new Date(ANO,MES,a.d1).getDay()]} ${dd(a.d1)} × média de ${a.n===1?'1':a.n} ${DSEM[new Date(ANO,MES,a.d1).getDay()]}${a.n===1?'':'s'} anterior${a.n===1?'':'es'}${a.quem!=='loja'?' · '+esc(a.quem):''}</span>
+  <div class="avg">${['ipb','pm','bm'].map(k=>`<span class="${a.v[k]>.005?'c-ok':a.v[k]<-.005?'c-bad':'mf'}" title="antes ${f[k](a.antes[k])}"><small>${nm[k]}</small><b>${f[k](a.dep[k])}</b><em>${a.v[k]>=0?'▲':'▼'} ${pct(Math.abs(a.v[k]),0)}</em></span>`).join('')}</div></div>`;
+}
 function efTag(e){return e?`<span class="delta ${e.d>=.05?'up':e.d<=-.05?'down':'flat'}" style="margin-top:6px">${ic(e.d>=0?'arrow-up-right':'arrow-down-right')}Ritmo ${pct(e.a)} → ${pct(e.b)} · ${e.inc>=0?'+':''}${kbrl(e.inc)}</span>`:`<span class="delta wait" style="margin-top:6px">${ic('hourglass')}Aguardando dias de venda para medir</span>`}
 function drawChart(m,la,el){
  const W=720,H=270,L=44,Rr=16,T=22,B=30,iw=W-L-Rr,ih=H-T-B,MAX=1.2;
@@ -1218,8 +1761,12 @@ function drawChart(m,la,el){
 const PERFIS={
  ausente:{n:'Sem venda nos últimos 3 dias',ic:'circle-slash',sev:'alto',o:3,acao:'1:1 com consultor',
   passos:()=>['Confirmar escala, folga, férias ou afastamento até as 10h','Se estiver ativo(a): 1:1 hoje para entender o bloqueio']},
- atende:{n:'Atende pouco',ic:'users',sev:'alto',o:0,acao:'Push do time',
-  passos:(c,p)=>[`Meta de atendimentos de hoje: ${fx(p.t.bolDia)} boletos (média do time)`,'Escalar na Calçada Perfumada e no horário de pico; 10 mensagens de WhatsApp para a própria carteira de clientes; repostar a promoção do dia nas redes']},
+ critico:{n:'Crítico: volume e boleto',ic:'siren',sev:'crit',o:0,acao:'1:1 com consultor',
+  passos:(c,p)=>[`1:1 completo hoje: abordagem, 2º item e fechamento com BT (B1 ${pct(c.m.pb1)}, BT ${pct(c.m.pBT)}, BP ${pct(c.m.pBP)})`,p.padrinho?`Acompanhar 2 atendimentos de ${esc(p.padrinho.nome)} (IPB ${fx(p.padrinho.m.ipb,2)})`:'Meta individual do dia na abertura e placar às 14h e às 18h']},
+ fraco:{n:'Vende muito, boleto fraco',ic:'package-open',sev:'alto',o:1,acao:'1:1 com consultor',
+  passos:(c,p)=>[`1:1 de 15 min nos boletos de 1 item: BT no fechamento de todo boleto de 1 item (B1 ${pct(c.m.pb1)}, BT ${pct(c.m.pBT)})`,p.padrinho?`Acompanhar 2 atendimentos de ${esc(p.padrinho.nome)} (IPB ${fx(p.padrinho.m.ipb,2)})`:'Gestor acompanha 2 atendimentos e dá retorno na hora']},
+ atende:{n:'Poucos boletos',ic:'users',sev:'alto',o:2,acao:'Push do time',
+  passos:(c,p)=>[`Meta de boletos de hoje: ${fx(p.t.bolDia)} (média do time)`,'Escalar na Calçada Perfumada e no horário de pico; 10 mensagens de WhatsApp para a própria carteira de clientes; repostar a promoção do dia nas redes']},
  item:{n:'Pouco item por boleto',ic:'shopping-bag',sev:'alto',o:0,acao:'1:1 com consultor',
   passos:(c,p)=>[`1:1 de 15 min revisando os boletos de 1 item (B1 ${pct(c.m.pb1)}, BT ${pct(c.m.pBT)}, BP ${pct(c.m.pBP)})`,p.padrinho?`Acompanhar 2 atendimentos de ${esc(p.padrinho.nome)} (IPB ${fx(p.padrinho.m.ipb,2)})`:'Gestor acompanha 2 atendimentos e dá retorno na hora']},
  ticket:{n:'Ticket baixo',ic:'tag',sev:'medio',o:0,acao:'Treinamento com o time',
@@ -1233,65 +1780,143 @@ const PERFIS={
 };
 function perfil(c){
  if(c._p)return c._p;
- const m=c.m,t=TEAM[c.loja],L=M[c.loja];
+ const m=c.m,t=c.digital?DIGTEAM:TEAM[c.loja],L=M[c.loja],tl=c.digital?'digitais':'time';
  const iBol=(m.bolDia-t.bolDia)*t.ipb*t.pm,iIpb=m.bolDia*(m.ipb-t.ipb)*t.pm,iPm=m.bolDia*m.ipb*(m.pm-t.pm);
- const lim=-.03*t.recDia,idx=t.recDia?m.recDia/t.recDia:1;if(!m.dias)return c._p={k:'semdados',t,idx:0,iBol:0,iIpb:0,iPm:0,lim,padrinho:null};
+ const lim=-.03*t.recDia,idx=t.recDia?m.recDia/t.recDia:1;if(!m.dias)return c._p={k:'semdados',t,tl,idx:0,iBol:0,iIpb:0,iPm:0,lim,padrinho:null};
  const abertos=[];for(let d=LAST;d>=1&&abertos.length<3;d--)if(L.days[d-1]>0)abertos.push(d);
  let k;
  if(SEL.has(LAST)&&sum(c.bol)>0&&c.bol.filter(v=>v>0).length>=4&&abertos.length===3&&abertos.every(d=>!c.bol[d-1]))k='ausente';
- else if(idx>=1.15)k='destaque';
- else if(idx>=.95)k='ritmo';
- else{const w=[['atende',iBol],['item',iIpb],['ticket',iPm]].sort((a,b)=>a[1]-b[1]);k=w[0][1]<lim?w[0][0]:'abaixo'}
- const pares=cons.filter(x=>x.loja===c.loja&&x.id!==c.id&&x.m.dias>=2);
+ else{
+  // volume (receita/dia contra o time) × qualidade do boleto (0–100 no cluster; 50 = mediana)
+  const q=qualCons(c),alto=idx>=.95,boa=!q.ok||q.q>=50;
+  k=alto?(boa?(idx>=1.15?'destaque':'ritmo'):'fraco'):(boa?'atende':'critico');
+ }
+ const pares=cons.filter(x=>x.id!==c.id&&x.m.dias>=2&&(c.digital?x.digital:x.loja===c.loja&&!x.digital));
  // padrinho: o colega da loja com melhor IPB / preço médio
- const pad_=k==='item'?[...pares].sort((a,b)=>b.m.ipb-a.m.ipb)[0]:k==='ticket'?[...pares].sort((a,b)=>b.m.pm-a.m.pm)[0]:null;
- const padrinho=pad_&&(k==='item'?pad_.m.ipb>m.ipb*1.05:pad_.m.pm>m.pm*1.05)?pad_:null;
- return c._p={k,t,idx,iBol,iIpb,iPm,lim,padrinho};
+ const porIpb=['item','fraco','critico'].includes(k);
+ const pad_=porIpb?[...pares].sort((a,b)=>b.m.ipb-a.m.ipb)[0]:k==='ticket'?[...pares].sort((a,b)=>b.m.pm-a.m.pm)[0]:null;
+ const padrinho=pad_&&(porIpb?pad_.m.ipb>m.ipb*1.05:pad_.m.pm>m.pm*1.05)?pad_:null;
+ return c._p={k,t,tl,idx,iBol,iIpb,iPm,lim,padrinho};
 }
 const ultAcao=c=>acoesMes().filter(x=>x.cons===c.id).sort((a,b)=>b.dia-a.dia)[0];
-const btbpLinha=m=>`<p class="btbp">${ic('ticket')}BT <b class="${m.pBT>=F.bt?'c-ok':'c-bad'}">${pct(m.pBT)}</b> / ${pct(F.bt)} · BP <b class="${m.pBP>=F.bp?'c-ok':'c-bad'}">${pct(m.pBP)}</b> / ${pct(F.bp)}${m.perdaBTBP>0?` · <span class="c-bad">−${kbrl(m.perdaBTBP)}</span> no período`:''}</p>`;
-function drvChip(lb,v,ref,imp,lim,ic_){
+// Mix do boleto do consultor em 3 quadros: %B1 contra a loja (menor é melhor), BT e BP contra a meta de penetração
+function btbpLinha(m,b1ref,b1lb='time'){
+ const L={pb1:b1ref},q=(lb,icn,v,ok,ref)=>`<div class="mx ${ok?'ok':'no'}"><span class="l">${ic(icn)}${lb}</span><b>${pct(v)}</b><small>${ref}</small></div>`;
+ return `<div class="mix">${q('%B1','package',m.pb1,L.pb1==null||m.pb1<=L.pb1,`${b1lb} ${pct(L.pb1||0)} · menor é melhor`)}${q('BT','zap',m.pBT,m.pBT>=F.bt,`meta ${pct(F.bt)} dos boletos`)}${q('BP','ticket',m.pBP,m.pBP>=F.bp,`meta ${pct(F.bp)} dos boletos ≥ R$ 120`)}</div>
+  ${m.perdaBTBP>0?`<p class="mixp">${ic('circle-alert')}BT e BP abaixo da meta: <b>−${kbrl(m.perdaBTBP)}</b> no período</p>`:''}`;
+}
+function drvChip(lb,v,ref,imp,lim,ic_,tl='time'){
  const cl=imp<lim?'dn':imp>-lim?'up':'eq';
- return `<div class="dc ${cl}"><span class="l">${ic(ic_)}${lb}</span><span class="v">${v}</span><span class="s">time: ${ref}</span><span class="i">${imp<0?'':'+'}${kbrl(imp)}/dia</span></div>`;
+ return `<div class="dc ${cl}"><span class="l">${ic(ic_)}${lb}</span><span class="v">${v}</span><span class="s">${tl}: ${ref}</span><span class="i">${imp<0?'':'+'}${kbrl(imp)}/dia</span></div>`;
 }
 function alvoCons(c,p){
- const t=p.t;
- return {atende:`${fx(t.bolDia)} boletos hoje (média do time)`,item:`IPB ${fx(Math.max(t.ipb,F.ipb||0),2)} hoje (time)`,ticket:`preço médio ${brl(Math.max(t.pm,F.pm||0),2)} hoje (time)`,
-  abaixo:`${kbrl(t.recDia)} hoje (média do time por dia)`}[p.k];
+ const t=p.t,qm=c.digital?'média dos digitais':'média do time';
+ const q=qualCons(c);
+ return {critico:q.ok?`${fx(t.bolDia)} boletos e IPB ${fx(q.ref.ipb,2)} hoje (${qm} e ${q.gl})`:'',fraco:q.ok?`IPB ${fx(q.ref.ipb,2)} e %B1 ≤ ${pct(q.ref.b1)} hoje (${q.gl})`:'',
+  atende:`${fx(t.bolDia)} boletos hoje (${qm})`,item:`IPB ${fx(Math.max(t.ipb,F.ipb||0),2)} hoje (${qm})`,ticket:`preço médio ${brl(Math.max(t.pm,F.pm||0),2)} hoje (${qm})`,
+  abaixo:`${kbrl(t.recDia)} hoje (${qm} por dia)`}[p.k];
 }
 function consCard(c){
  const p=perfil(c),P=PERFIS[p.k],m=c.m,l=lojaById(c.loja),ua=ultAcao(c),alvo=alvoCons(c,p);
  const ganho=Math.max(0,-Math.min(p.iBol,p.iIpb,p.iPm));
  return `<article class="card act ${P.sev} fade">
-  <div class="hd"><div class="l"><span class="sev ${P.sev}">${ic(P.ic)}${P.n}</span></div><div class="imp"><b>${pct(p.idx)}</b><small>do time</small></div></div>
-  <h3>${ic('user-round')}${esc(c.nome)} <span class="mf" style="font-family:var(--font-sans);font-size:13px;font-weight:600">· ${esc(l.nome)}</span></h3>
-  ${p.k==='ausente'?`<p class="evid">Sem cupom nos últimos 3 dias em que a loja vendeu. ${m.dias} dias com venda no mês.</p>`:`<div class="dchips">${drvChip('Boletos/dia',fx(m.bolDia,1),fx(p.t.bolDia,1),p.iBol,p.lim,'receipt')}${drvChip('IPB',fx(m.ipb,2),fx(p.t.ipb,2),p.iIpb,p.lim,'shopping-bag')}${drvChip('Preço médio',brl(m.pm,2),brl(p.t.pm,2),p.iPm,p.lim,'tag')}</div>${btbpLinha(m)}`}
-  ${acaoBloco(p.k,{tipo:P.acao,acao:P.acao,detalhe:P.passos(c,p)[0]},'')}
+  <div class="hd"><div class="l"><span class="sev ${P.sev}">${ic(P.ic)}${P.n}</span>${c.digital?`<span class="tag">${ic('smartphone')} Digital</span>`:''}</div><div class="imp">${qualCons(c).ok?`<b>${kbrl(qualCons(c).emJogo)}</b><small>em jogo por dia · qualidade ${fx(qualCons(c).q)}</small>`:`<b>${pct(p.idx)}</b><small>${c.digital?'dos digitais':'do time'}</small>`}</div></div>
+  <h3>${ic('user-round')}${esc(c.nome)} <span class="mf" style="font-family:var(--font-sans);font-size:13px;font-weight:600">· ${c.digital?`WhatsApp · ${c.lojas.length} loja${c.lojas.length>1?'s':''}`:esc(l.nome)}</span></h3>
+  ${p.k==='ausente'?`<p class="evid">Sem cupom nos últimos 3 dias em que a loja vendeu. ${m.dias} dias com venda no mês.</p>`:`<div class="dchips">${drvChip('Boletos/dia',fx(m.bolDia,1),fx(p.t.bolDia,1),p.iBol,p.lim,'receipt',p.tl)}${drvChip('IPB',fx(m.ipb,2),fx(p.t.ipb,2),p.iIpb,p.lim,'shopping-bag',p.tl)}${drvChip('Preço médio',brl(m.pm,2),brl(p.t.pm,2),p.iPm,p.lim,'tag',p.tl)}</div>${btbpLinha(m,p.t.pb1,p.tl)}`}
+  ${c.digital&&p.k==='atende'?`<div class="do">${ic('smartphone')}<div><b>Carteira no WhatsApp</b><span>30 conversas por dia com a oferta do dia, o saldo de cashback e os kits do ciclo; retomar quem não respondeu na semana.</span></div></div>`:acaoBloco(p.k,{tipo:P.acao,acao:P.acao,detalhe:P.passos(c,p)[0]},'')}
   ${alvo?`<div class="goal">${ic('flag')}<span>Alvo: ${alvo}${ganho>0?` · vale <b>+${kbrl(ganho)} por dia</b>`:''}</span></div>`:''}
+  <p class="sub" style="font-size:12px">Receita/dia ${pct(p.idx)} ${c.digital?'dos digitais':'do time'}</p>
   <div class="ft"><span class="mf" style="font-size:12px">${ua?`Última ação ${dd(ua.dia)}`:''}</span>
    ${ua&&ua.dia===TODAY?`<span class="done">${ic('circle-check')}Registrada hoje</span>`:`<button class="btn" data-creg="${c.id}">${ic('plus')}Registrar ${P.acao==='1:1 com consultor'?'1:1':'ação'}</button>`}</div></article>`;
+}
+// ---------- Qualidade do boleto (0–100) e R$ em jogo por dia ----------
+// Grupo de comparação: consultores do mesmo cluster (shopping, rua...); os digitais só entre si.
+// Cada indicador vira percentil no grupo (0 = pior, 100 = melhor). Quem tem menos de 100 boletos no período é puxado
+// para a média do grupo na proporção do volume (com 100 boletos ou mais vale o próprio resultado).
+// Qualidade = média ponderada: IPB 4, %B1 3 (menor é melhor), BT+BP contra a meta 2, preço médio 1.
+// R$ em jogo por dia = o que o consultor perde por estar abaixo do grupo no IPB e no preço médio (com os mesmos boletos/dia).
+// Seguindo a prioridade (IPB pesa mais): preço médio alto NÃO compensa IPB baixo; IPB alto compensa preço médio baixo
+// (quem leva mais itens por boleto naturalmente baixa o preço médio).
+const PESO_Q={ipb:4,b1:3,btbp:2,pm:1},BOL_PLENO=100;
+let QG={};
+// QDB é outra marca (preço médio bem menor): compara só com QDB
+const grupoCons=c=>{if(c.digital)return 'DIGITAL';const l=lojaById(c.loja)||{};return /^qdb/i.test(l.nome||'')?'QDB':(l.cluster||'—')};
+const nomeGrupo=g=>g==='DIGITAL'?'digitais':g==='QDB'?'lojas QDB':`cluster ${nomeCluster(g).toLowerCase()}`;
+const btbpIdx=m=>(Math.min(1.5,m.bol?(m.bt/m.bol)/F.bt:0)+Math.min(1.5,m.bpe?(m.bp/m.bpe)/F.bp:0))/2;   // 1 = as duas na meta
+function calcQualidade(){
+ QG={};
+ cons.filter(c=>c.m.bol>0&&c.m.dias>=2).forEach(c=>{(QG[grupoCons(c)]=QG[grupoCons(c)]||{cs:[]}).cs.push(c)});
+ for(const g in QG){
+  const G=QG[g],T={rec:0,bol:0,it:0,b1:0,bt:0,bp:0,bpe:0};G.cs.forEach(c=>{for(const k in T)T[k]+=c.m[k]||0});
+  G.ref={ipb:T.bol?T.it/T.bol:0,pm:T.it?T.rec/T.it:0,b1:T.bol?T.b1/T.bol:0,btbp:btbpIdx(T)};
+  const aj=(c,k,v)=>{const w=Math.min(1,c.m.bol/BOL_PLENO);return w*v+(1-w)*G.ref[k]};
+  G.v={ipb:[],b1:[],btbp:[],pm:[]};
+  G.cs.forEach(c=>{const m=c.m;c._a={ipb:aj(c,'ipb',m.ipb),b1:aj(c,'b1',m.pb1),btbp:aj(c,'btbp',btbpIdx(m)),pm:aj(c,'pm',m.pm)};for(const k in G.v)G.v[k].push(c._a[k])});
+  for(const k in G.v)G.v[k].sort((a,b)=>a-b);
+ }
+}
+// percentil de x no grupo (empates contam metade)
+function pctil(arr,x){let lo=0,eq=0;for(const v of arr){if(v<x)lo++;else if(v===x)eq++}return arr.length?(lo+eq/2)/arr.length*100:50}
+function qualCons(c){
+ if(c._q)return c._q;
+ const g=grupoCons(c),G=QG[g];
+ if(!G||!c._a||G.cs.length<3)return c._q={ok:false,q:0,emJogo:0,p:{}};
+ const a=c._a,P={ipb:pctil(G.v.ipb,a.ipb),b1:100-pctil(G.v.b1,a.b1),btbp:pctil(G.v.btbp,a.btbp),pm:pctil(G.v.pm,a.pm)};
+ const q=(P.ipb*PESO_Q.ipb+P.b1*PESO_Q.b1+P.btbp*PESO_Q.btbp+P.pm*PESO_Q.pm)/(PESO_Q.ipb+PESO_Q.b1+PESO_Q.btbp+PESO_Q.pm);
+ const m=c.m,r=G.ref,dIpb=m.bolDia*(r.ipb-m.ipb)*r.pm,dPm=m.bolDia*m.ipb*(r.pm-m.pm);
+ const eIpb=Math.max(0,dIpb),ePm=Math.max(0,dPm+Math.min(0,dIpb)),emJogo=eIpb+ePm;
+ return c._q={ok:true,q,p:P,ref:r,g,gl:nomeGrupo(g),n:G.cs.length,emJogo,eIpb,ePm};
+}
+const corP=v=>v>=50?'c-ok':v>=25?'c-warn':'c-bad';
+const qNivel=v=>v<25?['crit','Crítica']:v<50?['alto','Abaixo']:v<75?['medio','Boa']:['pos','Ótima'];
+// valor do indicador com a cor pelo percentil no grupo; a referência fica na dica (passar o mouse)
+const vsPct=(txt,p,ref)=>p==null?`<b>${txt}</b>`:`<b class="${corP(p)}" title="${ref}">${txt}</b>`;
+function tabelaCons(lst,titulo,sub,ic_){
+ if(!lst.length)return '';
+ const rows=[...lst].sort(sorter('cons',(c,k)=>k==='nome'?c.nome:k==='perfil'?PERFIS[perfil(c).k].o:k==='idx'?perfil(c).idx:k==='emJogo'?qualCons(c).emJogo:k==='q'?qualCons(c).q:c.m[k]));
+ // total do filtro (linha fixa no rodapé)
+ const T={rec:0,bol:0,it:0,b1:0,bt:0,bp:0,bpe:0,dias:0};lst.forEach(c=>{for(const k in T)T[k]+=c.m[k]||0});
+ const tIpb=T.bol?T.it/T.bol:0,tPm=T.it?T.rec/T.it:0,tBm=T.bol?T.rec/T.bol:0,tB1=T.bol?T.b1/T.bol:0,tBT=T.bol?T.bt/T.bol:0,tBP=T.bpe?T.bp/T.bpe:0;
+ const qs=lst.map(qualCons).filter(x=>x.ok),qMed=qs.length?sum(qs.map(x=>x.q))/qs.length:0,jogo=sum(qs.map(x=>x.emJogo));
+ return `<div class="card"><div class="card-hd"><div><h2>${titulo}</h2><p>${sub}</p></div><span class="icchip t-accent">${ic(ic_)}</span></div>
+  <div class="tw tall t15"><table class="tcons"><thead><tr>${sortTh('cons','nome','Consultor')}${sortTh('cons','emJogo','R$ em jogo/dia','r')}${sortTh('cons','q','Qualidade','r')}${sortTh('cons','bolDia','Boletos/dia','r')}${sortTh('cons','ipb','IPB','r')}${sortTh('cons','pb1','%B1','r')}${sortTh('cons','pBT','BT · BP','r')}${sortTh('cons','pm','Preço médio','r')}${sortTh('cons','bm','Boleto médio','r')}<th></th></tr></thead><tbody>
+  ${rows.map(c=>{const p=perfil(c),P=PERFIS[p.k],m=c.m,t=p.t,l=lojaById(c.loja),ua=ultAcao(c),q=qualCons(c),[nv,nt]=qNivel(q.q),r=q.ref||{};
+   return `<tr><td><p class="nm" title="${esc(P.n)}">${esc(c.nome)}</p><p class="sub">${c.digital?`WhatsApp · ${c.lojas.length} loja${c.lojas.length>1?'s':''}`:esc(l.nome)}</p></td>
+   <td class="r tnum">${q.ok?`<b class="${q.emJogo>0?'c-bad':'c-ok'}" title="IPB ${kbrl(q.eIpb)} · preço médio ${kbrl(q.ePm)}">${q.emJogo>0?kbrl(q.emJogo):'—'}</b>`:'<span class="mf">—</span>'}</td>
+   <td class="r tnum">${q.ok?`<span class="scT ${nv}" title="${nt} · ${q.gl}">${fx(q.q)}</span>`:'<span class="mf">—</span>'}</td>
+   <td class="r tnum"><b title="${p.tl} ${fx(t.bolDia,1)}">${fx(m.bolDia,1)}</b></td>
+   <td class="r tnum">${vsPct(fx(m.ipb,2),q.ok?q.p.ipb:null,`grupo ${fx(r.ipb||0,2)}`)}</td>
+   <td class="r tnum">${vsPct(pct(m.pb1),q.ok?q.p.b1:null,`grupo ${pct(r.b1||0)}`)}</td>
+   <td class="r tnum">${vsPct(`${pct(m.pBT)} · ${m.bpe?pct(m.pBP):'—'}`,q.ok?q.p.btbp:null,`meta ${pct(F.bt)} · ${pct(F.bp)}`)}</td>
+   <td class="r tnum">${vsPct(brl(m.pm,2),q.ok?q.p.pm:null,`grupo ${brl(r.pm||0,2)}`)}</td>
+   <td class="r tnum"><b title="grupo ${brl((r.ipb||0)*(r.pm||0))}">${brl(m.bm)}</b></td>
+   <td>${ua&&ua.dia===TODAY?`<span class="done">${ic('circle-check')}</span>`:`<button class="btn sm" data-creg="${c.id}">${ic(TIPOS[P.acao])}${P.acao==='1:1 com consultor'?'1:1':P.acao==='Reconhecimento'?'Reconhecer':'Ação'}</button>`}</td></tr>`}).join('')}
+  </tbody><tfoot><tr><td><p class="nm">Total · ${lst.length}</p></td>
+   <td class="r tnum"><b class="c-bad">${kbrl(jogo)}</b></td><td class="r tnum"><b>${fx(qMed)}</b></td>
+   <td class="r tnum"><b title="${fx(T.bol)} boletos no período">${fx(T.dias?T.bol/T.dias:0,1)}</b></td>
+   <td class="r tnum"><b>${fx(tIpb,2)}</b></td><td class="r tnum"><b>${pct(tB1)}</b></td>
+   <td class="r tnum"><b class="${tBT>=F.bt&&tBP>=F.bp?'c-ok':'c-bad'}">${pct(tBT)} · ${pct(tBP)}</b></td><td class="r tnum"><b>${brl(tPm,2)}</b></td><td class="r tnum"><b>${brl(tBm)}</b></td><td></td></tr></tfoot></table></div></div>`;
+}
+// Tabela com todos os consultores, rolável: altura de até 15 linhas, limitada a 80% da tela; o total fica fixo no rodapé
+function altura15(){
+ document.querySelectorAll('.t15').forEach(w=>{const th=w.querySelector('thead'),tf=w.querySelector('tfoot'),rs=[...w.querySelectorAll('tbody tr')].slice(0,15);
+  const h=e=>e?e.getBoundingClientRect().height:0;w.style.maxHeight=Math.min(Math.ceil(h(th)+h(tf)+sum(rs.map(h))+4),Math.round(innerHeight*.8))+'px'});
 }
 function vCons(ls,cs){
  const cnt={};cs.forEach(c=>{const k=perfil(c).k;cnt[k]=(cnt[k]||0)+1});
  const lista=cs.filter(c=>!S.pfil||perfil(c).k===S.pfil);
- const prio=S.cons?lista:lista.filter(c=>c.m.dias>=Math.min(4,SEL.size)&&(S.pfil||PERFIS[perfil(c).k].sev!=='pos')).sort((a,b)=>PERFIS[perfil(a).k].o-PERFIS[perfil(b).k].o||Math.min(perfil(a).iBol,perfil(a).iIpb,perfil(a).iPm)-Math.min(perfil(b).iBol,perfil(b).iIpb,perfil(b).iPm));
- const rows=[...lista].sort(sorter('cons',(c,k)=>k==='nome'?c.nome:k==='perfil'?PERFIS[perfil(c).k].o:k==='idx'?perfil(c).idx:c.m[k]));
- const fator=c=>{const p=perfil(c),m=c.m;if(!['atende','item','ticket'].includes(p.k))return '<span class="mf">—</span>';
-  const t={atende:`Boletos/dia ${fx(m.bolDia,1)} · time ${fx(p.t.bolDia,1)}`,item:`IPB ${fx(m.ipb,2)} · time ${fx(p.t.ipb,2)}`,ticket:`Preço médio ${brl(m.pm,2)} · time ${brl(p.t.pm,2)}`}[p.k];
-  return `<span class="pill p-bad">${t}</span>`};
+ // todos os consultores do filtro, na ordem de prioridade do perfil (os botões de perfil filtram um grupo)
+ const prio=[...lista].sort((a,b)=>PERFIS[perfil(a).k].o-PERFIS[perfil(b).k].o||qualCons(b).emJogo-qualCons(a).emJogo);
+ const loja=lista.filter(c=>!c.digital),dig=lista.filter(c=>c.digital);
  $('view').innerHTML=`<section class="sec">
-  <div class="plan-hd"><div><h2>Plano de 1:1 de hoje</h2><p>Comparado com o time da loja · ${perTxt()}</p></div></div>
-  <div class="pfil">${Object.entries(PERFIS).filter(([k])=>cnt[k]).map(([k,P])=>`<button class="pf ${P.sev} ${S.pfil===k?'on':''}" data-pfil="${k}">${ic(P.ic)}<span>${P.n}</span><b>${cnt[k]}</b></button>`).join('')}</div>
-  <div class="acts3">${prio.slice(0,6).map(consCard).join('')||'<p class="empty">Nenhum consultor precisando de 1:1 neste filtro.</p>'}</div>
-  <div class="card"><div class="card-hd"><div><h2>Consultores${S.pfil?`: ${PERFIS[S.pfil].n}`:''}</h2><p>${lista.length}${S.pfil?' · <button class="btn ghost sm" data-pfil="">limpar filtro</button>':''}</p></div><span class="icchip t-accent">${ic('users')}</span></div>
-  <div class="tw tall"><table><thead><tr>${sortTh('cons','nome','Consultor')}${sortTh('cons','perfil','Perfil')}${sortTh('cons','idx','Receita/dia vs time')}<th>Fator que mais pesa</th>${sortTh('cons','pBT','BT / BP')}<th></th></tr></thead><tbody>
-  ${rows.map(c=>{const p=perfil(c),P=PERFIS[p.k],m=c.m,l=lojaById(c.loja),ua=ultAcao(c);
-   return `<tr><td><p class="nm">${esc(c.nome)}</p><p class="sub">${esc(l.nome)}</p></td>
-   <td><span class="sev ${P.sev}" style="text-transform:none;letter-spacing:0">${ic(P.ic)}${P.n}</span></td>
-   <td><div class="minibar"><span class="b"><i style="width:${Math.min(100,p.idx*70)}%;background:${p.idx>=.95?'var(--primary)':p.idx>=.8?'var(--warning)':'var(--destructive)'}"></i></span><b class="tnum">${pct(p.idx)}</b></div><p class="sub">${kbrl(m.recDia)} por dia</p></td>
-   <td>${fator(c)}</td><td class="tnum"><b class="${m.pBT>=F.bt?'c-ok':'c-bad'}">${pct(m.pBT)}</b> / <b class="${m.pBP>=F.bp?'c-ok':'c-bad'}">${pct(m.pBP)}</b></td>
-   <td>${ua&&ua.dia===TODAY?`<span class="done">${ic('circle-check')}</span>`:`<button class="btn sm" data-creg="${c.id}">${ic(TIPOS[P.acao])}${P.acao==='1:1 com consultor'?'1:1':P.acao==='Reconhecimento'?'Reconhecer':'Ação'}</button>`}</td></tr>`}).join('')}
-  </tbody></table></div></div></section>`;
+  <div class="plan-hd"><div><h2>Consultores${S.pfil?`: ${PERFIS[S.pfil].n}`:''} (${lista.length})</h2><p>${perTxt()} · passe o mouse nos valores para ver a referência</p></div></div>
+  <div class="pfil"><button class="pf ${!S.pfil?'on':''}" data-pfil="">${ic('users')}<span>Todos</span><b>${cs.length}</b></button>${Object.entries(PERFIS).filter(([k])=>cnt[k]).map(([k,P])=>`<button class="pf ${P.sev} ${S.pfil===k?'on':''}" data-pfil="${k}">${ic(P.ic)}<span>${P.n}</span><b>${cnt[k]}</b></button>`).join('')}</div>
+  ${tabelaCons(loja,`Consultores de loja (${loja.length})`,'Comparados com o cluster · qualidade de 0 a 100 (IPB 4, %B1 3, BT + BP 2, preço médio 1)','users')}
+  ${tabelaCons(dig,`Consultores digitais · WhatsApp (${dig.length})`,'Comparados só entre si','smartphone')}
+  ${!loja.length&&!dig.length?'<p class="empty">Nenhum consultor neste filtro.</p>':''}
+  ${prio.length?`<div class="plan-hd"><div><h2>Plano de cada consultor</h2></div></div><div class="acts3">${prio.map(consCard).join('')}</div>`:''}
+ </section>`;
+ altura15();
 }
 function icons(){try{window.lucide&&lucide.createIcons()}catch(e){}}
 
@@ -1300,13 +1925,13 @@ let CTX=null;
 const isoDia=d=>`${ANO}-${pad(MES+1)}-${pad(d)}`;
 function abrir(t,lojaId,consId){
  CTX=t||null;
- const ls=escopo(),lid=t?t.loja.id:lojaId||S.foco;
- $('dLoja').innerHTML=ls.map(l=>`<option value="${l.id}">${esc(l.nome)}</option>`).join('');$('dLoja').value=lid;
+ const lid=t?t.loja.id:lojaId||S.foco,esc_=escopo(),ls=esc_.some(l=>l.id===lid)?esc_:lojas;
+ $('dLoja').innerHTML=ls.map(l=>`<option value="${l.id}">${esc(l.nome)}</option>`).join('');$('dLoja').value=lid||ls[0].id;
  fillCons(lid,consId||'');
  $('dTipo').value=t?(t.acao||GT[t.g].acao):'Push do time';
  $('dDia').min=isoDia(1);$('dDia').max=isoDia(DAYS);$('dDia').value=isoDia(Math.min(TODAY,DAYS));$('dDesc').value='';
  $('dCtx').innerHTML=t?`<b>Gatilho:</b> ${GT[t.g].nome} · ${esc(t.loja.nome)}<br><b>Meta da ação:</b> ${t.meta}`:'Ação avulsa, sem gatilho associado.';
- try{$('dAutor').value=$('dAutor').value||localStorage.getItem(KEY_AUTOR)||''}catch(e){}
+ try{const u=window.PulsarUso&&PulsarUso.usuario();$('dAutor').value=(u&&u.nome)||$('dAutor').value||localStorage.getItem(KEY_AUTOR)||''}catch(e){}
  $('dlg').showModal();icons();
 }
 function fillCons(lid,v){const cs=cons.filter(c=>c.loja===lid&&c.m.dias>0).sort((a,b)=>a.nome.localeCompare(b.nome));$('dCons').innerHTML='<option value="">Loja inteira</option>'+cs.map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join('');$('dCons').value=v||''}
@@ -1316,13 +1941,13 @@ $('dlgX').onclick=$('dlgCancel').onclick=()=>$('dlg').close();
 $('fAcao').addEventListener('submit',e=>{
  e.preventDefault();
  const v=$('dDia').value;if(!v||v.slice(0,7)!==`${ANO}-${pad(MES+1)}`)return;
- const loja=$('dLoja').value;
+ const loja=$('dLoja').value;if(!loja){$('dLoja').focus();return}
  const autor=$('dAutor').value.trim();if(!autor){$('dAutor').focus();return}
  try{localStorage.setItem(KEY_AUTOR,autor)}catch(e){}
  registrar({id:Date.now(),autor,mes:v.slice(0,7),dia:+v.slice(8,10),loja,cons:$('dCons').value,tipo:$('dTipo').value,gat:CTX&&CTX.loja.id===loja?CTX.g:'',desc:$('dDesc').value.trim()});
  $('dlg').close();render();toast(PLANILHA.url?'Ação registrada e enviada para a planilha':'Ação registrada neste navegador');
 });
-function toast(msg){const t=document.createElement('div');t.className='toast';t.innerHTML=`${ic('circle-check')}${esc(msg)}`;document.body.appendChild(t);icons();setTimeout(()=>t.remove(),2600)}
+function toast(msg,erro){const t=document.createElement('div');t.className='toast'+(erro?' erro':'');t.innerHTML=`${ic(erro?'circle-alert':'circle-check')}${esc(msg)}`;document.body.appendChild(t);icons();setTimeout(()=>t.remove(),erro?6000:2600)}
 
 /* ================= Eventos ================= */
 // Monta as opções de cada filtro a partir dos filtros acima dele; zera o que deixou de existir.
@@ -1342,22 +1967,39 @@ function fillFiltros(){
  $('fCons').innerHTML='<option value="">Todos os consultores</option>'+cs.map(c=>`<option value="${c.id}">${esc(c.nome)}${S.loja?'':' · '+esc(lojaById(c.loja).nome)}</option>`).join('');
  $('fCons').value=S.cons;
 }
-const setFiltro=(k,v)=>{S[k]=v;S.foco=S.loja||null;fillFiltros();render()};
+// Filtro lembrado neste navegador (o gerente abre direto na loja dele) e link direto: ?loja=ID (ou ?gvo=, ?praca=, ?reg=)
+const KEY_FIL='pulsar-filtro-v1';
+const lembrarFiltro=()=>{try{localStorage.setItem(KEY_FIL,JSON.stringify({reg:S.reg,praca:S.praca,gvo:S.gvo,loja:S.loja}))}catch(e){}};
+function filtroInicial(){
+ let f={};try{f=JSON.parse(localStorage.getItem(KEY_FIL))||{}}catch(e){}
+ const q=new URLSearchParams(location.search);
+ if(['loja','gvo','praca','reg'].some(k=>q.has(k)))f={reg:q.get('reg')||'',praca:q.get('praca')||'',gvo:q.get('gvo')||'',loja:q.get('loja')||''};
+ const l=f.loja&&lojaById(f.loja);
+ if(l){S.reg=l.regional;S.praca=l.praca;S.gvo=l.gestor;S.loja=l.id;S.foco=l.id}
+ else{const ok=(k,fn)=>f[k]&&lojas.some(x=>fn(x)===f[k]);if(ok('reg',x=>x.regional))S.reg=f.reg;if(ok('praca',x=>x.praca))S.praca=f.praca;if(ok('gvo',x=>x.gestor))S.gvo=f.gvo}
+}
+const setFiltro=(k,v)=>{S[k]=v;S.foco=S.loja||null;fillFiltros();lembrarFiltro();render()};
 $('fReg').addEventListener('change',e=>setFiltro('reg',e.target.value));
 $('fPraca').addEventListener('change',e=>setFiltro('praca',e.target.value));
 $('fGvo').addEventListener('change',e=>setFiltro('gvo',e.target.value));
 $('fLoja').addEventListener('change',e=>setFiltro('loja',e.target.value));
 $('fCons').addEventListener('change',e=>{S.cons=e.target.value;if(S.cons){S.tab='consultores';S.pfil=''}render()});
-$('fLimpar').addEventListener('click',()=>{S.reg=S.praca=S.gvo=S.loja=S.cons='';S.foco=null;fillFiltros();render()});
+$('fToggle').addEventListener('click',()=>{const f=$('fToggle').closest('.filter'),o=f.classList.toggle('open');$('fToggle').setAttribute('aria-expanded',o)});
+$('fLimpar').addEventListener('click',()=>{S.reg=S.praca=S.gvo=S.loja=S.cons='';S.foco=null;fillFiltros();lembrarFiltro();render()});
 
 /* ---------- Filtro de datas ---------- */
 let ultDia=null;
-function fillDias(){
+// Filete de cada data = atingimento do dia no filtro atual (verde ≥ 100%, amarelo ≥ 90%, vermelho abaixo)
+let AGG_DIAS=null;
+function fillDias(a){
+ if(a)AGG_DIAS=a;a=AGG_DIAS;
  const DS=['D','S','T','Q','Q','S','S'];
  $('fDias').innerHTML=Array.from({length:LAST},(_,i)=>{const d=i+1,w=new Date(ANO,MES,d).getDay();
-  return `<button type="button" class="dia ${SEL.has(d)?'on':''} ${w===0?'fds':''}" data-dia="${d}" aria-pressed="${SEL.has(d)}" title="${dd(d)}"><b>${pad(d)}</b><small>${DS[w]}</small></button>`}).join('');
+  const mt=a?a.metaDays[d-1]:0,r=mt>0?a.days[d-1]/mt:null,cl=!a||r==null?'':r>=1?'r-ok':r>=.9?'r-mid':'r-no';
+  const tt=`${dd(d)}${r==null?'':` · ${pct(r)} da meta do dia`}`;
+  return `<button type="button" class="dia ${SEL.has(d)?'on':''} ${w===0?'fds':''} ${cl}" data-dia="${d}" aria-pressed="${SEL.has(d)}" title="${tt}"><b>${pad(d)}</b><small>${DS[w]}</small></button>`}).join('');
 }
-function setDias(novos){if(!novos.size)return;SEL=novos;recalc();fillDias();render()}
+function setDias(novos){if(!novos.size)return;SEL=novos;recalc();render()}
 $('fDias').addEventListener('click',e=>{
  const b=e.target.closest('[data-dia]');if(!b)return;const d=+b.dataset.dia,n=new Set(SEL);
  if(e.shiftKey&&ultDia){const[a,z]=[Math.min(ultDia,d),Math.max(ultDia,d)];for(let x=a;x<=z;x++)n.add(x)}
@@ -1371,14 +2013,19 @@ document.querySelector('.datas .pres').addEventListener('click',e=>{
 });
 function irFoco(id){if(S.foco!==id)S.acSel=null;S.foco=id;S.tab='lojas';render();requestAnimationFrame(()=>$('foco')?.scrollIntoView({behavior:'smooth',block:'start'}))}
 document.addEventListener('click',e=>{
- const t=e.target.closest('[data-tab],[data-reg],[data-foco],[data-del],[data-sort],[data-novo],[data-drill],[data-verc],[data-chart],[data-acsel],[data-pfil],[data-creg]');if(!t)return;
+ const t=e.target.closest('[data-tab],[data-reg],[data-foco],[data-del],[data-sort],[data-novo],[data-drill],[data-verc],[data-chart],[data-acsel],[data-pfil],[data-creg],[data-dec],[data-gvo],[data-uso],[data-usonome]');if(!t)return;
  const d=t.dataset;
+ if(d.uso){carregarUso(true).then(render);return}
+ if(d.usonome!=null){S.usoNome=S.usoNome===d.usonome?'':d.usonome;render();return}
+ if(d.dec!=null){const x=DEC[+d.dec];if(!x)return;const cm=comoDecisao(x);abrir({loja:x.loja,g:x.g,meta:x.meta.replace(/^Meta: /,''),acao:cm.tipo});
+  if(TIPOS[cm.tipo])$('dTipo').value=cm.tipo;$('dDesc').value=`${x.meta}${cm.txt?' · '+cm.txt:''}`;return}
+ if(d.gvo!=null){const l=lojas.find(z=>z.gestor===d.gvo);if(l){S.reg=l.regional;S.praca=l.praca}S.gvo=d.gvo;S.loja='';S.foco=null;fillFiltros();lembrarFiltro();render();$('view').scrollIntoView({behavior:'smooth',block:'start'});return}
  if(d.chart){S.chart=d.chart;render();return}
- if(d.verc){const l=lojaById(d.verc);S.reg=l.regional;S.praca=l.praca;S.gvo=l.gestor;S.loja=l.id;S.cons='';S.tab='consultores';fillFiltros();render();$('view').scrollIntoView({behavior:'smooth',block:'start'});return}
+ if(d.verc){const l=lojaById(d.verc);S.reg=l.regional;S.praca=l.praca;S.gvo=l.gestor;S.loja=l.id;S.cons='';S.tab='consultores';fillFiltros();lembrarFiltro();render();$('view').scrollIntoView({behavior:'smooth',block:'start'});return}
  if(d.pfil!=null){S.pfil=S.pfil===d.pfil?'':d.pfil;render();return}
  if(d.creg){const c=consById(d.creg),p=perfil(c),P=PERFIS[p.k];abrir(null,c.loja,c.id);$('dTipo').value=P.acao;$('dDesc').value=P.passos(c,p)[0].replace(/<[^>]+>/g,'')+(alav(p.k)?` · ${alav(p.k).acao}`:'');$('dCtx').innerHTML=`<b>Perfil:</b> ${P.n} · ${esc(c.nome)} · ${esc(lojaById(c.loja).nome)}`;return}
  if(d.acsel){S.acSel=+d.acsel;S.chart='dia';render();return}
- if(d.drill!=null){S.loja=d.drill;S.foco=S.loja||null;fillFiltros();render();$('view').scrollIntoView({behavior:'smooth',block:'start'});return}
+ if(d.drill!=null){S.loja=d.drill;S.foco=S.loja||null;fillFiltros();lembrarFiltro();render();$('view').scrollIntoView({behavior:'smooth',block:'start'});return}
  if(d.tab){S.tab=d.tab;render();return}
  if(d.reg!=null){const t=FIRED[+d.reg];abrir(t);const x=alav(t.g);if(x){if(TIPOS[x.tipo])$('dTipo').value=x.tipo;$('dDesc').value=`${x.acao}: ${x.detalhe||''}`}return}
  if(d.novo){abrir(null,d.novo);return}
@@ -1396,7 +2043,11 @@ function cabecalho(){
  $('hBase').textContent=`${lojas.length} lojas · atualizado em ${D.geradoEm.slice(8,10)}/${D.geradoEm.slice(5,7)} às ${D.geradoEm.slice(11,16)}`;
 }
 fetch('Ciclo/ciclo_atual.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null).then(c=>{CICLO=c}).then(()=>fetch('data/pulsar.json',{cache:'no-store'})).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(j=>{
- init(j);cabecalho();fillFiltros();fillDias();render();
+ init(j);cabecalho();filtroInicial();fillFiltros();
+ // identificação de quem acessa (primeira visita) antes do primeiro registro de uso
+ // sem o uso.js (ex.: site publicado sem o arquivo), o painel funciona normalmente, só sem registrar o uso
+ if(window.PulsarUso)PulsarUso.iniciar({pessoas:D.pessoas||[],planilha:PLANILHA,ambiente:CONF.ambiente,pagina:'mes'}).then(render).catch(()=>{});
+ render();
  sincronizar().then(render);setInterval(()=>sincronizar().then(render),120000);
 }).catch(err=>{
  $('view').innerHTML=`<div class="card pad"><h2 style="font-size:18px">Não foi possível carregar os dados</h2><p class="mf">Abra o PULSAR pelo atalho <b>Abrir PULSAR.bat</b>, que processa as planilhas e abre o painel. O arquivo <code>data/pulsar.json</code> precisa existir e a página precisa ser aberta por um servidor local (não direto do arquivo).</p></div>`;

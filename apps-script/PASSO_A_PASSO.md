@@ -51,3 +51,10 @@ Use **Implantar > Gerenciar implantações > lápis > Versão: Nova versão > Im
 ## Segurança
 - A chave barra gravações por acaso ou por robôs, mas fica visível no código da página. Ela não é uma senha forte.
 - Se o PULSAR for publicado em um site aberto (GitHub Pages público), qualquer pessoa com o link vê os dados e a URL da planilha. Prefira publicar com login (ex.: Cloudflare Pages + Cloudflare Access com os e-mails da empresa).
+
+
+## Atualização: registro de acessos (aba Uso)
+1. Abra a planilha > Extensões > Apps Script.
+2. Substitua todo o código pelo conteúdo novo de `apps-script/Codigo.gs` e troque `CHAVE` por `pulsar-gn-2026`.
+3. Salve. Implantar > Gerenciar implantações > lápis (editar) > Versão: **Nova versão** > Implantar. A URL continua a mesma.
+4. No primeiro acesso ao painel depois disso, a aba `acessos` é criada sozinha na planilha.

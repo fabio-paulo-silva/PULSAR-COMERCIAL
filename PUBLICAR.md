@@ -32,6 +32,18 @@ O que vai para o GitHub: `index.html`, `config.js`, `data/pulsar.json`, `Ciclo/`
    git push
    ```
 
+**Atualizar o acompanhamento do dia (hoje.html), quantas vezes quiser ao longo do dia:**
+1. Salve o export de cupons de hoje em `Dados/Hoje` (substitua o anterior).
+2. Rode `Atualizar hoje.bat` (ou `python processar_hoje.py`).
+3. Envie para a `main`:
+   ```
+   git checkout main
+   git add data/hoje.json
+   git commit -m "Venda de hoje até HH:MM"
+   git push
+   git checkout develop
+   ```
+
 **Testar uma mudança no painel:**
 1. `git checkout develop`, faça a mudança, `git commit` e `git push`.
 2. Confira em `/dev/` (aparece o selo amarelo **Desenvolvimento**).
@@ -45,7 +57,7 @@ git checkout develop
 ```
 
 ## Ambientes e planilha de ações
-O `config.js` escolhe o ambiente pelo endereço: `/dev/` e o computador local usam **desenvolvimento**; o resto usa **produção**. Cada um tem sua URL de planilha de ações. Em desenvolvimento a URL está vazia (as ações ficam no navegador); para testar gravação sem misturar com produção, crie uma segunda planilha "PULSAR · Ações (dev)" seguindo `apps-script/PASSO_A_PASSO.md` e cole a URL e a chave no bloco `desenvolvimento` do `config.js`.
+O `config.js` escolhe o ambiente pelo endereço: `/dev/` e o computador local usam **desenvolvimento**; o resto usa **produção**. Cada um tem sua URL de planilha de ações. Hoje os dois ambientes usam a mesma planilha (todo mundo vê as mesmas ações, em `/dev/` e em produção); para separar, crie uma segunda planilha "PULSAR · Ações (dev)" seguindo `apps-script/PASSO_A_PASSO.md` e cole a URL e a chave no bloco `desenvolvimento` do `config.js`.
 
 ## Atenção: o site é público
 No GitHub Pages do plano gratuito (e no Pro), o site fica aberto para qualquer pessoa com o link, mesmo com o repositório privado. Isso inclui `data/pulsar.json` (receita por loja e nomes de consultores) e a URL da planilha de ações. Para restringir a quem é da empresa, é preciso GitHub Enterprise Cloud (Pages privado) ou outra hospedagem com login, como Cloudflare Pages + Cloudflare Access.
