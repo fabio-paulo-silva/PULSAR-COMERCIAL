@@ -111,3 +111,8 @@ Primeiro a tabela dos consultores de loja e a dos digitais, com receita/dia, bol
 ## Avaliação das ações (aba Lojas)
 - Cada ação registrada mostra **IPB, preço médio e BM do dia seguinte ao dia da ação** contra a média dos **3 últimos dias iguais da semana** (ex.: quinta contra as 3 quintas anteriores; no começo do mês, os que houver). Se a ação foi para um consultor, a conta é com a venda dele; senão, a da loja.
 - Veredito: **Melhorou** (2 dos 3 indicadores subiram), **Piorou** (2 dos 3 caíram) ou **Misto**. Sem o dia seguinte fechado: "Aguardando"; sem venda no dia: "Sem venda para medir". A coluna Ação da tabela de lojas mostra o veredito da última ação.
+
+## Metas por consultor
+- Pasta `Metas/Consultores` (fica só no computador, como as outras planilhas). O arquivo com o nome do mês (ex.: `METAS NOVEMBRO CONSULTORES.xlsx`) traz uma linha por consultor e loja: loja (PDV), consultor (código/matrícula do Retaguarda), nome (opcional) e a meta do mês (coluna com "META" no nome). O LEIA-ME da pasta descreve o formato.
+- **Diarização:** meta do dia do consultor = meta do mês do consultor × (meta do dia da loja ÷ meta do mês da loja), ou seja, a mesma diarização da loja. Consultor com meta e ainda sem venda também entra no painel.
+- **Meta de hoje do consultor** = meta diarizada de hoje + gap do consultor até ontem ÷ dias que faltam (mesma regra da loja). Usada na "Meta de hoje por consultor" (painel do mês, com loja filtrada) e na hoje.html. Loja sem metas por consultor continua com a meta da loja dividida em partes iguais entre o time.

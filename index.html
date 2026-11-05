@@ -1419,9 +1419,28 @@ function timeDaLoja(lid){
  return{time:at.filter(c=>sum(c.rec)>=MIN_TIME*med),fora:at.filter(c=>sum(c.rec)<MIN_TIME*med)};
 }
 // Meta de hoje da loja dividida em partes iguais entre os consultores do time
+// Meta de hoje do consultor com meta própria (Metas/Consultores, diarizada como a loja):
+// meta diarizada de hoje + gap do consultor até ontem ÷ dias que faltam com meta (mesma regra da loja)
+function metaHojeCons(c){
+ const mt=c.meta;if(!mt)return null;
+ const mh=TODAY<=DAYS?mt[TODAY-1]||0:0,ate=sum(mt.slice(0,LAST)),rec=sum(c.rec),rest=mt.slice(TODAY-1).filter(v=>v>0).length,gap=Math.max(0,ate-rec);
+ return{mh,gap,rec,ate,mes:sum(mt),recup:mh>0&&rest?gap/rest:0,hoje:mh+(mh>0&&rest?gap/rest:0),rest};
+}
 function metaConsHTML(l){
- const m=M[l.id],{time,fora}=timeDaLoja(l.id);if(!time.length)return '';
- const bm=m.bmAlvoV||m.bm,mh=m.hoje/time.length;
+ const m=M[l.id],bm=m.bmAlvoV||m.bm;
+ // com metas por consultor: cada um com a sua meta de hoje
+ const comMeta=cons.filter(c=>c.loja===l.id&&c.meta);
+ if(comMeta.length){
+  const rows=comMeta.map(c=>({c,x:metaHojeCons(c)})).sort((a,b)=>b.x.hoje-a.x.hoje),tot=sum(rows.map(r=>r.x.hoje));
+  return `<div class="card"><div class="card-hd"><div><h2>Meta de hoje por consultor</h2><p>${esc(l.nome)} · meta de cada consultor diarizada como a loja + o gap dele ÷ dias que faltam · total ${kbrl(tot)}</p></div><span class="icchip t-accent">${ic('users')}</span></div>
+  <div class="tw"><table class="mc"><thead><tr><th>Consultor</th><th class="r">% da meta do mês</th><th class="r">Meta do dia</th><th class="r">+ Gap</th><th class="r">Meta hoje</th><th class="r">Boletos</th></tr></thead><tbody>
+  ${rows.map(({c,x})=>`<tr><td><p class="nm">${esc(c.nome)}</p></td>
+   <td class="r tnum"><b class="${x.rec>=x.ate?'c-ok':'c-bad'}">${pct(x.mes?x.rec/x.mes:0)}</b><p class="sub">deveria ${pct(x.mes?x.ate/x.mes:0)}</p></td>
+   <td class="r tnum">${kbrl(x.mh)}</td><td class="r tnum">${x.recup>0?kbrl(x.recup):'—'}</td><td class="r tnum"><b>${kbrl(x.hoje)}</b></td><td class="r tnum">${fx(bm?x.hoje/bm:0)}</td></tr>`).join('')}
+  </tbody></table></div></div>`;
+ }
+ const {time,fora}=timeDaLoja(l.id);if(!time.length)return '';
+ const mh=m.hoje/time.length;
  const rows=[...time].sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
  return `<div class="card"><div class="card-hd"><div><h2>Meta de hoje por consultor</h2><p>${esc(l.nome)} · ${kbrl(m.hoje)} ÷ ${time.length} consultores = <b>${kbrl(mh)}</b> e ${fx(bm?mh/bm:0)} boletos para cada um</p></div><span class="icchip t-accent">${ic('users')}</span></div>
   <div class="tw"><table class="mc"><thead><tr><th>Consultor</th><th class="r">Meta hoje</th><th class="r">Boletos</th><th class="r">Média atual/dia</th></tr></thead><tbody>
