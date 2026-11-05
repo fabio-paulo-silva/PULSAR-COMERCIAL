@@ -651,6 +651,7 @@ dialog .hd h3{font-size:18px}
   <section class="card filter">
     <button type="button" class="ttl" id="fToggle" aria-expanded="false"><i data-lucide="sliders-horizontal"></i>Filtros<span class="fres" id="fRes"></span><i data-lucide="chevron-down" class="fchev"></i></button>
     <div class="row">
+      <div class="fld" id="fMesBox" hidden><label for="fMes">Mês</label><select id="fMes"></select></div>
       <div class="fld"><label for="fReg">Regional</label><select id="fReg"></select></div>
       <div class="fld"><label for="fPraca">Praça</label><select id="fPraca"></select></div>
       <div class="fld"><label for="fGvo">GVO</label><select id="fGvo"></select></div>
@@ -765,7 +766,8 @@ function juntaDigitais(lst){
  lst.forEach(c=>{if(!c.digital){out.push(c);return}
   const cod=c.id.split('@')[0],g=dg[cod]=dg[cod]||{id:'dig:'+cod,nome:c.nome,digital:true,lojas:[],_rec:{}};
   if(lojaById(c.loja)){g.lojas.push(c.loja);g._rec[c.loja]=sum(c.rec)}
-  SERIES.forEach(k=>{g[k]=g[k]||[];(c[k]||[]).forEach((v,i)=>g[k][i]=(g[k][i]||0)+v)})});
+  SERIES.forEach(k=>{g[k]=g[k]||[];(c[k]||[]).forEach((v,i)=>g[k][i]=(g[k][i]||0)+v)});
+  if(c.meta){g.meta=g.meta||[];c.meta.forEach((v,i)=>g.meta[i]=(g.meta[i]||0)+v)}});
  Object.values(dg).forEach(g=>{if(!g.lojas.length)return;g.loja=[...g.lojas].sort((a,b)=>g._rec[b]-g._rec[a])[0];
   SERIES.forEach(k=>{for(let i=0;i<LAST;i++)g[k][i]=g[k][i]||0});out.push(g)});
  return out;
@@ -1166,9 +1168,9 @@ function render(){
     <div><span>BT necessário</span><b>${pct(F.bt)}</b><small>hoje ${pct(a.pBT)}</small></div>
     <div><span>BP necessário</span><b>${pct(F.bp)}</b><small>hoje ${pct(a.pBP)} · boletos ≥ R$ 120</small></div>
    </div></div>`;
- const TABS=[['hoje','Hoje','zap'],['consultores','Consultores','users'],['lojas','Lojas','store'],['entender','Entender','search'],['uso','Uso','activity']];
+ const TABS=[['hoje','Hoje · Lojas','zap'],['hojecons','Hoje · Consultor','user-check'],['consultores','Consultores','users'],['lojas','Lojas','store'],['entender','Entender','search'],['uso','Uso','activity']];
  $('tabs').innerHTML=TABS.map(([id,l,i])=>`<button class="tab ${S.tab===id?'on':''}" data-tab="${id}">${ic(i)}<span>${l}</span></button>`).join('');
- ({hoje:vHoje,entender:vEntender,lojas:vLojas,consultores:vCons,uso:vUso})[S.tab](ls,cs,a);
+ ({hoje:vHoje,hojecons:vHojeCons,entender:vEntender,lojas:vLojas,consultores:vCons,uso:vUso})[S.tab](ls,cs,a);
  icons();
  // registra o acesso (página do mês, aba e filtro); o uso.js não repete a mesma tela antes de 30 minutos
  if(window.PulsarUso)PulsarUso.registrar({pagina:'mes',aba:S.tab,regional:S.reg,praca:S.praca,gvo:S.gvo,loja_id:S.loja||(S.tab==='lojas'&&S.foco?S.foco:'')});
@@ -1458,12 +1460,13 @@ const IND={bol:{n:'Boletos',g:'fluxo'},ipb:{n:'IPB',g:'ipb'},pm:{n:'Preço médi
 const FMT={bol:v=>`${fx(v)} boletos`,ipb:v=>`IPB ${fx(v,2)}`,pm:v=>`PM ${brl(v,2)}`,bm:v=>`BM ${brl(v)}`};
 // Crescimento máximo de boletos contra o mesmo dia da semana do ano passado. Acima disso, o que falta vem do boleto médio.
 const CRESC_MAX_BOL=.30;
-// Boleto médio máximo que se pede no dia: o maior BM (de venda, no mês) entre as lojas do mesmo cluster
-// (QDB fora; só lojas com pelo menos 200 boletos). Acima dele, a meta é distribuída em mais boletos (além dos +30%).
+// Boleto médio máximo que se pede no dia: o maior BM de venda entre as lojas do mesmo cluster, no mês somado aos
+// 3 meses de referência (base estável no começo do mês); QDB fora e só lojas com pelo menos 200 boletos.
+// Acima dele, a meta é distribuída em mais boletos (além dos +30%).
 let BMMAX={};
 function calcBmMax(){
  BMMAX={};
- lojas.forEach(l=>{if(/^qdb/i.test(l.nome))return;const b=sum(l.bol);if(b<200)return;const v=sum(l.rec)/b,c=l.cluster||'—';
+ lojas.forEach(l=>{if(/^qdb/i.test(l.nome))return;const rf=l.ref||{},b=sum(l.bol)+(rf.bol||0);if(b<200)return;const v=(sum(l.rec)+(rf.rec||0))/b,c=l.cluster||'—';
   if(!BMMAX[c]||v>BMMAX[c].v)BMMAX[c]={v,loja:l}});
 }
 const bmMax=l=>{const x=BMMAX[l.cluster||'—'];return x?x:{v:Infinity,loja:null}};
@@ -1574,7 +1577,11 @@ function gvoHTML(ls){
   </tbody></table></div>${rows.length>8?`<p style="padding:0 20px 16px"><button class="lk" onclick="this.closest('.card').classList.toggle('todos');this.textContent=this.closest('.card').classList.contains('todos')?'Mostrar só os 8 primeiros':'Ver os ${rows.length} GVOs'">Ver os ${rows.length} GVOs</button></p>`:''}</div>`;
 }
 const NIVEL=()=>S.loja?'loja':S.gvo?'gvo':'rede';
+// Mês já encerrado (consulta pelo filtro de mês): não há "hoje" nesse mês
+const mesFechado=()=>TODAY>DAYS;
+const avisoMesFechado=()=>`<section class="sec"><div class="card pad"><h2 style="font-size:18px">${MESES[MES][0].toUpperCase()+MESES[MES].slice(1)} de ${ANO} já fechou</h2><p class="mf">As abas de hoje valem para o mês atual. Para ${MESES[MES]}, use Consultores, Lojas e Entender, ou volte o filtro de mês para o mês atual.</p></div></section>`;
 function vHoje(ls,cs,a){
+ if(mesFechado()){$('view').innerHTML=avisoMesFechado();return}
  DEC=ls.map(decisao).filter(Boolean).sort((x,y)=>y.valor-x.valor);
  const nv=NIVEL(),ids=new Set(ls.map(l=>l.id)),top=DEC.slice(0,3),resto=DEC.slice(3);
  const titulo={loja:'O que fazer hoje',gvo:'Suas 3 lojas de hoje',rede:'As 3 lojas de hoje'}[nv];
@@ -1617,6 +1624,51 @@ function vEntender(ls,cs,a){
   ${acoesRegHTML(ids)}
  </section>`;
  drawMetaDia(a,'chartMeta');
+}
+
+
+/* ================= Hoje · Consultor: o desafio de cada consultor hoje ================= */
+// Meta de hoje do consultor (meta própria diarizada como a loja + o gap dele ÷ dias que faltam).
+// Boletos necessários = meta de hoje ÷ BM alvo da loja, limitado ao maior BM do cluster; IPB alvo da loja; BT e BP nas metas.
+// Em risco hoje = meta de hoje − venda média por dia nos últimos 7 dias com venda (ordem dos cards).
+function desafioCons(c){
+ const x=metaHojeCons(c);if(!x||!(x.hoje>0))return null;
+ const l=lojaById(c.loja),m=M[c.loja]||{};
+ const bmMx=l?bmMax(l).v:Infinity,bmA=Math.min(m.bmAlvoV||m.bm||0,bmMx)||m.bm||0,bol=bmA?x.hoje/bmA:0;
+ let r=0,b=0,it=0,bt=0,bp=0,bpe=0,b1=0,n=0;
+ for(let d=LAST;d>=1&&n<7;d--)if(c.bol[d-1]>0){r+=c.rec[d-1];b+=c.bol[d-1];it+=c.it[d-1];bt+=c.bt[d-1]||0;bp+=c.bp[d-1]||0;bpe+=c.bpe?c.bpe[d-1]||0:0;b1+=c.b1[d-1]||0;n++}
+ const med={rec:n?r/n:0,bol:n?b/n:0,ipb:b?it/b:0,pm:it?r/it:0,bm:b?r/b:0,pBT:b?bt/b:0,pBP:bpe?bp/bpe:0,pb1:b?b1/b:0,n};
+ return{c,l,x,bm:bmA,bol,ipb:m.ipbAlvo||m.ipb||0,med,risco:Math.max(0,x.hoje-med.rec)};
+}
+function consHojeCard(d,n){
+ const {c,l,x,med}=d,ok=(v,alvo,maior=true)=>!med.n?'mf':(maior?v>=alvo:v<=alvo)?'c-ok':'c-bad';
+ const sev=d.risco>=x.hoje*.4?'crit':d.risco>=x.hoje*.15?'alto':d.risco>0?'medio':'pos';
+ const q=(lb,v,alvo,cl)=>`<div class="mx ${cl==='c-ok'?'ok':cl==='c-bad'?'no':''}"><span class="l">${lb}</span><b>${alvo}</b><small>hoje faz ${v}</small></div>`;
+ return `<article class="card act ${sev} fade">
+  <div class="hd"><div class="l"><span class="num">${n}</span>${c.digital?`<span class="tag">${ic('smartphone')} Digital</span>`:`<span class="tag">${esc(l?l.nome:'')}</span>`}</div>
+   <div class="imp"><b>${d.risco>0?kbrl(d.risco):'—'}</b><small>${d.risco>0?'em risco hoje':'no ritmo'}</small></div></div>
+  <h3>${ic('user-round')}${esc(c.nome)}</h3>
+  <p class="head">Vender ${kbrl(x.hoje)} hoje<small>meta do dia ${kbrl(x.mh)}${x.recup>0?` + ${kbrl(x.recup)} do gap`:''} · ${pct(x.mes?x.rec/x.mes:0)} da meta do mês (deveria ${pct(x.mes?x.ate/x.mes:0)})</small></p>
+  <div class="mover"><span>Garantir</span><b>${fx(d.bol)} boletos · BM ${brl(d.bm)}</b><small>${med.n?`média dos últimos ${med.n} dias com venda: ${fx(med.bol,1)} boletos e ${kbrl(med.rec)} por dia`:'sem venda no mês ainda'}</small></div>
+  <div class="mix">${q('IPB',fx(med.ipb,2),fx(d.ipb,2),ok(med.ipb,d.ipb))}${q('BT',pct(med.pBT),pct(F.bt),ok(med.pBT,F.bt))}${q('BP',pct(med.pBP),pct(F.bp),ok(med.pBP,F.bp))}</div>
+  <div class="ft"><span></span><button class="btn" data-creg="${c.id}">${ic('plus')}Registrar ação</button></div></article>`;
+}
+function vHojeCons(ls){
+ if(mesFechado()){$('view').innerHTML=avisoMesFechado();return}
+ const ids=new Set(ls.map(l=>l.id));
+ const lst=cons.filter(c=>c.meta&&naEscopo(c,ids)).map(desafioCons).filter(Boolean).sort((a,b)=>b.risco-a.risco||b.x.hoje-a.x.hoje);
+ if(!lst.length){$('view').innerHTML=`<section class="sec"><div class="card pad"><h2 style="font-size:18px">Sem metas por consultor neste mês</h2><p class="mf">Salve a planilha de metas por consultor do mês em <b>Metas/Consultores</b> (ex.: METAS ${MESES[MES].toUpperCase()} CONSULTORES.xlsx) e rode o processamento.</p></div></section>`;return}
+ const lim=S.consTodos||S.loja||S.gvo?lst.length:30,emRisco=lst.filter(d=>d.risco>0).length;
+ $('view').innerHTML=`<section class="sec">
+  <div class="kpis" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
+   <div class="card kpi"><p class="lbl">Meta de hoje dos consultores</p><p class="val">${kbrl(sum(lst.map(d=>d.x.hoje)))}</p><p class="kl">${lst.length} consultores com meta · ${fx(sum(lst.map(d=>d.bol)))} boletos</p></div>
+   <div class="card kpi"><p class="lbl">Em risco hoje</p><p class="val c-bad">${emRisco}</p><p class="kl">${kbrl(sum(lst.map(d=>d.risco)))} se repetirem a média recente</p></div>
+   <div class="card kpi"><p class="lbl">% da meta do mês</p><p class="val">${pct(sum(lst.map(d=>d.x.rec))/(sum(lst.map(d=>d.x.mes))||1))}</p><p class="kl">deveria estar em ${pct(sum(lst.map(d=>d.x.ate))/(sum(lst.map(d=>d.x.mes))||1))}</p></div>
+  </div>
+  <div class="plan-hd"><div><h2>O desafio de cada consultor hoje</h2><p>Meta própria diarizada como a loja + o gap dele · boletos pelo BM alvo da loja (até o maior BM do cluster) · IPB alvo da loja · BT e BP nas metas</p></div></div>
+  <div class="acts3">${lst.slice(0,lim).map((d,i)=>consHojeCard(d,i+1)).join('')}</div>
+  ${lst.length>lim?`<p class="mf" style="text-align:center"><button class="lk" data-constodos="1">Ver os ${lst.length} consultores</button> · ou filtre um GVO ou uma loja</p>`:''}
+ </section>`;
 }
 
 /* ================= Lojas ================= */
@@ -2032,8 +2084,9 @@ document.querySelector('.datas .pres').addEventListener('click',e=>{
 });
 function irFoco(id){if(S.foco!==id)S.acSel=null;S.foco=id;S.tab='lojas';render();requestAnimationFrame(()=>$('foco')?.scrollIntoView({behavior:'smooth',block:'start'}))}
 document.addEventListener('click',e=>{
- const t=e.target.closest('[data-tab],[data-reg],[data-foco],[data-del],[data-sort],[data-novo],[data-drill],[data-verc],[data-chart],[data-acsel],[data-pfil],[data-creg],[data-dec],[data-gvo],[data-uso],[data-usonome]');if(!t)return;
+ const t=e.target.closest('[data-tab],[data-reg],[data-foco],[data-del],[data-sort],[data-novo],[data-drill],[data-verc],[data-chart],[data-acsel],[data-pfil],[data-creg],[data-dec],[data-gvo],[data-uso],[data-usonome],[data-constodos]');if(!t)return;
  const d=t.dataset;
+ if(d.constodos){S.consTodos=true;render();return}
  if(d.uso){carregarUso(true).then(render);return}
  if(d.usonome!=null){S.usoNome=S.usoNome===d.usonome?'':d.usonome;render();return}
  if(d.dec!=null){const x=DEC[+d.dec];if(!x)return;const cm=comoDecisao(x);abrir({loja:x.loja,g:x.g,meta:x.meta.replace(/^Meta: /,''),acao:cm.tipo});
@@ -2056,11 +2109,26 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches('tr
 
 /* ================= Início ================= */
 function cabecalho(){
- if(CONF.ambiente==='desenvolvimento'){$('hAmb').hidden=false;document.title='[DEV] '+document.title}
+ if(CONF.ambiente==='desenvolvimento'){$('hAmb').hidden=false;if(!document.title.startsWith('[DEV]'))document.title='[DEV] '+document.title}
  const hoje=new Date(ANO,MES,Math.min(TODAY,DAYS));
  $('hData').textContent=`${SEMANA[hoje.getDay()][0].toUpperCase()+SEMANA[hoje.getDay()].slice(1)}, ${pad(hoje.getDate())} de ${MESES[MES]} de ${ANO} · vendas até ${dd(LAST)}`;
  $('hBase').textContent=`${lojas.length} lojas · atualizado em ${D.geradoEm.slice(8,10)}/${D.geradoEm.slice(5,7)} às ${D.geradoEm.slice(11,16)}`;
 }
+// Filtro de mês: data/meses.json lista os meses processados (um arquivo por mês). O painel abre no mês mais recente
+// (data/pulsar.json), com a visão de hoje e o resultado até ontem; os meses anteriores ficam para consulta.
+let MESES_DISP=[],MES_ATUAL='';
+async function trocarMes(arq){
+ const j=await fetch('data/'+arq,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()});
+ init(j);cabecalho();fillFiltros();fillDias();S.foco=S.loja||null;render();sincronizar().then(render);
+}
+function fillMes(){
+ if(MESES_DISP.length<2)return;
+ $('fMesBox').hidden=false;
+ $('fMes').innerHTML=MESES_DISP.map(m=>`<option value="${m.arquivo}">${esc(m.nome)}${m===MESES_DISP[MESES_DISP.length-1]?' (atual)':''}</option>`).join('');
+ $('fMes').value=MES_ATUAL||MESES_DISP[MESES_DISP.length-1].arquivo;
+}
+$('fMes').addEventListener('change',e=>{MES_ATUAL=e.target.value;trocarMes(MES_ATUAL).catch(()=>toast('Não foi possível abrir esse mês',true))});
+fetch('data/meses.json',{cache:'no-store'}).then(r=>r.ok?r.json():[]).catch(()=>[]).then(l=>{MESES_DISP=Array.isArray(l)?l:[];fillMes()});
 fetch('Ciclo/ciclo_atual.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null).then(c=>{CICLO=c}).then(()=>fetch('data/pulsar.json',{cache:'no-store'})).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(j=>{
  init(j);cabecalho();filtroInicial();fillFiltros();
  // identificação de quem acessa (primeira visita) antes do primeiro registro de uso

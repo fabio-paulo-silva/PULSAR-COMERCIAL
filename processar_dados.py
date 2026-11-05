@@ -177,7 +177,7 @@ def mes_do_arquivo(arq: Path):
     return (int(m.group(1)), int(m.group(2))) if m else None
 
 
-def ler_vendas() -> pd.DataFrame:
+def ler_vendas(alvo=None) -> pd.DataFrame:
     # Dados/Hoje é a venda parcial do dia (processar_hoje.py): fica fora do fechamento D-1
     # só os exports de cupons (cupom_venda_*.xlsx): outras planilhas salvas em Dados/ ficam de fora
     arquivos = sorted(a for a in PASTA_VENDAS.rglob("cupom_venda*.xlsx") if not a.name.startswith("~$") and "Hoje" not in a.parts)
@@ -185,9 +185,10 @@ def ler_vendas() -> pd.DataFrame:
     meses = [mes_do_arquivo(a) for a in arquivos]
     conhecidos = [m for m in meses if m]
     if conhecidos:
-        ano, mes = max(conhecidos)
-        corte = (ano * 12 + mes - 1) - MESES_REFERENCIA
-        arquivos = [a for a, m in zip(arquivos, meses) if m is None or (m[0] * 12 + m[1] - 1) >= corte]
+        ano, mes = alvo or max(conhecidos)
+        fim = ano * 12 + mes - 1
+        corte = fim - MESES_REFERENCIA
+        arquivos = [a for a, m in zip(arquivos, meses) if m is None or corte <= (m[0] * 12 + m[1] - 1) <= fim]
     partes = [agregar_arquivo(a) for a in arquivos]
     v = pd.concat(partes, ignore_index=True)
     # se dois arquivos cobrirem o mesmo dia, fica o último lido
@@ -226,18 +227,27 @@ def ler_metas(ano: int) -> pd.DataFrame:
 
 
 def ler_meta_mensal(mes: int):
-    """Meta mensal do Canal Varejo (aba VAREJO) do mês, se houver o arquivo "METAS <MÊS> VAREJO...xlsx"."""
+    """Meta mensal do Canal Varejo (aba VAREJO) do mês, se houver o arquivo "METAS <MÊS> VAREJO...xlsx".
+    O código da loja é a coluna (fora a META) com mais valores numéricos, mesmo que o título esteja trocado
+    (em novembro a coluna "PRAÇA" trazia o código e a "PDV" trazia a praça)."""
     arqs = [a for a in PASTA_METAS.glob("*.xlsx") if not a.name.startswith("~$")
             and MESES_PT[mes - 1] in a.name.upper() and "VAREJO" in a.name.upper()]
     if not arqs:
         return None, None, None
     arq = max(arqs, key=lambda a: a.stat().st_mtime)
     m = ler_excel(arq, sheet_name="VAREJO")
-    m = m[pd.to_numeric(m["PDV"], errors="coerce").notna()].copy()
-    m["loja"] = m["PDV"].map(cod_loja)   # 12175.1 (quiosque) soma na 12175
-    m["META"] = pd.to_numeric(m["META"], errors="coerce").fillna(0)
+    cols = {normalizar(c): c for c in m.columns}
+    c_meta = next(c for k, c in cols.items() if "META" in k)
+    outras = [c for c in m.columns if c != c_meta]
+    c_pdv = max(outras, key=lambda c: pd.to_numeric(m[c], errors="coerce").notna().sum())
+    texto = [c for c in outras if c != c_pdv]
+    c_loja = next((c for c in texto if normalizar(c) == "LOJA"), texto[0] if texto else c_pdv)
+    c_praca = next((c for c in texto if c != c_loja), c_loja)
+    m = m[pd.to_numeric(m[c_pdv], errors="coerce").notna()].copy()
+    m["loja"] = m[c_pdv].map(cod_loja)   # 12175.1 (quiosque) soma na 12175
+    m["META"] = pd.to_numeric(m[c_meta], errors="coerce").fillna(0)
     meta = m.groupby("loja")["META"].sum()
-    info = m.groupby("loja").agg(nome=("LOJA", "first"), praca=("PRAÇA", "first"))
+    info = m.groupby("loja").agg(nome=(c_loja, "first"), praca=(c_praca, "first"))
     return meta, info, arq
 
 
@@ -251,8 +261,8 @@ def ler_meta_consultores(mes: int):
     if not PASTA_METAS_CONS.exists():
         return None, None
     arqs = [a for a in PASTA_METAS_CONS.iterdir() if a.suffix.lower() in (".xlsx", ".xls", ".csv") and not a.name.startswith("~$")]
-    do_mes = [a for a in arqs if MESES_PT[mes - 1] in normalizar(a.name)]
-    arqs = do_mes or (arqs if len(arqs) == 1 else [])
+    # só o arquivo com o nome do mês (ex.: NOVEMBRO): outubro não pode usar a meta de novembro
+    arqs = [a for a in arqs if normalizar(MESES_PT[mes - 1]) in normalizar(a.name)]
     if not arqs:
         return None, None
     arq = max(arqs, key=lambda a: a.stat().st_mtime)
@@ -273,10 +283,13 @@ def ler_meta_consultores(mes: int):
         return None
     c_meta = col("META")
     c_loja = col("PDV", "BCPS", "COD. LOJA", "COD LOJA", "LOJA", evita=("META",))
-    c_cons = col("MATRICULA", "COD. CONSULTOR", "COD CONSULTOR", "CODIGO", "CONSULTOR", "VENDEDOR", evita=("META", "LOJA", "PDV"))
+    c_cons = col("MATRICULA", "COD. CONSULTOR", "COD CONSULTOR", "CODIGO", "CONSULTOR", "CPMSULTOR", "CONSULT", "VENDEDOR", "NOME",
+                 evita=("META", "LOJA", "PDV"))
     c_nome = col("NOME", evita=("LOJA",))
     if c_nome == c_cons:
         c_nome = None
+    if c_cons is None:      # sem título reconhecível: a coluna de texto que não é a da loja
+        c_cons = next((i for i, c in enumerate(cab) if i not in (c_loja, c_meta) and c), None)
     if c_loja is None or c_cons is None:
         raise ValueError(f"{arq.name}: preciso das colunas de loja e de consultor (achei: {', '.join(c for c in cab if c)})")
     d = bruto.iloc[ini + 1:]
@@ -290,8 +303,53 @@ def ler_meta_consultores(mes: int):
                if d[c_meta].dtype == object and d[c_meta].astype(str).str.contains(",").any()
                else pd.to_numeric(d[c_meta], errors="coerce"),
     })
-    out = out[(out["loja"] != "") & (out["codigo"] != "") & (out["meta"] > 0)]
-    return out.groupby(["loja", "codigo"], as_index=False).agg(nome=("nome", "first"), meta=("meta", "sum")), arq
+    out["digital"] = d[c_loja].astype(str).str.upper().str.contains("DIGITAL").values
+    out = out[(out["loja"] != "") & (out["meta"] > 0) & (out["nome"].map(normalizar) != "TOTAL")]
+    # sem código: a chave é o nome normalizado (o código vem depois, pelo nome, nas vendas)
+    out["codigo"] = out["codigo"].where(out["codigo"] != "", "")
+    out["chave"] = out["codigo"].where(out["codigo"] != "", out["nome"].map(normalizar))
+    return out.groupby(["loja", "chave"], as_index=False).agg(codigo=("codigo", "first"), nome=("nome", "first"),
+                                                              meta=("meta", "sum"), digital=("digital", "max")), arq
+
+
+def ligar_por_nome(meta_cons, vendas):
+    """Preenche o código do consultor pelo nome (planilha sem código), usando os nomes das vendas (mês e referência).
+    Ordem: nome completo na mesma loja; nome completo em qualquer loja; primeiro + último nome na mesma loja.
+    Devolve a planilha com "codigo" preenchido (vazio se não achou) e a lista dos que não foram encontrados."""
+    if meta_cons is None:
+        return None, []
+    nomes = vendas[["loja", "consultor"]].drop_duplicates()
+    nomes = nomes[nomes["consultor"].str.contains(" - ")]
+    nomes["codigo"] = nomes["consultor"].str.partition(" - ")[0].str.strip()
+    nomes["n"] = nomes["consultor"].str.partition(" - ")[2].map(normalizar)
+    por_loja = {(r.loja, r.n): r.codigo for r in nomes.itertuples()}
+    geral = {}
+    for r in nomes.itertuples():
+        geral.setdefault(r.n, r.codigo)
+    pe = lambda n: (n.split()[0], n.split()[-1]) if n.split() else ("", "")
+    curto = {}
+    for r in nomes.itertuples():
+        curto.setdefault((r.loja, pe(r.n)), set()).add(r.codigo)
+    faltam = []
+    cods = []
+    for r in meta_cons.itertuples():
+        if r.codigo:
+            cods.append(r.codigo); continue
+        n = normalizar(r.nome)
+        c = por_loja.get((r.loja, n)) or geral.get(n)
+        if not c and len(n) >= 25:
+            # nome cortado na planilha (ex.: 40 caracteres): o nome das vendas começa com ele (mesma loja, depois qualquer)
+            cand = {cd for (lj, nv), cd in por_loja.items() if lj == r.loja and nv.startswith(n)} or                    {cd for nv, cd in geral.items() if nv.startswith(n)}
+            c = next(iter(cand)) if len(cand) == 1 else ""
+        if not c:
+            cand = curto.get((r.loja, pe(n)), set())
+            c = next(iter(cand)) if len(cand) == 1 else ""
+        if not c:
+            faltam.append(f"{r.nome} ({r.loja})")
+        cods.append(c)
+    meta_cons = meta_cons.copy()
+    meta_cons["codigo"] = cods
+    return meta_cons, faltam
 
 
 def diarizar(diaria: pd.DataFrame, mensal: pd.Series, info: pd.DataFrame) -> pd.DataFrame:
@@ -438,10 +496,26 @@ def achar_plano(plano_cons, loja, nome):
     return None
 
 
-def main():
+def meses_com_dados():
+    """Meses (ano, mês) com vendas em Dados/ (exceto o ano anterior) e meta diarizada no Metas_Canal_Loja."""
+    arqs = [a for a in PASTA_VENDAS.rglob("cupom_venda*.xlsx") if not a.name.startswith("~$") and "Hoje" not in a.parts]
+    meses = sorted({m for m in map(mes_do_arquivo, arqs) if m})
+    if not meses:
+        return []
+    ultimo = max(meses)
+    metas = ler_metas(ultimo[0])
+    com_meta = {(d.year, d.month) for d in metas.loc[metas["meta"] > 0, "data"]}
+    return [m for m in meses if m in com_meta and m[0] == ultimo[0] or m == ultimo]
+
+
+def main(alvo=None, saida_arq=None):
     print("Lendo vendas...")
-    vendas = ler_vendas()
-    ontem = vendas["data"].max()
+    vendas = ler_vendas(alvo)
+    if alvo:
+        vendas_mes = vendas[(vendas["data"].dt.year == alvo[0]) & (vendas["data"].dt.month == alvo[1])]
+        ontem = vendas_mes["data"].max()
+    else:
+        ontem = vendas["data"].max()
     ini_mes = ontem.replace(day=1)
     dias_mes = (ini_mes + pd.offsets.MonthEnd(0)).day
     ini_ref = ini_mes - pd.DateOffset(months=MESES_REFERENCIA)
@@ -459,6 +533,7 @@ def main():
               + (f"; pela praça: {', '.join(sem_forma)}" if sem_forma else ""))
     centros = ler_centros()
     meta_cons, arq_mc = ler_meta_consultores(ini_mes.month)
+    meta_cons, sem_nome = ligar_por_nome(meta_cons, vendas)
     if meta_cons is not None:
         print(f"  Metas por consultor: {arq_mc.name} ({len(meta_cons)} consultores, R$ {meta_cons['meta'].sum():,.0f}),"
               f" diarizadas pelo formato da loja de cada um")
@@ -527,7 +602,8 @@ def main():
         # meta do consultor: meta do mês × peso de cada dia na meta da loja (mesma diarização da loja)
         tot_loja = sum(float(mt.get(d, 0)) for d in range(1, dias_mes + 1))
         pesos = [float(mt.get(d, 0)) / tot_loja if tot_loja else 1 / dias_mes for d in range(1, dias_mes + 1)]
-        mc_loja = {} if meta_cons is None else {r.codigo: (r.meta, r.nome) for r in meta_cons[meta_cons["loja"] == loja].itertuples()}
+        mc_loja = {} if meta_cons is None else {(r.codigo or "n:" + normalizar(r.nome)): (r.meta, r.nome)
+                                                 for r in meta_cons[meta_cons["loja"] == loja].itertuples()}
         diarizada = lambda v: [round(v * w, 2) for w in pesos]
         vistos = set()
         for consultor, vc in vl.groupby("consultor"):
@@ -550,7 +626,7 @@ def main():
         for codigo, (valor, nome_c) in mc_loja.items():
             if codigo in vistos:
                 continue
-            cons_out.append({"id": f"{codigo}@{loja}", "nome": nome_curto(nome_c), "loja": loja,
+            cons_out.append({"id": f"{codigo}@{loja}", "nome": nome_curto(nome_c), "loja": loja, "nome_completo": str(nome_c).title(),
                              **({"digital": True} if codigo in DIGITAIS else {}), "meta": diarizada(valor),
                              **{k: list(zeros) for k in ("rec", "bol", "it", "b1", "br", "bt", "bp", "bpe")},
                              "ref": None, "plano": achar_plano(plano_cons, loja, nome_c)})
@@ -569,18 +645,22 @@ def main():
         "lojas": lojas_out,
         "consultores": cons_out,
     }
-    ARQ_SAIDA.parent.mkdir(exist_ok=True)
-    ARQ_SAIDA.write_text(json.dumps(saida, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    destino = saida_arq or ARQ_SAIDA
+    destino.parent.mkdir(exist_ok=True)
+    destino.write_text(json.dumps(saida, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 
     rec = sum(sum(l["rec"]) for l in lojas_out)
     meta_ate = sum(sum(l["meta"][:ontem.day]) for l in lojas_out)
-    print(f"OK: {len(lojas_out)} lojas, {len(cons_out)} consultores -> {ARQ_SAIDA.relative_to(BASE)}")
+    print(f"OK: {len(lojas_out)} lojas, {len(cons_out)} consultores -> {destino.name}")
     print(f"Receita do mês até ontem R$ {rec:,.0f} | meta até ontem R$ {meta_ate:,.0f} | {rec / meta_ate:.1%}")
     if meta_cons is not None:
         com = [c for c in cons_out if c.get("meta")]
         sem_loja = sorted(set(meta_cons["loja"]) - lojas_meta)
         print(f"Metas por consultor: {len(com)} consultores com meta diarizada (R$ {sum(sum(c['meta']) for c in com):,.0f})"
               + (f" | lojas da planilha fora do painel: {', '.join(sem_loja)}" if sem_loja else ""))
+        if sem_nome:
+            print(f"  Sem venda com esse nome (aparecem só com a meta): {len(sem_nome)} -> {'; '.join(sem_nome[:12])}"
+                  + (" ..." if len(sem_nome) > 12 else ""))
     if plano_lojas:
         n_l = sum(1 for l in lojas_out if l["plano"])
         n_c = sum(1 for c in cons_out if c["plano"])
@@ -596,4 +676,15 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # um arquivo por mês (filtro de mês do painel) + data/pulsar.json = mês mais recente; data/meses.json lista os meses
+    meses = meses_com_dados()
+    lista = []
+    for i, (a, m) in enumerate(meses):
+        print(f"\n===== {MESES_PT[m - 1].title()} {a} =====")
+        arq = ARQ_SAIDA.parent / f"pulsar_{a}-{m:02d}.json"
+        main((a, m), arq)
+        lista.append({"mes": f"{a}-{m:02d}", "nome": f"{MESES_PT[m - 1].title()} {a}", "arquivo": arq.name})
+    if lista:
+        shutil.copyfile(ARQ_SAIDA.parent / lista[-1]["arquivo"], ARQ_SAIDA)
+        (ARQ_SAIDA.parent / "meses.json").write_text(json.dumps(lista, ensure_ascii=False), encoding="utf-8")
+        print(f"\nPainel inicial: {lista[-1]['nome']} (data/pulsar.json) | meses no filtro: {', '.join(x['nome'] for x in lista)}")

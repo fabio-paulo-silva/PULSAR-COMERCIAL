@@ -215,8 +215,8 @@ const linear=()=>Array.from({length:24},(_,i)=>i>=9&&i<22?1/13:0);    // sem his
 function preparar(){
  const[y,mo,d]=P.ontem.split('-').map(Number);ANO=y;MES=mo-1;LAST=d;TODAY=d+1;DAYS=P.diasMes;
  LJ=P.lojas.filter(l=>sum(l.meta)>0);CURVA_REDE=H.curvaRede||linear();
- // BM máximo pedido no dia = maior BM do mês entre as lojas do mesmo cluster (QDB fora; lojas com 200+ boletos)
- const BMMAX={};LJ.forEach(l=>{if(/^qdb/i.test(l.nome))return;const b=sum(l.bol);if(b<200)return;const v=sum(l.rec)/b,c=l.cluster||'—';if(!BMMAX[c]||v>BMMAX[c])BMMAX[c]=v});
+ // BM máximo pedido no dia = maior BM de venda do cluster no mês + 3 meses de referência (QDB fora; lojas com 200+ boletos)
+ const BMMAX={};LJ.forEach(l=>{if(/^qdb/i.test(l.nome))return;const rf=l.ref||{},b=sum(l.bol)+(rf.bol||0);if(b<200)return;const v=(sum(l.rec)+(rf.rec||0))/b,c=l.cluster||'—';if(!BMMAX[c]||v>BMMAX[c])BMMAX[c]=v});
  const th={};H.lojas.forEach(t=>th[t.id]=t);
  X={};
  LJ.forEach(l=>{
