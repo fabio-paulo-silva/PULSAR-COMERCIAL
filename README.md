@@ -121,7 +121,7 @@ Primeiro a tabela dos consultores de loja e a dos digitais, com receita/dia, bol
 - O `processar_dados.py` processa cada mês com vendas em `Dados/` e meta no `Metas_Canal_Loja.xlsx` e grava `data/pulsar_AAAA-MM.json`; `data/pulsar.json` é o mês mais recente e `data/meses.json` lista os meses. Cada mês usa os 3 meses anteriores como referência e o mesmo mês do ano anterior (ex.: `Dados/NOVEMBRO 2025`).
 - O painel abre no mês atual (visão de hoje com o resultado até ontem). O filtro **Mês** abre um mês anterior para consulta; nele as abas de hoje mostram que o mês já fechou.
 - Meta mensal de loja (`METAS <MÊS> VAREJO…xlsx`, aba VAREJO): o código da loja é reconhecido pelo conteúdo da coluna, mesmo com o título trocado.
-- Metas por consultor sem código: ligadas pelo **nome** às vendas (nome completo na mesma loja; em qualquer loja; nome cortado pelo começo; primeiro e último nome na mesma loja). Quem não for encontrado aparece só com a meta e é listado no processamento.
+- Metas por consultor sem código: ligadas pelo **nome** às vendas (nome completo na mesma loja; em qualquer loja; nome cortado pelo começo; primeiro e último nome; nome abreviado com todas as palavras contidas no nome das vendas; nome muito parecido na mesma loja, para erros de digitação). Quem não for encontrado aparece só com a meta e é listado no processamento.
 
 ## Hoje · Consultor
 - Aba com o desafio de cada consultor hoje: vender R$ X (meta própria diarizada como a loja + o gap dele ÷ dias que faltam), garantir N boletos com o BM alvo da loja (limitado ao maior BM do cluster), IPB alvo da loja, BT 32% e BP 30%, comparados com a média dos últimos 7 dias com venda dele.

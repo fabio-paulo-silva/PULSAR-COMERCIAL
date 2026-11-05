@@ -18,6 +18,7 @@ import subprocess
 import tempfile
 import unicodedata
 from datetime import date, datetime
+from difflib import SequenceMatcher
 from pathlib import Path
 
 import pandas as pd
@@ -344,6 +345,17 @@ def ligar_por_nome(meta_cons, vendas):
         if not c:
             cand = curto.get((r.loja, pe(n)), set())
             c = next(iter(cand)) if len(cand) == 1 else ""
+        if not c:
+            # nome abreviado (ex.: "Raquel Barros"): todas as palavras dele estão no nome das vendas; um só candidato
+            ws = [w for w in n.split() if len(w) > 2]
+            tem = lambda nv: ws and all(w in nv.split() for w in ws)
+            cand = {cd for (lj, nv), cd in por_loja.items() if lj == r.loja and tem(nv)} or {cd for nv, cd in geral.items() if tem(nv)}
+            c = next(iter(cand)) if len(cand) == 1 else ""
+        if not c:
+            # erro de digitação (ex.: FERNANDIA x FERLANDIA): nome muito parecido, só na mesma loja
+            notas = sorted(((SequenceMatcher(None, n, nv[:len(n) + 3]).ratio(), cd) for (lj, nv), cd in por_loja.items() if lj == r.loja), reverse=True)
+            if notas and notas[0][0] >= .86 and (len(notas) == 1 or notas[1][0] < notas[0][0] - .05):
+                c = notas[0][1]
         if not c:
             faltam.append(f"{r.nome} ({r.loja})")
         cods.append(c)
