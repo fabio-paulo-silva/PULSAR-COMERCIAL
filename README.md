@@ -127,3 +127,7 @@ Primeiro a tabela dos consultores de loja e a dos digitais, com receita/dia, bol
 - Aba com o desafio de cada consultor hoje: vender R$ X (meta própria diarizada como a loja + o gap dele ÷ dias que faltam), garantir N boletos com o BM alvo da loja (limitado ao maior BM do cluster), IPB alvo da loja, BT 32% e BP 30%, comparados com a média dos últimos 7 dias com venda dele.
 - Ordem: R$ em risco hoje (meta de hoje − venda média por dia recente). A aba de lojas passou a se chamar **Hoje · Lojas**.
 - O maior BM do cluster (teto do "Garantir") usa o mês somado aos 3 meses de referência.
+
+## Acompanhamento Meta Desafio
+- Campo **Meta** nos filtros (painel do mês e hoje.html): **Oficial** ou **Desafio (+5%)**. No desafio, todas as metas de loja e de consultor são multiplicadas por 1,05 (`FATOR_DESAFIO`) antes de qualquer cálculo: % da meta, deveria estar, gap, meta de hoje, boletos e BM necessários, "Garantir", consultores e avaliações.
+- O selo "Meta Desafio · +5%" aparece no topo. A escolha fica lembrada no navegador; o link com `?meta=desafio` abre direto no desafio. Na aba Uso, os acessos aparecem como "… · desafio".

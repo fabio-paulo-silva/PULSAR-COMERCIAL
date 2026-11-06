@@ -63,6 +63,7 @@ svg.lucide{width:16px;height:16px;flex:none}
 .glass{display:flex;align-items:center;gap:8px;border-radius:12px;background:oklch(1 0 0 / .1);padding:8px 16px;font-size:14px;color:#fff;font-weight:500;text-decoration:none}
 .glass svg{color:var(--primary)}
 a.glass:hover{background:oklch(1 0 0 / .18)}
+.glass.desafio{background:var(--accent);color:oklch(0.15 0.05 240);font-weight:800} .glass.desafio svg{color:oklch(0.15 0.05 240)}
 .glass.amb{background:var(--warning);color:oklch(0.25 0.06 70);font-weight:800} .glass.amb svg{color:oklch(0.25 0.06 70)}
 
 /* Cards, filtros */
@@ -145,6 +146,7 @@ tr.click{cursor:pointer} tr.click:hover td{background:var(--muted)}
       <div><p class="eyebrow">Acompanhamento do dia</p><h1>PULSAR · HOJE</h1></div></div>
     <div class="chips">
       <div class="glass"><i data-lucide="clock"></i><span id="hData">Carregando…</span></div>
+      <div class="glass desafio" id="hDesafio" hidden><i data-lucide="flame"></i><span>Meta Desafio · +5%</span></div>
       <div class="glass amb" id="hAmb" hidden><i data-lucide="flask-conical"></i><span>Desenvolvimento</span></div>
       <a class="glass" href="index.html" id="lkMes"><i data-lucide="calendar-days"></i><span>Painel do mês</span></a>
     </div>
@@ -153,6 +155,7 @@ tr.click{cursor:pointer} tr.click:hover td{background:var(--muted)}
 
 <main class="wrap">
   <section class="card filter">
+    <div class="fld"><label for="fMeta">Meta</label><select id="fMeta"><option value="0">Oficial</option><option value="1">Desafio (+5%)</option></select></div>
     <div class="fld"><label for="fReg">Regional</label><select id="fReg"></select></div>
     <div class="fld"><label for="fPraca">Praça</label><select id="fPraca"></select></div>
     <div class="fld"><label for="fGvo">GVO</label><select id="fGvo"></select></div>
@@ -212,7 +215,20 @@ function fracAte(c,ate){
 const misturar=(a,b)=>a&&b?a.map((x,i)=>.5*x+.5*b[i]):a||b;
 const linear=()=>Array.from({length:24},(_,i)=>i>=9&&i<22?1/13:0);    // sem histórico: 9h às 22h por igual
 
+// Acompanhamento Meta Desafio: todas as metas (lojas e consultores) × 1,05. Gap, meta de hoje, deveria estar, boletos,
+// "Garantir" e consultores passam a ser calculados sobre a meta desafio. Escolha lembrada no navegador; ?meta=desafio abre direto.
+const FATOR_DESAFIO=1.05,KEY_DESAFIO='pulsar-meta-desafio';
+let DESAFIO=(()=>{const q=new URLSearchParams(location.search).get('meta');if(q)return q==='desafio';try{return localStorage.getItem(KEY_DESAFIO)==='1'}catch(e){return false}})();
+const fatorMeta=()=>DESAFIO?FATOR_DESAFIO:1;
+// aplica o fator sobre a meta original (guardada em _m0), sem acumular ao trocar de visão
+function aplicarDesafio(dados){
+ const f=fatorMeta();
+ dados.lojas.forEach(l=>{l._m0=l._m0||l.meta.slice();l.meta=l._m0.map(v=>v*f)});
+ dados.consultores.forEach(c=>{if(!c.meta)return;c._m0=c._m0||c.meta.slice();c.meta=c._m0.map(v=>v*f)});
+}
+function seloDesafio(){$('hDesafio').hidden=!DESAFIO;$('fMeta').value=DESAFIO?'1':'0'}
 function preparar(){
+ aplicarDesafio(P);seloDesafio();
  const[y,mo,d]=P.ontem.split('-').map(Number);ANO=y;MES=mo-1;LAST=d;TODAY=d+1;DAYS=P.diasMes;
  LJ=P.lojas.filter(l=>sum(l.meta)>0);CURVA_REDE=H.curvaRede||linear();
  // BM máximo pedido no dia = maior BM de venda do cluster no mês + 3 meses de referência (QDB fora; lojas com 200+ boletos)
@@ -279,7 +295,7 @@ const chip=r=>{const[c,t,i]=st(r);return `<span class="ritmo ${c}">${ic(i)}${t} 
 const cor=r=>r>=1?'var(--primary)':r>=.9?'var(--warning)':'var(--destructive)';
 
 function render(){
- if(window.PulsarUso)PulsarUso.registrar({pagina:'hoje',aba:'hoje',regional:S.reg,praca:S.praca,gvo:S.gvo,loja_id:S.loja});
+ if(window.PulsarUso)PulsarUso.registrar({pagina:'hoje',aba:'hoje'+(DESAFIO?' · desafio':''),regional:S.reg,praca:S.praca,gvo:S.gvo,loja_id:S.loja});
  if(!DIA_OK){icons();return}
  const ls=filtra(4),a=agregar(ls),v=a.v,dA=TODAY+1<=DAYS?new Date(ANO-1,MES,TODAY+1):null;
  const lj=S.loja?LJ.find(l=>l.id===S.loja):null;
@@ -423,6 +439,8 @@ async function carregar(){
  preparar();cabecalho();
 }
 if(CONF.ambiente==='desenvolvimento'){$('hAmb').hidden=false;document.title='[DEV] '+document.title}
+$('fMeta').addEventListener('change',e=>{DESAFIO=e.target.value==='1';try{localStorage.setItem(KEY_DESAFIO,DESAFIO?'1':'0')}catch(_){}
+ preparar();render()});
 carregar().then(async()=>{filtroInicial();fillFiltros();
  if(window.PulsarUso)await PulsarUso.iniciar({pessoas:P.pessoas||[],planilha:CONF.planilha||{url:'',chave:''},ambiente:CONF.ambiente,pagina:'hoje'}).catch(()=>{});
  render();

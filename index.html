@@ -545,6 +545,7 @@ tr.click[data-gvo]{cursor:pointer}
 .exemplo svg{width:14px;height:14px;color:var(--warning-ink);flex:none;margin-top:1px}
 .exemplo b{color:var(--foreground)}
 
+.glass.desafio{background:var(--accent);color:oklch(0.15 0.05 240);font-weight:800} .glass.desafio svg{color:oklch(0.15 0.05 240)}
 .glass.amb{background:var(--warning);color:oklch(0.25 0.06 70);font-weight:800}
 .glass.amb svg{color:oklch(0.25 0.06 70)}
 
@@ -640,6 +641,7 @@ dialog .hd h3{font-size:18px}
     <div class="chips">
       <div class="glass"><i data-lucide="calendar-days"></i><span id="hData">Carregando dados…</span></div>
       <div class="glass"><i data-lucide="database"></i><span id="hBase"></span></div>
+      <div class="glass desafio" id="hDesafio" hidden><i data-lucide="flame"></i><span>Meta Desafio · +5%</span></div>
       <div class="glass amb" id="hAmb" hidden><i data-lucide="flask-conical"></i><span>Desenvolvimento</span></div>
       <a class="glass" href="hoje.html" style="text-decoration:none"><i data-lucide="activity"></i><span>Acompanhar o dia</span></a>
       <div class="glass" id="hPlan" title="Onde as ações registradas ficam salvas"><i data-lucide="sheet"></i><span id="hPlanTxt">Ações: neste navegador</span></div>
@@ -651,6 +653,7 @@ dialog .hd h3{font-size:18px}
   <section class="card filter">
     <button type="button" class="ttl" id="fToggle" aria-expanded="false"><i data-lucide="sliders-horizontal"></i>Filtros<span class="fres" id="fRes"></span><i data-lucide="chevron-down" class="fchev"></i></button>
     <div class="row">
+      <div class="fld"><label for="fMeta">Meta</label><select id="fMeta"><option value="0">Oficial</option><option value="1">Desafio (+5%)</option></select></div>
       <div class="fld" id="fMesBox" hidden><label for="fMes">Mês</label><select id="fMes"></select></div>
       <div class="fld"><label for="fReg">Regional</label><select id="fReg"></select></div>
       <div class="fld"><label for="fPraca">Praça</label><select id="fPraca"></select></div>
@@ -747,8 +750,20 @@ const selArr=()=>[...SEL].sort((a,b)=>a-b);
 const sum=a=>a.reduce((s,x)=>s+x,0);
 const avg=a=>a.length?sum(a)/a.length:null;
 
+// Acompanhamento Meta Desafio: todas as metas (lojas e consultores) × 1,05. Gap, meta de hoje, deveria estar, boletos,
+// "Garantir" e consultores passam a ser calculados sobre a meta desafio. Escolha lembrada no navegador; ?meta=desafio abre direto.
+const FATOR_DESAFIO=1.05,KEY_DESAFIO='pulsar-meta-desafio';
+let DESAFIO=(()=>{const q=new URLSearchParams(location.search).get('meta');if(q)return q==='desafio';try{return localStorage.getItem(KEY_DESAFIO)==='1'}catch(e){return false}})();
+const fatorMeta=()=>DESAFIO?FATOR_DESAFIO:1;
+// aplica o fator sobre a meta original (guardada em _m0), sem acumular ao trocar de visão
+function aplicarDesafio(dados){
+ const f=fatorMeta();
+ dados.lojas.forEach(l=>{l._m0=l._m0||l.meta.slice();l.meta=l._m0.map(v=>v*f)});
+ dados.consultores.forEach(c=>{if(!c.meta)return;c._m0=c._m0||c.meta.slice();c.meta=c._m0.map(v=>v*f)});
+}
+function seloDesafio(){$('hDesafio').hidden=!DESAFIO;$('fMeta').value=DESAFIO?'1':'0'}
 function init(json){
- D=json;
+ D=json;aplicarDesafio(D);seloDesafio();
  const[y,mo,d]=D.ontem.split('-').map(Number);ANO=y;MES=mo-1;LAST=d;TODAY=d+1;DAYS=D.diasMes;
  const ri=+D.referencia.inicio.slice(5,7)-1,rf=+D.referencia.fim.slice(5,7)-1;
  REFTXT=`${MESES[ri].slice(0,3)}–${MESES[rf].slice(0,3)}`;
@@ -1173,7 +1188,7 @@ function render(){
  ({hoje:vHoje,hojecons:vHojeCons,entender:vEntender,lojas:vLojas,consultores:vCons,uso:vUso})[S.tab](ls,cs,a);
  icons();
  // registra o acesso (página do mês, aba e filtro); o uso.js não repete a mesma tela antes de 30 minutos
- if(window.PulsarUso)PulsarUso.registrar({pagina:'mes',aba:S.tab,regional:S.reg,praca:S.praca,gvo:S.gvo,loja_id:S.loja||(S.tab==='lojas'&&S.foco?S.foco:'')});
+ if(window.PulsarUso)PulsarUso.registrar({pagina:'mes',aba:S.tab+(DESAFIO?' · desafio':''),regional:S.reg,praca:S.praca,gvo:S.gvo,loja_id:S.loja||(S.tab==='lojas'&&S.foco?S.foco:'')});
 }
 /* ================= Uso: quem está acessando o PULSAR ================= */
 // Lê a aba "acessos" da planilha (gravada pelo uso.js) e cruza com as pessoas do cadastro (GVO, GCVO/GPVO, GRVO).
@@ -2127,6 +2142,8 @@ function fillMes(){
  $('fMes').innerHTML=MESES_DISP.map(m=>`<option value="${m.arquivo}">${esc(m.nome)}${m===MESES_DISP[MESES_DISP.length-1]?' (atual)':''}</option>`).join('');
  $('fMes').value=MES_ATUAL||MESES_DISP[MESES_DISP.length-1].arquivo;
 }
+$('fMeta').addEventListener('change',e=>{DESAFIO=e.target.value==='1';try{localStorage.setItem(KEY_DESAFIO,DESAFIO?'1':'0')}catch(_){}
+ init(D);fillFiltros();S.foco=S.loja||null;render();toast(DESAFIO?'Meta Desafio: metas × 1,05':'Meta oficial')});
 $('fMes').addEventListener('change',e=>{MES_ATUAL=e.target.value;trocarMes(MES_ATUAL).catch(()=>toast('Não foi possível abrir esse mês',true))});
 fetch('data/meses.json',{cache:'no-store'}).then(r=>r.ok?r.json():[]).catch(()=>[]).then(l=>{MESES_DISP=Array.isArray(l)?l:[];fillMes()});
 fetch('Ciclo/ciclo_atual.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null).then(c=>{CICLO=c}).then(()=>fetch('data/pulsar.json',{cache:'no-store'})).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(j=>{
