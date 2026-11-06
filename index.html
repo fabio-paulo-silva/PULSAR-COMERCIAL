@@ -782,7 +782,8 @@ function juntaDigitais(lst){
   const cod=c.id.split('@')[0],g=dg[cod]=dg[cod]||{id:'dig:'+cod,nome:c.nome,digital:true,lojas:[],_rec:{}};
   if(lojaById(c.loja)){g.lojas.push(c.loja);g._rec[c.loja]=sum(c.rec)}
   SERIES.forEach(k=>{g[k]=g[k]||[];(c[k]||[]).forEach((v,i)=>g[k][i]=(g[k][i]||0)+v)});
-  if(c.meta){g.meta=g.meta||[];c.meta.forEach((v,i)=>g.meta[i]=(g.meta[i]||0)+v)}});
+  if(c.meta){g.meta=g.meta||[];c.meta.forEach((v,i)=>g.meta[i]=(g.meta[i]||0)+v)}
+  if(c.ant){g.ant=g.ant||{rec:[],bol:[],it:[]};for(const k in g.ant)(c.ant[k]||[]).forEach((v,i)=>g.ant[k][i]=(g.ant[k][i]||0)+v)}});
  Object.values(dg).forEach(g=>{if(!g.lojas.length)return;g.loja=[...g.lojas].sort((a,b)=>g._rec[b]-g._rec[a])[0];
   SERIES.forEach(k=>{for(let i=0;i<LAST;i++)g[k][i]=g[k][i]||0});out.push(g)});
  return out;
@@ -1067,7 +1068,7 @@ const paraPlanilha=a=>{const l=lojaById(a.loja),c=a.cons?consById(a.cons):null;
  return{id:a.id,autor:a.autor||'',mes:a.mes,dia:a.dia,loja_id:a.loja,loja:l?l.nome:'',consultor_id:a.cons||'',consultor:c?c.nome:'',tipo:a.tipo,gatilho:a.gat||'',descricao:a.desc||''}};
 // O Sheets pode devolver o mês como data ("Thu Oct 01 2026 ...") em vez de "2026-10": normaliza aqui
 const mesTxt=v=>{v=String(v||'').replace(/^'/,'');if(/^\d{4}-\d{2}$/.test(v))return v;const d=new Date(v);return isNaN(d)?v:`${d.getFullYear()}-${pad(d.getMonth()+1)}`};
-const daPlanilha=r=>({id:Number(r.id),autor:r.autor,mes:mesTxt(r.mes),dia:Number(String(r.dia).replace(/^'/,'')),loja:String(r.loja_id),cons:r.consultor_id||'',tipo:r.tipo,gat:r.gatilho||'',desc:r.descricao||''});
+const daPlanilha=r=>({id:Number(r.id),autor:r.autor,mes:mesTxt(r.mes),dia:Number(String(r.dia).replace(/^'/,'')),loja:String(r.loja_id),cons:r.consultor_id||'',tipo:r.tipo,gat:r.gatilho||'',desc:r.descricao||'',criado:String(r.criado_em||'').replace(/^'/,'')});
 // POST sem cabeçalho de conteúdo (text/plain) para o navegador não exigir pré-verificação de CORS
 // recusa da planilha (ação incompleta etc.) vira erro com .recusa: a fila descarta o item em vez de travar as próximas
 const enviar=corpo=>fetch(PLANILHA.url,{method:'POST',body:JSON.stringify({chave:PLANILHA.chave,...corpo})}).then(r=>r.json()).then(j=>{if(!j.ok){const e=new Error(j.erro||'erro');e.recusa=j.erro!=='chave inválida';throw e}return j});
@@ -1405,9 +1406,9 @@ function acoesRegHTML(ids){
  const fonte=!PLANILHA.url?'só neste navegador':planOk===false?'planilha fora do ar: mostrando o que está neste navegador':'da planilha compartilhada';
  return `<div class="card"><div class="card-hd"><div><h2>Ações registradas no mês (${ac.length})</h2><p>${S.loja?esc(lojaById(S.loja).nome):'Lojas do filtro'} · ${fonte}</p></div>
   <button class="btn sm" data-novo="${S.loja||S.foco||''}">${ic('plus')}Registrar ação</button></div>
-  ${ac.length?`<div class="ontem" style="padding:0 20px 20px">${ac.slice(0,lim).map(x=>{const l=lojaById(x.loja),c=x.cons?consById(x.cons):null,m=l?M[l.id]:null,e=m?efeito(m,x.dia):null;
+  ${ac.length?`<div class="ontem" style="padding:0 20px 20px">${ac.slice(0,lim).map(x=>{const l=lojaById(x.loja),c=x.cons?consById(x.cons):null,av=avaliarAcao(x);
    return `<div class="it">${ic(TIPOS[x.tipo]||'circle-dot')}<div><b>${esc(x.tipo)}</b> · ${esc(l?l.nome:x.loja)}${c?' · '+esc(c.nome):''}<small>${dd(x.dia)}${x.autor?' · por '+esc(x.autor):''}${x.desc?' · '+esc(x.desc.slice(0,120)):''}</small></div>
-    <div class="r">${e?`<span class="${e.d>=0?'c-ok':'c-bad'}">${pct(e.a)} → ${pct(e.b)}</span><small>ritmo antes → depois</small>`:`<small>${x.dia>LAST?'resultado amanhã':''}</small>`}</div></div>`}).join('')}
+    <div class="r">${avalPill(av)}</div></div>`}).join('')}
    ${ac.length>lim?`<p class="mf">+${ac.length-lim} ações: filtre uma loja para ver todas.</p>`:''}</div>`
   :`<p class="empty" style="padding:0 20px 20px">Nenhuma ação registrada neste mês para este filtro.</p>`}</div>`;
 }
@@ -1716,7 +1717,7 @@ function focoHTML(){
    <div class="seg" role="tablist"><button class="${S.chart==='dia'?'on':''}" data-chart="dia">${ic('bar-chart-3')}Dia a dia: impacto das ações</button><button class="${S.chart==='acum'?'on':''}" data-chart="acum">${ic('line-chart')}Acumulado do mês</button></div>
    <div class="chart" id="chartFoco"></div>
    ${S.chart==='acum'?`<div class="legend"><span><i></i>Realizado acumulado</span><span><i class="e"></i>Onde deveria estar (meta diarizada)</span><span><i class="p"></i>Projeção</span><span><i class="a"></i>Ação registrada</span></div>`
-    :`<div class="legend"><span><i class="bx"></i>Venda do dia ÷ meta do dia</span><span><i class="bx d"></i>Dias depois da ação</span><span><i class="e"></i>Média antes e depois</span><span><i class="a"></i>Ação registrada</span><span><i class="bx o"></i>Quanto precisa hoje</span></div>${impactoHTML(l,m)}`}
+    :`<div class="legend"><span><i class="bx"></i>Venda do dia ÷ meta do dia</span><span><i class="bx d"></i>Dias avaliados</span><span><i class="a"></i>Ação registrada</span><span><i class="bx o"></i>Quanto precisa hoje</span></div>${impactoHTML(l,m)}`}
   </div>
   <div class="card pad"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3 style="font-size:15px">Ações da loja</h3><button class="btn sm" data-novo="${l.id}">${ic('plus')}Nova ação</button></div>
    <div class="list">${la.length?la.map(x=>`<div class="it hist ${sel&&sel.id===x.id&&S.chart==='dia'?'on':''}" data-acsel="${x.id}" title="Ver o antes e depois desta ação no gráfico"><span class="dchip">${dd(x.dia)}</span><div><p style="font-weight:700">${esc(x.tipo)}${x.cons?' · '+esc(consById(x.cons)?.nome):''}</p><p class="mf" style="font-size:13px">${esc(x.desc||'Sem descrição')}</p>${avalHTML(x)}</div><button class="btn ghost sm" data-del="${x.id}" aria-label="Remover ação">${ic('trash-2')}</button></div>`).join(''):'<p class="empty">Nenhuma ação registrada nesta loja no mês.</p>'}</div>
@@ -1748,78 +1749,103 @@ function clusterHTML(l,m){
 }
 function acaoSel(lid){
  const la=acoesMes().filter(x=>x.loja===lid).sort((a,b)=>b.dia-a.dia);
- return la.find(x=>x.id===S.acSel)||la.find(x=>efeito(M[lid],x.dia))||la[0]||null;
+ return la.find(x=>x.id===S.acSel)||la.find(x=>{const a=avaliarAcao(x);return a&&a.ver})||la[0]||null;
 }
 const DRVG={fluxo:'bol',ritmo:'bol',tendencia:'bol',ipb:'ipb',b1:'ipb',pm:'pm'};
 function impactoHTML(l,m){
  const x=acaoSel(l.id);
- if(!x)return `<div class="impact empty-i">${ic('mouse-pointer-click')}<span>Nenhuma ação registrada nesta loja. Registre uma ação e, a partir do dia seguinte, o gráfico mostra o antes e o depois.</span></div>`;
- const e=efeito(m,x.dia),la=acoesMes().filter(a=>a.loja===l.id).sort((a,b)=>a.dia-b.dia);
- const chips=la.length>1?`<div class="achips">${la.map(a=>`<button class="${a.id===x.id?'on':''}" data-acsel="${a.id}">${dd(a.dia)} · ${esc(a.tipo)}</button>`).join('')}</div>`:'';
- const hd=`<div class="ih"><div><p class="eyebrow2">Ação em análise</p><p class="it-t">${ic(TIPOS[x.tipo]||'circle-dot')}${esc(x.tipo)} em ${dd(x.dia)}${x.cons?' · '+esc(consById(x.cons)?.nome):''}</p><p class="mf" style="font-size:13px">${esc(x.desc||'Sem descrição')}</p></div>`;
- if(!e)return `<div class="impact">${chips}${hd}<span class="verd v-wait">${ic('hourglass')}Aguardando</span></div><p class="mf">${x.dia>LAST?'A ação é de hoje. O efeito aparece a partir de amanhã, quando o dia fechar.':'Sem dias anteriores no mês para comparar.'}</p></div>`;
- const [vc,vt,vi]=e.d>=.05?['v-ok','Funcionou','circle-check']:e.d<=-.05?['v-bad','Piorou','circle-x']:['v-flat','Sem efeito claro','minus-circle'];
- const foco=DRVG[x.gat];
- const row=(k,lb,f)=>{const a=e.antes[k],b=e.depois[k],d=a?b/a-1:0;return `<div class="${foco===k||(k==='bm'&&!foco)?'fz':''}"><span class="l">${lb}${foco===k?' · alvo da ação':''}</span><span class="v">${f(a)} → ${f(b)}</span><span class="delta ${d>=.02?'up':d<=-.02?'down':'flat'}">${pct(d,1,true)}</span></div>`};
- const nA=e.dia-e.ini,nD=LAST-e.dia+1;
+ if(!x)return `<div class="impact empty-i">${ic('mouse-pointer-click')}<span>Nenhuma ação registrada nesta loja no mês.</span></div>`;
+ const la=acoesMes().filter(a=>a.loja===l.id).sort((a,b)=>a.dia-b.dia),a=avaliarAcao(x);
+ const chips=la.length>1?`<div class="achips">${la.map(y=>`<button class="${y.id===x.id?'on':''}" data-acsel="${y.id}">${dd(y.dia)} · ${esc(y.tipo)}</button>`).join('')}</div>`:'';
+ const hd=`<div class="ih"><div><p class="eyebrow2">Ação em análise</p><p class="it-t">${ic(TIPOS[x.tipo]||'circle-dot')}${esc(x.tipo)} em ${dd(x.dia)}${x.cons?' · '+esc(consById(x.cons)?.nome):''}</p></div>`;
+ if(!a||a.wait||a.semBase||a.semVenda){
+  const msg=!a?'':a.wait?`Avalia ${pad(a.dias[0])} e ${dd(a.dias[1])}${a.tarde?' (cadastro após as 14h)':''}. O resultado aparece quando ${dd(a.dias[1])} fechar.`:'Sem venda para comparar nesses dias.';
+  return `<div class="impact">${chips}${hd}<span class="verd v-wait">${ic('hourglass')}${a&&a.wait?'Aguardando':'Sem dado'}</span></div><p class="mf">${msg}</p></div>`;
+ }
+ const [vc,vt,vi]=a.ver==='melhorou'?['v-ok','Deu certo','circle-check']:a.ver==='piorou'?['v-bad','Não deu certo','circle-x']:['v-flat','Neutro','minus-circle'];
+ const sobe=['ipb','pm','bm'].filter(k=>a.v[k]>.005).length;
+ const f={ipb:v=>fx(v,2),pm:v=>brl(v,2),bm:v=>brl(v)},nm={ipb:'IPB',pm:'Preço médio',bm:'Boleto médio'};
  return `<div class="impact">${chips}${hd}<span class="verd ${vc}">${ic(vi)}${vt}</span></div>
-  <div class="ibig"><div><span class="l">Ritmo antes</span><span class="v">${pct(e.a)}</span><span class="s">até ${nA} dia${nA>1?'s':''}</span></div>${ic('arrow-right','arr')}<div><span class="l">Ritmo depois</span><span class="v ${vc}">${pct(e.b)}</span><span class="s">${nD} dia${nD>1?'s':''}</span></div>
-   <div><span class="l">Diferença</span><span class="v ${vc}">${pp(e.d)}</span><span class="s">venda ÷ meta do dia</span></div><div><span class="l">Receita a mais</span><span class="v ${e.inc>=0?'c-ok':'c-bad'}">${e.inc>=0?'+':''}${kbrl(e.inc)}</span><span class="s">vs. manter o ritmo de antes</span></div></div>
-  <div class="idrv">${row('bol','Boletos por dia aberto',v=>fx(v))}${row('ipb','IPB',v=>fx(v,2))}${row('pm','Preço médio',v=>brl(v,2))}${row('bm','Boleto médio',v=>brl(v,2))}</div>
-  <p class="mf" style="font-size:12px">Estimativa: compara o ritmo (venda ÷ meta do dia) antes e depois da ação. Campanhas e outras ações no mesmo período também influenciam.</p></div>`;
+  <p class="mf" style="font-size:13px">${sobe} de 3 indicadores subiram · ${periodoTxt(a)}${a.tarde?' · cadastro após as 14h':''}</p>
+  <div class="avg">${['ipb','pm','bm'].map(k=>`<span class="${a.v[k]>.005?'c-ok':a.v[k]<-.005?'c-bad':'mf'}"><small>${nm[k]}</small><b>${f[k](a.antes[k])} → ${f[k](a.dep[k])}</b><em>${a.v[k]>=0?'▲':'▼'} ${pct(Math.abs(a.v[k]),1)}</em></span>`).join('')}</div></div>`;
 }
 function drawDaily(m,la,sel,el){
  const N=Math.min(TODAY,DAYS),W=720,H=290,L=46,Rr=12,T=40,B=40,iw=W-L-Rr,ih=H-T-B,cw=iw/N,bw=cw*.58;
  const mh=m.metaDays[TODAY-1]||0,need=mh>0?m.hoje/mh:null;
- const e=sel?efeito(m,sel.dia):null;
+ const av=sel?avaliarAcao(sel):null,aval=av&&av.dias?av.dias:null;
  const MAX=Math.max(1.3,...m.ritmo.filter(v=>v!=null).map(v=>v*1.12),(need||0)*1.12);
  const xc=d=>L+cw*(d-.5),y=v=>T+(1-Math.min(v,MAX)/MAX)*ih;
  const DS=['dom','seg','ter','qua','qui','sex','sáb'],curto=N>16;
  let g='';
- if(e){g+=`<rect class="win-a" x="${xc(e.ini)-cw/2}" y="${T}" width="${cw*(e.dia-e.ini)}" height="${ih}"/><rect class="win-d" x="${xc(e.dia)-cw/2}" y="${T}" width="${cw*(LAST-e.dia+1)}" height="${ih}"/>
-  <text class="wl" x="${xc(e.ini)-cw/2+6}" y="${T+14}">ANTES</text><text class="wl d" x="${xc(e.dia)-cw/2+6}" y="${T+14}">DEPOIS</text>`}
+ if(aval&&aval[0]<=N){g+=`<rect class="win-d" x="${xc(aval[0])-cw/2}" y="${T}" width="${cw*Math.min(2,N-aval[0]+1)}" height="${ih}"/><text class="wl d" x="${xc(aval[0])-cw/2+6}" y="${T+14}">AVALIADOS</text>`}
  [0,.5,1,1.5,2,2.5].filter(v=>v<=MAX).forEach(v=>{g+=`<line class="${v===1?'meta1':'grid'}" x1="${L}" x2="${W-Rr}" y1="${y(v)}" y2="${y(v)}"/><text class="ax" x="${L-8}" y="${y(v)+4}" text-anchor="end">${v*100}%</text>`});
  g+=`<text class="mt1" x="${W-Rr-4}" y="${y(1)-6}" text-anchor="end">meta do dia</text>`;
  for(let d=1;d<=N;d++){
   const dow=DS[new Date(ANO,MES,d).getDay()];
   g+=`<text class="ax" x="${xc(d)}" y="${H-22}" text-anchor="middle">${curto?pad(d):dd(d)}</text><text class="ax s" x="${xc(d)}" y="${H-8}" text-anchor="middle">${d===TODAY?'hoje':curto?dow[0]:dow}</text>`;
-  if(d<=LAST){const v=m.ritmo[d-1],dep=e&&d>=e.dia;
+  if(d<=LAST){const v=m.ritmo[d-1],dep=aval&&aval.includes(d);
    if(v==null){g+=`<text class="ax s" x="${xc(d)}" y="${y(0)-6}" text-anchor="middle">fechada</text>`;continue}
    g+=`<rect class="${dep?'bd':'bb'}" x="${xc(d)-bw/2}" y="${y(v)}" width="${bw}" height="${Math.max(1,y(0)-y(v))}" rx="4"><title>${dd(d)}: ${kbrl(m.days[d-1])} vendidos, meta do dia ${kbrl(m.metaDays[d-1])}</title></rect>`;
    g+=`<text class="bl" x="${xc(d)}" y="${y(v)-6}" text-anchor="middle">${pct(v)}</text>`}
   else if(need!=null){g+=`<rect class="bo" x="${xc(d)-bw/2}" y="${y(need)}" width="${bw}" height="${y(0)-y(need)}" rx="4"/><text class="bl o" x="${xc(d)}" y="${y(need)-6}" text-anchor="middle">${pct(need)}</text><text class="ax s" x="${xc(d)}" y="${y(need)+16}" text-anchor="middle">${kbrl(m.hoje)}</text>`}
  }
- if(e){g+=`<line class="avg" x1="${xc(e.ini)-cw/2}" x2="${xc(e.dia)-cw/2}" y1="${y(e.a)}" y2="${y(e.a)}"/><line class="avg d" x1="${xc(e.dia)-cw/2}" x2="${xc(LAST)+cw/2}" y1="${y(e.b)}" y2="${y(e.b)}"/>`;
-  if(e.b!==e.a){const xa=xc(e.dia)-cw/2;g+=`<line class="jump" x1="${xa}" x2="${xa}" y1="${y(e.a)}" y2="${y(e.b)}" marker-end="url(#ah)"/>`}}
  const by={};la.forEach(a=>(by[a.dia]=by[a.dia]||[]).push(a));
  Object.entries(by).forEach(([d,arr])=>{d=+d;if(d>N)return;const on=sel&&arr.some(a=>a.id===sel.id),xa=xc(d)-cw/2;
   g+=`<g class="mk ${on?'on':''}" data-acsel="${arr[0].id}" style="cursor:pointer"><title>${esc(arr.map(a=>`${dd(d)} · ${a.tipo}${a.desc?': '+a.desc:''}`).join('\n'))}</title><line x1="${xa}" x2="${xa}" y1="${T-14}" y2="${T+ih}"/><circle cx="${xa}" cy="${T-16}" r="${on?11:9}"/><text x="${xa}" y="${T-12.5}" text-anchor="middle">${arr.length}</text></g>`});
  $(el).innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Venda diária da loja em % da meta do dia, com o antes e o depois da ação selecionada"><defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ahp"/></marker></defs>${g}</svg>`;
 }
-// Avaliação direta da ação: IPB, preço médio e BM no DIA SEGUINTE ao dia da ação contra a média dos 3 últimos dias
-// iguais da semana (ex.: quinta contra as 3 quintas anteriores; no começo do mês, os que houver), da loja ou do consultor
-// quando a ação é para ele. Veredito: 2 de 3 subiram = melhorou; 2 de 3 caíram = piorou; senão, misto.
+// Avaliação da ação em 2 dias: cadastrada antes das 14h -> o próprio dia e o seguinte; a partir das 14h -> os 2 dias
+// seguintes. Cada dia avaliado é comparado com o mesmo dia da semana das 3 semanas anteriores (ex.: sex 06 e sáb 07
+// contra as 3 sextas e os 3 sábados antes). Da loja, ou do consultor quando a ação é para ele.
+// Indicadores: IPB, preço médio e BM dos 2 dias contra a base. Deu certo = 2 dos 3 subiram; não deu = 2 dos 3 caíram.
+function horaCadastro(x){
+ const t=x.criado&&/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}/.test(x.criado)?new Date(x.criado.replace(' ','T')):x.id>1e12?new Date(x.id):null;
+ return t&&!isNaN(t)?t:null;
+}
+function diasAvaliados(x){
+ const t=horaCadastro(x),noDia=t&&t.getFullYear()===ANO&&t.getMonth()===MES&&t.getDate()===x.dia;
+ const ini=noDia&&t.getHours()>=14?x.dia+1:x.dia;
+ return{ini,dias:[ini,ini+1],tarde:noDia&&t.getHours()>=14,hora:t};
+}
+// venda do dia d do consultor/loja (d < 1 = fim do mês anterior, até 21 dias antes)
+function valDia(src,d){
+ if(d>=1)return{rec:src.rec[d-1]||0,bol:src.bol[d-1]||0,it:src.it[d-1]||0};
+ const a=src.ant,i=20+d;if(!a||i<0)return null;return{rec:a.rec[i]||0,bol:a.bol[i]||0,it:a.it[i]||0};
+}
 function avaliarAcao(x){
  const l=lojaById(x.loja),c=x.cons?consById(x.cons):null,src=c||l;if(!src)return null;
- const d1=x.dia+1,ind=(r,b,i)=>({ipb:b?i/b:0,pm:i?r/i:0,bm:b?r/b:0});
- if(d1>LAST)return{wait:true,d1};
- let r=0,b=0,i=0,n=0;for(let d=d1-7;d>=1&&n<3;d-=7)if(src.bol[d-1]>0){r+=src.rec[d-1];b+=src.bol[d-1];i+=src.it[d-1];n++}
- if(!b)return{semBase:true,d1};
- if(!(src.bol[d1-1]>0))return{semVenda:true,d1};
- const antes=ind(r,b,i),dep=ind(src.rec[d1-1],src.bol[d1-1],src.it[d1-1]),v={};
+ let {dias,tarde,hora}=diasAvaliados(x);const ind=(r,b,i)=>({ipb:b?i/b:0,pm:i?r/i:0,bm:b?r/b:0});
+ // fim de mês já fechado: o 2º dia cai no mês seguinte, então vale só o dia que existe neste mês
+ if(dias[1]>DAYS&&LAST>=DAYS&&dias[0]<=DAYS)dias=[dias[0]];
+ if(dias[dias.length-1]>LAST)return{wait:true,d1:Math.min(dias[dias.length-1],DAYS),dias:dias.length>1?dias:[dias[0],dias[0]+1],tarde,hora};
+ const A={r:0,b:0,i:0,n:0},B={r:0,b:0,i:0,n:0},base=[];
+ dias.forEach(d=>{if(src.bol[d-1]>0){A.r+=src.rec[d-1];A.b+=src.bol[d-1];A.i+=src.it[d-1];A.n++}
+  // dias antes do dia 1 vêm do fim do mês anterior ("ant": últimos 21 dias)
+  for(let k=1;k<=3;k++){const db=d-7*k,v=valDia(src,db);if(!v)break;if(v.bol>0){B.r+=v.rec;B.b+=v.bol;B.i+=v.it;B.n++;base.push(db)}}});
+ if(!B.b)return{semBase:true,d1:dias[dias.length-1],dias,tarde,hora};
+ if(!A.b)return{semVenda:true,d1:dias[dias.length-1],dias,tarde,hora};
+ const antes=ind(B.r,B.b,B.i),dep=ind(A.r,A.b,A.i),v={};
  for(const k in antes)v[k]=antes[k]?dep[k]/antes[k]-1:0;
  const sobe=Object.values(v).filter(z=>z>.005).length,cai=Object.values(v).filter(z=>z<-.005).length;
- return{d1,n,antes,dep,v,quem:c?c.nome:'loja',ver:sobe>=2?'melhorou':cai>=2?'piorou':'misto'};
+ return{d1:dias[dias.length-1],dias,base,n:B.n,tarde,hora,antes,dep,v,quem:c?c.nome:'loja',ver:sobe>=2?'melhorou':cai>=2?'piorou':'misto'};
+}
+// texto do período: "sex 06 e sáb 07/11 × 3 sextas e 3 sábados anteriores"
+const DS3=['dom','seg','ter','qua','qui','sex','sáb'],DSP=['domingos','segundas','terças','quartas','quintas','sextas','sábados'];
+function periodoTxt(a){
+ const w=d=>new Date(ANO,MES,d).getDay(),[d1,d2]=a.dias;
+ const nb=d=>a.base?a.base.filter(x=>w(x)===w(d)).length:0;
+ if(d2==null)return `${DS3[w(d1)]} ${dd(d1)} × ${nb(d1)} ${DSP[w(d1)]} anteriores (o 2º dia é do mês seguinte)`;
+ return `${DS3[w(d1)]} ${pad(d1)} e ${DS3[w(d2)]} ${dd(d2)} × ${nb(d1)} ${DSP[w(d1)]} e ${nb(d2)} ${DSP[w(d2)]} anteriores`;
 }
 const DSEM=['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
-const VER={melhorou:['p-ok','Melhorou','trending-up'],piorou:['p-bad','Piorou','trending-down'],misto:['p-warn','Misto','minus']};
+const VER={melhorou:['p-ok','Deu certo','circle-check'],piorou:['p-bad','Não deu certo','circle-x'],misto:['p-warn','Neutro','minus-circle']};
 const avalPill=a=>!a?'':a.wait?`<span class="pill">Aguardando ${dd(a.d1)}</span>`:a.semBase||a.semVenda?`<span class="pill">Sem venda para medir</span>`:`<span class="pill ${VER[a.ver][0]}">${ic(VER[a.ver][2])}${VER[a.ver][1]}</span>`;
 function avalHTML(x){
  const a=avaliarAcao(x);if(!a)return '';
- if(a.wait)return `<p class="aval mf">${ic('hourglass')}Resultado em ${dd(a.d1)}, com o fechamento do dia seguinte</p>`;
- if(a.semBase||a.semVenda)return `<p class="aval mf">${ic('circle-slash')}${a.semVenda?`Sem venda em ${dd(a.d1)}`:`Sem venda nas ${DSEM[new Date(ANO,MES,a.d1).getDay()]}s anteriores`} para medir</p>`;
+ if(a.wait)return `<p class="aval mf">${ic('hourglass')}Resultado depois de ${dd(a.d1)} (avalia ${pad(a.dias[0])} e ${dd(a.dias[1])}${a.tarde?', cadastro após as 14h':''})</p>`;
+ if(a.semBase||a.semVenda)return `<p class="aval mf">${ic('circle-slash')}${a.semVenda?`Sem venda em ${a.dias.map(d=>pad(d)).join(' e ')}/${pad(MES+1)}`:'Sem venda nos mesmos dias das semanas anteriores'} para medir</p>`;
  const f={ipb:v=>fx(v,2),pm:v=>brl(v,2),bm:v=>brl(v)},nm={ipb:'IPB',pm:'Preço médio',bm:'BM'};
- return `<div class="aval">${avalPill(a)}<span class="mf">${DSEM[new Date(ANO,MES,a.d1).getDay()]} ${dd(a.d1)} × média de ${a.n===1?'1':a.n} ${DSEM[new Date(ANO,MES,a.d1).getDay()]}${a.n===1?'':'s'} anterior${a.n===1?'':'es'}${a.quem!=='loja'?' · '+esc(a.quem):''}</span>
+ return `<div class="aval">${avalPill(a)}<span class="mf">${periodoTxt(a)}${a.quem!=='loja'?' · '+esc(a.quem):''}</span>
   <div class="avg">${['ipb','pm','bm'].map(k=>`<span class="${a.v[k]>.005?'c-ok':a.v[k]<-.005?'c-bad':'mf'}" title="antes ${f[k](a.antes[k])}"><small>${nm[k]}</small><b>${f[k](a.dep[k])}</b><em>${a.v[k]>=0?'▲':'▼'} ${pct(Math.abs(a.v[k]),0)}</em></span>`).join('')}</div></div>`;
 }
 function efTag(e){return e?`<span class="delta ${e.d>=.05?'up':e.d<=-.05?'down':'flat'}" style="margin-top:6px">${ic(e.d>=0?'arrow-up-right':'arrow-down-right')}Ritmo ${pct(e.a)} → ${pct(e.b)} · ${e.inc>=0?'+':''}${kbrl(e.inc)}</span>`:`<span class="delta wait" style="margin-top:6px">${ic('hourglass')}Aguardando dias de venda para medir</span>`}

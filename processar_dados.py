@@ -568,6 +568,21 @@ def main(alvo=None, saida_arq=None):
         s = df.groupby(df["data"].dt.day)[campo].sum()
         return [round(float(s.get(d, 0)), 2) for d in range(1, ontem.day + 1)]
 
+    # últimos 21 dias do mês anterior (dia a dia): base da avaliação das ações no começo do mês
+    # ("ant"[i] = dia ini_mes - 21 + i; o painel compara com o mesmo dia da semana das 3 semanas anteriores)
+    ANT = 21
+    ini_ant = ini_mes - pd.Timedelta(days=ANT)
+    v_ant = ref[ref["data"] >= ini_ant]
+
+    def serie_ant(df):
+        if df.empty:
+            return None
+        out = {}
+        for campo in ("rec", "bol", "it"):
+            s = df.groupby(df["data"])[campo].sum()
+            out[campo] = [round(float(s.get(ini_ant + pd.Timedelta(days=i), 0)), 2) for i in range(ANT)]
+        return out
+
     def resumo_ref(df):
         if df.empty:
             return None
@@ -608,6 +623,7 @@ def main(alvo=None, saida_arq=None):
             "bt": serie(vl, "bt"), "bp": serie(vl, "bp"), "bpe": serie(vl, "bpe"),
             "alav": {c: serie(vl, c) for c in ALAVANCAS},
             "ref": resumo_ref(ref[ref["loja"] == loja]),
+            "ant": serie_ant(v_ant[v_ant["loja"] == loja]),
             "aa": serie_aa(loja),
             "plano": plano_lojas.get(loja),
         })
@@ -631,6 +647,7 @@ def main(alvo=None, saida_arq=None):
                 "rec": serie(vc, "rec"), "bol": serie(vc, "bol"), "it": serie(vc, "it"), "b1": serie(vc, "b1"), "br": serie(vc, "br"),
                 "bt": serie(vc, "bt"), "bp": serie(vc, "bp"), "bpe": serie(vc, "bpe"),
                 "ref": resumo_ref(rc),
+                "ant": serie_ant(v_ant[(v_ant["loja"] == loja) & (v_ant["consultor"] == consultor)]),
                 "plano": achar_plano(plano_cons, loja, nome_c),
             })
         # consultor com meta e ainda sem venda no mês também aparece
@@ -641,7 +658,8 @@ def main(alvo=None, saida_arq=None):
             cons_out.append({"id": f"{codigo}@{loja}", "nome": nome_curto(nome_c), "loja": loja, "nome_completo": str(nome_c).title(),
                              **({"digital": True} if codigo in DIGITAIS else {}), "meta": diarizada(valor),
                              **{k: list(zeros) for k in ("rec", "bol", "it", "b1", "br", "bt", "bp", "bpe")},
-                             "ref": None, "plano": achar_plano(plano_cons, loja, nome_c)})
+                             "ref": None, "plano": achar_plano(plano_cons, loja, nome_c),
+                             "ant": serie_ant(v_ant[(v_ant["loja"] == loja) & v_ant["consultor"].str.startswith(f"{codigo} - ")])})
 
     saida = {
         "geradoEm": datetime.now().isoformat(timespec="minutes"),

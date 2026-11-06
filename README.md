@@ -109,8 +109,10 @@ Primeiro a tabela dos consultores de loja e a dos digitais, com receita/dia, bol
 - A identificação é declarada pela própria pessoa (não há login).
 
 ## Avaliação das ações (aba Lojas)
-- Cada ação registrada mostra **IPB, preço médio e BM do dia seguinte ao dia da ação** contra a média dos **3 últimos dias iguais da semana** (ex.: quinta contra as 3 quintas anteriores; no começo do mês, os que houver). Se a ação foi para um consultor, a conta é com a venda dele; senão, a da loja.
-- Veredito: **Melhorou** (2 dos 3 indicadores subiram), **Piorou** (2 dos 3 caíram) ou **Misto**. Sem o dia seguinte fechado: "Aguardando"; sem venda no dia: "Sem venda para medir". A coluna Ação da tabela de lojas mostra o veredito da última ação.
+- **Dias avaliados (2):** ação cadastrada **antes das 14h** do dia da ação → o próprio dia e o seguinte; cadastrada **a partir das 14h** → os 2 dias seguintes. O horário vem do `criado_em` da planilha (ou do cadastro no navegador). Ação cadastrada depois do dia da ação conta a partir do próprio dia.
+- **Base:** cada dia avaliado contra o mesmo dia da semana das 3 semanas anteriores (ex.: sex 06 e sáb 07 × as 3 sextas e os 3 sábados antes). No começo do mês a base usa o fim do mês anterior (`ant`: últimos 21 dias, gravado pelo processamento). No último dia do mês fechado, vale só o dia do mês.
+- **Indicadores:** IPB, preço médio e boleto médio dos 2 dias contra a base, da loja ou do consultor (ação para consultor). **Deu certo** = 2 dos 3 subiram; **Não deu certo** = 2 dos 3 caíram; **Neutro** = o resto. "Aguardando dd/mm" até o 2º dia fechar.
+- Aparece no painel "Ação em análise" (veredito, "N de 3 indicadores subiram", período e os 3 indicadores antes → depois), na lista de ações da loja, na coluna Ação da tabela de lojas e nas ações do mês (aba Entender). O gráfico da loja destaca os 2 dias avaliados.
 
 ## Metas por consultor
 - Pasta `Metas/Consultores` (fica só no computador, como as outras planilhas). O arquivo com o nome do mês (ex.: `METAS NOVEMBRO CONSULTORES.xlsx`) traz uma linha por consultor e loja: loja (PDV), consultor (código/matrícula do Retaguarda), nome (opcional) e a meta do mês (coluna com "META" no nome). O LEIA-ME da pasta descreve o formato.
