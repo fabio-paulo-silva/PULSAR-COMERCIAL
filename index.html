@@ -1616,6 +1616,53 @@ function vHoje(ls,cs,a){
   <p class="mf" style="text-align:center">Diagnóstico completo (onde está a perda, ${a.aa.ok?`comparação com ${AAtxt()}, `:''}ciclo e histórico) na aba <button class="lk" data-tab="entender">Entender</button>.</p>
  </section>`;
 }
+/* ================= Constância: bate a meta todo dia ou só no dia de sorte? =================
+   Calculada no processamento (bloco l.const): últimos 30 dias com meta, atravessando o mês anterior.
+   Constante = bate em 50% dos dias ou mais e tem até 20% de dias ruins (abaixo de 70% da meta).
+   Inconstante = bate em menos de 25% dos dias ou tem 40% ou mais de dias ruins. Oscila = o resto.
+   bom/mau = [boletos/dia, IPB, BM] no dia em que bate × no dia em que não bate. */
+const SELO={constante:['p-ok','Constante'],oscila:['p-warn','Oscila'],inconstante:['p-bad','Inconstante']};
+const seloC=c=>`<span class="pill ${SELO[c.selo][0]}">${SELO[c.selo][1]}</span>`;
+const medC=a=>{const s=a.filter(v=>v!=null).sort((x,y)=>x-y),n=s.length;return n?(n%2?s[(n-1)/2]:(s[n/2-1]+s[n/2])/2):null};
+// loja constante para copiar: mesmo cluster (QDB com QDB), de preferência da mesma praça; a que mais bate
+function refConst(l){
+ const c=lojas.filter(x=>x.id!==l.id&&x.const&&x.const.selo==='constante'&&x.cluster===l.cluster);
+ const ord=(a,b)=>(b.const.bate/b.const.n-a.const.bate/a.const.n)||(a.const.ruim-b.const.ruim);
+ return c.filter(x=>x.praca===l.praca).sort(ord)[0]||c.sort(ord)[0]||null;
+}
+const yoyTxt=v=>v==null?'—':pct(v,0,true);
+function constHTML(ls){
+ const v=ls.filter(l=>l.const);if(!v.length)return '';
+ const hd=(t,sub)=>`<div class="card-hd"><div><h2>${t}</h2><p>${sub}</p></div><span class="icchip t-accent">${ic('repeat')}</span></div>`;
+ if(S.loja){
+  const l=v[0],c=l.const,r=refConst(l),rc=r&&r.const;
+  const dif=c.bom&&c.mau?c.bom[0]/c.mau[0]-1:null;
+  const lin=(nm,a,b,f,menor)=>{const ok=b==null?'':(menor?a<=b:a>=b)?'c-ok':'c-bad';return `<span><small>${nm}</small><b class="${ok}">${f(a)}</b><em class="mf">${r?esc(r.nome)+': '+f(b):''}</em></span>`};
+  return `<div class="card pad">${hd('Constância',`Últimos ${c.n} dias com meta · o que faz a loja bater todo dia, não só no dia de sorte`)}
+   <p style="font-size:15px;margin:4px 0 10px">${seloC(c)} Bateu a meta em <b>${c.bate} de ${c.n} dias</b> · <b class="${c.ruim/c.n>.2?'c-bad':''}">${c.ruim} ${c.ruim===1?'dia ruim':'dias ruins'}</b> (abaixo de 70% da meta)</p>
+   ${c.bom&&c.mau?`<p class="mf" style="margin:0 0 6px"><b>No dia em que bate × no dia em que não bate</b>${dif!=null?` · o que decide é ${dif>.15?'<b>a quantidade de boletos</b>':'o boleto'}`:''}</p>
+   <div class="avg">${[['Boletos/dia',0,x=>fx(x,1)],['IPB',1,x=>fx(x,2)],['Boleto médio',2,x=>brl(x)]].map(([n,i,f])=>{const d=c.bom[i]/c.mau[i]-1;
+    return `<span><small>${n}</small><b>${f(c.mau[i])} → ${f(c.bom[i])}</b><em class="${d>=0?'c-ok':'c-bad'}">${d>=0?'▲':'▼'} ${pct(Math.abs(d))}</em></span>`}).join('')}</div>`:''}
+   <p class="mf" style="margin:14px 0 6px"><b>${r?`Para copiar: ${esc(r.nome)}`:'Sem loja constante no cluster para comparar'}</b>${r?` · ${esc(r.praca)} · bate em ${rc.bate} de ${rc.n} dias, ${rc.ruim} ${rc.ruim===1?'dia ruim':'dias ruins'}`:''}</p>
+   ${r?`<div class="avg" style="grid-template-columns:repeat(4,minmax(0,1fr))">${lin('Boletos vs ano passado',c.yoyb,rc.yoyb,yoyTxt)}${lin('IPB',c.ipb,rc.ipb,x=>fx(x,2))}${lin('%B1',c.b1,rc.b1,x=>pct(x),true)}${lin('Boleto médio',c.bm,rc.bm,x=>brl(x))}</div>`:''}
+  </div>`;
+ }
+ const cnt=k=>v.filter(l=>l.const.selo===k).length;
+ const rows=[...v].sort((a,b)=>(b.const.bate/b.const.n-a.const.bate/a.const.n)||(a.const.ruim/a.const.n-b.const.ruim/b.const.n));
+ // o que as constantes fazem diferente (rede inteira, para ter base mesmo com filtro pequeno)
+ const g=k=>lojas.filter(l=>l.const&&l.const.selo===k).map(l=>l.const),G=[g('constante'),g('inconstante')];
+ const cmp=[['Boletos vs ano passado','yoyb',yoyTxt],['IPB','ipb',x=>fx(x,2)],['%B1','b1',x=>pct(x)],['Boleto médio','bm',x=>brl(x)],['Dias ruins','r',x=>pct(x)]].map(([n,k,f])=>{
+  const m=G.map(a=>medC(a.map(c=>k==='r'?c.ruim/c.n:c[k])));return `<span><small>${n}</small><b>${f(m[0])}</b><em class="mf">inconstantes ${f(m[1])}</em></span>`}).join('');
+ return `<div class="card">${hd('Constância das lojas',`Últimos 30 dias com meta · <b class="c-ok">${cnt('constante')} constantes</b> · ${cnt('oscila')} oscilam · <b class="c-bad">${cnt('inconstante')} inconstantes</b>`)}
+  <div class="pad" style="padding-top:0"><p class="mf" style="margin:0 0 6px"><b>O que as lojas constantes da rede têm</b> (mediana)</p>
+  <div class="avg" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">${cmp}</div></div>
+  <div class="tw tall"><table><thead><tr><th>Loja</th><th></th><th class="r">Bateu a meta</th><th class="r">Dias ruins</th><th class="r">Boletos vs ano passado</th><th class="r">IPB</th><th class="r">%B1</th><th class="r">Boleto médio</th><th>Para copiar</th></tr></thead><tbody>
+  ${rows.map(l=>{const c=l.const,r=c.selo==='constante'?null:refConst(l);return `<tr><td><p class="nm">${esc(l.nome)}</p><p class="sub">${esc(l.gestor||'')}</p></td><td>${seloC(c)}</td>
+   <td class="r tnum"><b>${c.bate} de ${c.n}</b></td><td class="r tnum ${c.ruim/c.n>.2?'c-bad':''}">${c.ruim}</td><td class="r tnum ${c.yoyb==null?'':c.yoyb>=0?'c-ok':'c-bad'}">${yoyTxt(c.yoyb)}</td>
+   <td class="r tnum">${fx(c.ipb,2)}</td><td class="r tnum">${pct(c.b1)}</td><td class="r tnum">${brl(c.bm)}</td>
+   <td>${r?`<button class="lk" data-constl="${r.id}" title="abrir esta loja">${esc(r.nome)}</button>`:'<span class="mf">—</span>'}</td></tr>`}).join('')}
+  </tbody></table></div></div>`;
+}
 // Entender: o porquê (árvore da perda, ano passado, ciclo, histórico e ações do mês)
 function vEntender(ls,cs,a){
  const ids=new Set(ls.map(l=>l.id));
@@ -1636,6 +1683,7 @@ function vEntender(ls,cs,a){
    <div class="tw"><div class="chart" id="chartMeta"></div></div>
    <div class="legend"><span><i class="bx mb"></i>Meta</span><span><i class="ln"></i>Realizado</span><span><i class="bx o"></i>Hoje</span></div>
   </div>
+  ${constHTML(ls)}
   ${cicloCard(ls)}
   ${acoesRegHTML(ids)}
  </section>`;
@@ -2125,8 +2173,9 @@ document.querySelector('.datas .pres').addEventListener('click',e=>{
 });
 function irFoco(id){if(S.foco!==id)S.acSel=null;S.foco=id;S.tab='lojas';render();requestAnimationFrame(()=>$('foco')?.scrollIntoView({behavior:'smooth',block:'start'}))}
 document.addEventListener('click',e=>{
- const t=e.target.closest('[data-tab],[data-reg],[data-foco],[data-del],[data-sort],[data-novo],[data-drill],[data-verc],[data-chart],[data-acsel],[data-pfil],[data-creg],[data-dec],[data-gvo],[data-uso],[data-usonome],[data-constodos]');if(!t)return;
+ const t=e.target.closest('[data-tab],[data-reg],[data-foco],[data-del],[data-sort],[data-novo],[data-drill],[data-verc],[data-chart],[data-acsel],[data-pfil],[data-creg],[data-dec],[data-gvo],[data-uso],[data-usonome],[data-constodos],[data-constl]');if(!t)return;
  const d=t.dataset;
+ if(d.constl){const l=lojaById(d.constl);S.reg=l.regional;S.praca=l.praca;S.gvo=l.gestor;S.loja=l.id;S.cons='';S.foco=l.id;fillFiltros();lembrarFiltro();render();$('view').scrollIntoView({behavior:'smooth',block:'start'});return}
  if(d.constodos){S.consTodos=true;render();return}
  if(d.uso){carregarUso(true).then(render);return}
  if(d.usonome!=null){S.usoNome=S.usoNome===d.usonome?'':d.usonome;render();return}

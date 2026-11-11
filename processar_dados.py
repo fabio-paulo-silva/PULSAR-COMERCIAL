@@ -705,6 +705,63 @@ def main(alvo=None, saida_arq=None):
         print(f"Atenção: {len(sem_meta)} loja(s) com venda e sem meta, fora do painel: {', '.join(sem_meta)}")
 
 
+
+# ---------------- Constância: o que faz a loja bater a meta todo dia (não só no dia de sorte)
+JANELA_CONST = 30      # últimos 30 dias com meta (atravessa o mês anterior)
+DIA_RUIM = 0.70        # dia ruim = venda abaixo de 70% da meta do dia
+
+
+def selo_constancia(bat, ruim):
+    # constante: bate em metade dos dias ou mais e tem no máximo 20% de dias ruins
+    # inconstante: bate em menos de 1 a cada 4 dias ou tem 40% ou mais de dias ruins
+    if bat >= 0.50 and ruim <= 0.20:
+        return "constante"
+    if bat < 0.25 or ruim >= 0.40:
+        return "inconstante"
+    return "oscila"
+
+
+def calcular_constancia(arquivos):
+    """Acrescenta em cada loja de cada arquivo mensal o bloco 'const' (janela dos últimos 30 dias com meta até ontem)."""
+    dados = [json.loads(a.read_text(encoding="utf-8")) for a in arquivos]
+    hist = {}  # loja -> lista de dias (ordem cronológica) acumulada mês a mês
+    for arq, d in zip(arquivos, dados):
+        ate = int(d["ontem"][-2:])
+        for l in d["lojas"]:
+            h = hist.setdefault(l["id"], [])
+            aa = l.get("aa") or {}
+            for i in range(ate):
+                h.append(dict(meta=l["meta"][i], rec=l["rec"][i], bol=l["bol"][i], it=l["it"][i], b1=l["b1"][i],
+                              aab=(aa.get("bol") or [0] * 31)[i] if aa else 0))
+        for l in d["lojas"]:
+            dias = [x for x in hist.get(l["id"], []) if x["meta"] > 0][-JANELA_CONST:]
+            if len(dias) < 10:
+                l["const"] = None
+                continue
+            bate = [x for x in dias if x["rec"] >= x["meta"]]
+            nao = [x for x in dias if x["rec"] < x["meta"]]
+            ruim = sum(1 for x in dias if x["rec"] < DIA_RUIM * x["meta"])
+            B = sum(x["bol"] for x in dias) or 1
+            I = sum(x["it"] for x in dias)
+            R = sum(x["rec"] for x in dias)
+            comp = [x for x in dias if x["aab"] > 0]
+            def grupo(g):
+                b = sum(x["bol"] for x in g)
+                return None if not g or not b else [round(b / len(g), 1), round(sum(x["it"] for x in g) / b, 2),
+                                                    round(sum(x["rec"] for x in g) / b, 1)]
+            bat, rr = len(bate) / len(dias), ruim / len(dias)
+            l["const"] = dict(n=len(dias), bate=len(bate), ruim=ruim, selo=selo_constancia(bat, rr),
+                              ipb=round(I / B, 2), b1=round(sum(x["b1"] for x in dias) / B, 3), bm=round(R / B, 1),
+                              yoyb=round(sum(x["bol"] for x in comp) / sum(x["aab"] for x in comp) - 1, 3) if comp else None,
+                              bom=grupo(bate), mau=grupo(nao))  # [boletos/dia, IPB, BM] no dia que bate × não bate
+        arq.write_text(json.dumps(d, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    sel = {}
+    for l in dados[-1]["lojas"]:
+        if l.get("const"):
+            sel[l["const"]["selo"]] = sel.get(l["const"]["selo"], 0) + 1
+    print(f"Constância (últimos {JANELA_CONST} dias com meta): {sel}")
+
+
 if __name__ == "__main__":
     # um arquivo por mês (filtro de mês do painel) + data/pulsar.json = mês mais recente; data/meses.json lista os meses
     meses = meses_com_dados()
@@ -715,6 +772,7 @@ if __name__ == "__main__":
         main((a, m), arq)
         lista.append({"mes": f"{a}-{m:02d}", "nome": f"{MESES_PT[m - 1].title()} {a}", "arquivo": arq.name})
     if lista:
+        calcular_constancia([ARQ_SAIDA.parent / x["arquivo"] for x in lista])
         shutil.copyfile(ARQ_SAIDA.parent / lista[-1]["arquivo"], ARQ_SAIDA)
         (ARQ_SAIDA.parent / "meses.json").write_text(json.dumps(lista, ensure_ascii=False), encoding="utf-8")
         print(f"\nPainel inicial: {lista[-1]['nome']} (data/pulsar.json) | meses no filtro: {', '.join(x['nome'] for x in lista)}")
