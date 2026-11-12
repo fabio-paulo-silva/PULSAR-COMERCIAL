@@ -114,6 +114,13 @@ select:focus-visible,input:focus-visible,textarea:focus-visible,button:focus-vis
 .dia.on{opacity:1;background:var(--card);border-color:var(--foreground);color:var(--foreground);box-shadow:var(--shadow-card)}
 .dia.on b{color:var(--foreground)}
 .dia.fds{border-style:dashed}
+.dia.fut{opacity:.4;background:transparent} .dia.fut.on{opacity:1}
+.dia.hj small{color:var(--primary);font-weight:800}
+.dia.mes{width:auto;padding:4px 10px}
+.dleg i.dl-fut{border-top:2px dashed var(--muted-fg)}
+.hreal{margin:4px 0 0;font-size:13px;color:var(--muted-fg)} .hreal b{font-size:14px}
+.dec .real{margin:-4px 0 8px;font-size:13px;color:var(--muted-fg)}
+.chart .mb.fut{opacity:.14}
 .dica{font-size:11px;color:var(--muted-fg)}
 .kpi{padding:20px;transition:box-shadow .2s;min-width:0}
 .kpi:hover{box-shadow:var(--shadow-elevated)}
@@ -663,10 +670,9 @@ dialog .hd h3{font-size:18px}
       <button class="btn ghost sm" type="button" id="fLimpar" style="align-self:flex-end"><i data-lucide="rotate-ccw"></i>Limpar</button>
     </div>
     <div class="datas">
-      <div class="dh"><span class="dl"><i data-lucide="calendar-range"></i>Datas</span><span class="per" id="perTxt"></span>
-        <span class="pres"><button type="button" data-pre="ontem">Ontem</button><button type="button" data-pre="7">Últimos 7 dias</button><button type="button" data-pre="mes">Mês até ontem</button></span></div>
-      <div class="dias" id="fDias" role="group" aria-label="Datas selecionadas" title="Clique para marcar ou desmarcar. Shift + clique marca um intervalo."></div>
-      <div class="legend dleg"><span><i class="dl-ok"></i>Bateu a meta do dia</span><span><i class="dl-mid"></i>90 a 99%</span><span><i class="dl-no"></i>Abaixo de 90%</span></div>
+      <div class="dh"><span class="dl"><i data-lucide="calendar-days"></i>Dia</span><span class="per" id="perTxt"></span></div>
+      <div class="dias" id="fDias" role="group" aria-label="Dia" title="Escolha o dia: o painel mostra os objetivos desse dia, com o resultado até a véspera"></div>
+      <div class="legend dleg"><span><i class="dl-ok"></i>Bateu a meta do dia</span><span><i class="dl-mid"></i>90 a 99%</span><span><i class="dl-no"></i>Abaixo de 90%</span><span><i class="dl-fut"></i>Futuro</span></div>
     </div>
   </section>
 
@@ -727,7 +733,7 @@ const MESES=['janeiro','fevereiro','março','abril','maio','junho','julho','agos
 const SEMANA=['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
 
 /* ================= Dados (dados/pulsar.json, gerado por processar_dados.py) ================= */
-let D,ANO,MES,DAYS,LAST,TODAY,REFTXT,lojas=[],cons=[],M={},TEAM={};
+let D,ANO,MES,DAYS,LAST,TODAY,LASTR,REF,REF_MES='',REFTXT,lojas=[],cons=[],M={},TEAM={};
 let PB=null;                                        // faixas da rede (meta de %B1)
 let CICLO=null;                                     // Ciclo/ciclo_atual.json: alavancas comerciais do ciclo vigente
 // Liga cada detrator (gatilho ou perfil) à alavanca do ciclo que ataca ele
@@ -763,15 +769,40 @@ function aplicarDesafio(dados){
 }
 function seloDesafio(){$('hDesafio').hidden=!DESAFIO;$('fMeta').value=DESAFIO?'1':'0'}
 function init(json){
- D=json;aplicarDesafio(D);seloDesafio();
- const[y,mo,d]=D.ontem.split('-').map(Number);ANO=y;MES=mo-1;LAST=d;TODAY=d+1;DAYS=D.diasMes;
+ D=json;restaurar(D.lojas);restaurar(D.consultores);aplicarDesafio(D);seloDesafio();
+ const[y,mo,d]=D.ontem.split('-').map(Number);ANO=y;MES=mo-1;LAST=d;LASTR=d;TODAY=d+1;DAYS=D.diasMes;
  const ri=+D.referencia.inicio.slice(5,7)-1,rf=+D.referencia.fim.slice(5,7)-1;
  REFTXT=`${MESES[ri].slice(0,3)}–${MESES[rf].slice(0,3)}`;
  lojas=D.lojas.filter(l=>sum(l.meta)>0);
  cons=juntaDigitais(D.consultores);
  PB=D.planoBM||null;if(PB&&PB.b1Meta)F.b1=PB.b1Meta;
- SEL=new Set(Array.from({length:LAST},(_,i)=>i+1));
+ guardar(lojas);guardar(cons);
+ // mantém o dia escolhido ao trocar a meta (oficial/desafio); ao trocar de mês, volta para hoje
+ const mesAtual=D.ontem.slice(0,7);aplicarRef(REF_MES===mesAtual&&REF?REF:LASTR+1);REF_MES=mesAtual;
  recalc();calcBmMax();
+}
+/* ---------- Dia escolhido no filtro de data ----------
+   O painel trata o dia escolhido como "hoje": resultado até a véspera, meta do dia + gap ÷ dias que faltam.
+   Dia anterior: os objetivos que o dia tinha naquela manhã (e o que foi feito, para comparar).
+   Dia futuro: a meta do dia + a parte do gap de hoje (o gap até ontem dividido pelos dias que faltam a partir de hoje).
+   As séries completas ficam em _f; as séries de trabalho são cortadas até a véspera do dia escolhido. */
+function restaurar(lst){lst.forEach(x=>{if(!x._f)return;for(const k in x._f)x[k]=x._f[k]})}
+function guardar(lst){lst.forEach(x=>{if(x._f)return;x._f={};SERIES.forEach(k=>{if(x[k])x._f[k]=x[k]});if(x.alav)x._f.alav=x.alav})}
+function aplicarRef(r){
+ REF=Math.max(1,Math.min(r,DAYS+1));TODAY=REF;LAST=Math.max(0,Math.min(REF-1,LASTR));
+ const corta=x=>{SERIES.forEach(k=>{if(x._f[k])x[k]=x._f[k].slice(0,LAST)});
+  if(x._f.alav){const o={};for(const k in x._f.alav)o[k]=x._f.alav[k].slice(0,LAST);x.alav=o}};
+ lojas.forEach(corta);cons.forEach(corta);
+ SEL=new Set(Array.from({length:LAST},(_,i)=>i+1));
+}
+// primeiro dia que ainda divide o gap: hoje de verdade (para dia futuro) ou o dia escolhido
+const R0=()=>Math.min(TODAY,LAST+1);
+const ehFuturo=()=>REF>LASTR+1&&REF<=DAYS,ehPassado=()=>REF<=LASTR;
+const realDia=ls=>sum(ls.map(l=>(l._f&&l._f.rec?l._f.rec[REF-1]:0)||0));
+function diaTxt(){
+ if(TODAY>DAYS)return `${MESES[MES]} fechado · resultado até ${dd(LAST)}`;
+ const w=['dom','seg','ter','qua','qui','sex','sáb'][new Date(ANO,MES,REF).getDay()];
+ return `Objetivos de ${w} ${dd(REF)}${ehFuturo()?' (futuro)':ehPassado()?' (dia anterior)':''} · ${LAST?`resultado até ${dd(LAST)}`:'início do mês'}`;
 }
 // Consultores digitais (WhatsApp, várias lojas; lista em processar_dados.py): as entradas de cada loja viram uma pessoa só.
 // A "loja" dela é a de maior receita; "lojas" guarda todas. Fica fora do time das lojas e é comparada com o grupo digital.
@@ -792,7 +823,7 @@ const naEscopo=(c,ids)=>ids.has(c.loja)||(c.digital&&c.lojas.some(x=>ids.has(x))
 let DIGTEAM=null;
 // Recalcula lojas, consultores e médias de time para as datas selecionadas.
 function recalc(){
- M={};TEAM={};
+ M={};TEAM={};CST=null;
  lojas.forEach(l=>M[l.id]=aggL([l]));
  praticasCluster();
  cons.forEach(c=>{c.m=aggC(c);delete c._p;delete c._q});
@@ -932,7 +963,7 @@ function aggL(list){
    ds.forEach(d=>{y.rec+=x.rec[d-1];y.bol+=x.bol[d-1];y.it+=x.it[d-1];y.b1+=x.b1[d-1];y.recC+=l.rec[d-1];y.bolC+=l.bol[d-1];y.itC+=l.it[d-1];y.b1C+=l.b1[d-1]});
    for(let i=0;i<DAYS;i++){a.aaDays[i]+=x.rec[i]||0;a.aaBolDays[i]+=x.bol[i]||0}
    y.ate+=sum(x.rec.slice(0,LAST));y.ateC+=rec;y.mes+=sum(x.rec)}
-  const mh=TODAY<=DAYS?mt[TODAY-1]:0,rest=mt.slice(TODAY-1).filter(v=>v>0).length,gap=Math.max(0,ate-rec);
+  const mh=TODAY<=DAYS?mt[TODAY-1]:0,rest=mt.slice(R0()-1).filter(v=>v>0).length,gap=Math.max(0,ate-rec);
   const rc=mh>0&&rest?gap/rest:0;
   a.metaHoje+=mh;a.recupLojas+=rc;if(rc>0)a.nAtras++;
  });
@@ -963,14 +994,14 @@ function aggL(list){
  // Meta de hoje no nível que está sendo visto (loja, GVO, praça, regional ou rede):
  // meta do dia da planilha + gap acumulado ÷ dias restantes com meta, contando hoje. Se o conjunto está
  // acima do "deveria estar", fica só a meta do dia. A recuperação das lojas atrasadas segue na meta de cada loja.
- {const rest=a.metaDays.slice(TODAY-1).filter(v=>v>0).length,gap=Math.max(0,a.metaAte-a.rec);
+ {const rest=a.metaDays.slice(R0()-1).filter(v=>v>0).length,gap=Math.max(0,a.metaAte-a.rec);
   a.recup=a.metaHoje>0&&rest?gap/rest:0;a.hoje=a.metaHoje+a.recup;}
  a.ritmo=a.days.map((v,i)=>a.metaDays[i]>0?v/a.metaDays[i]:null);
  a.nd=ds.filter(d=>a.metaDays[d-1]>0).length||1;
  a.cupons=a.bol+a.br;a.bmPlano=a.cupons?a.recP/a.cupons:0;a.pBr=a.cupons?a.br/a.cupons:0;
  a.potBM=a.bmAlvoV&&a.bm<a.bmAlvoV?(a.bmAlvoV-a.bm)*a.bol:0;         // R$ se o BM de venda chegasse ao alvo
  a.potB1=F.b1&&a.pb1>F.b1?(a.pb1-F.b1)*a.bol*a.pm:0;                   // R$ se o excesso de B1 virasse 2º item
- a.diasRest=a.metaDays.slice(TODAY-1).filter(v=>v>0).length;
+ a.diasRest=a.metaDays.slice(R0()-1).filter(v=>v>0).length;
  a.valorPP=.01*(a.bol/a.nd)*a.diasRest*a.pm;                           // 1 p.p. a menos de %B1 até o fim do mês
  btbpCalc(a);
  yoyCalc(a.aa,list.length);a.yoy=a.aa.ok?a.aa.d.rec:-9;   // -9: sem ano anterior (vai para o fim na ordenação)
@@ -1034,7 +1065,7 @@ const ic=(n,cls='')=>`<i data-lucide="${n}" class="${cls}"></i>`;
 const lojaById=id=>lojas.find(l=>l.id===id);
 const consById=id=>cons.find(c=>c.id===id);
 function perTxt(){
- const a=selArr();if(!a.length)return '';
+ const a=selArr();if(!a.length)return 'sem dias fechados no mês';
  if(a.length===LAST&&a[0]===1)return `mês até ${dd(LAST)}`;
  if(a.length===1)return dd(a[0]);
  if(a[a.length-1]-a[0]===a.length-1)return `${dd(a[0])} a ${dd(a[a.length-1])}`;
@@ -1154,8 +1185,8 @@ function escopo(){return filtra(4)}
 function render(){
  const ls=escopo(),ids=new Set(ls.map(l=>l.id)),a=aggL(ls);
  const cs=S.cons?cons.filter(c=>c.id===S.cons):cons.filter(c=>naEscopo(c,ids)&&c.m.dias>=Math.min(2,SEL.size));
- $('perTxt').textContent=perTxt();
- const lj=S.loja&&lojaById(S.loja);$('fRes').textContent=`${lj?lj.nome:S.gvo||S.praca||S.reg||'Rede'} · ${perTxt()}`;
+ $('perTxt').textContent=diaTxt();
+ const lj=S.loja&&lojaById(S.loja);$('fRes').textContent=`${lj?lj.nome:S.gvo||S.praca||S.reg||'Rede'} · ${diaTxt()}`;
  FIRED=avaliar(ls);
  if(!S.foco||!ids.has(S.foco))S.foco=[...ls].sort((x,y)=>M[x.id].gapR-M[y.id].gapR)[0].id;
  // Status do conjunto contra o "deveria estar" (meta diarizada acumulada)
@@ -1164,7 +1195,7 @@ function render(){
  // Boletos, BM, IPB e PM necessários hoje: mesma regra do "Garantir" de cada loja
  // (boletos até +30% sobre o mesmo dia da semana do ano passado; o resto no boleto médio)
  const nec=necessarioHoje(ls,a);
- fillDias(a);
+ fillDias(ls);a.realRef=ehPassado()?realDia(ls):null;
  const nAA=a.aa.ok?a.aa.dAte:null;
  $('kpis').innerHTML=`
   <div class="card kpi st-${stA} fade"><p class="lbl">% da meta <span class="d1">D-1 · até ${dd(LAST)}</span></p><p class="val ${acima?'c-ok':'c-bad'}">${pct(a.at,1)}</p>
@@ -1174,8 +1205,9 @@ function render(){
    ${nAA!=null?`<p class="kl ky"><b class="${nAA>=0?'c-ok':'c-bad'}">${nAA>=0?'+':'−'}${fx(Math.abs(nAA)*100,1)}%</b> vs ${ANO-1}</p>`:''}</div>
   <div class="card kpi st-${stP} fade"><p class="lbl">Projeção</p><p class="val ${tone(a.proj>=1,a.proj>=.96)}">${pct(a.proj)}</p>
    ${chip(stP,stP==='ok'?'Fecha acima':stP==='warn'?'No limite':'Fecha abaixo',stP==='ok'?'circle-check':'triangle-alert')}</div>
-  <div class="card kpi hero fade"><div class="top"><p class="lbl">Meta de hoje · ${dd(Math.min(TODAY,DAYS))}</p>${chip(a.recup>0?'bad':'ok',a.recup>0?'Recuperar':'No ritmo',a.recup>0?'alarm-clock':'circle-check')}</div>
+  <div class="card kpi hero fade"><div class="top"><p class="lbl">${ehPassado()?'Meta do dia':ehFuturo()?'Meta prevista':'Meta de hoje'} · ${dd(Math.min(TODAY,DAYS))}</p>${chip(a.recup>0?'bad':'ok',a.recup>0?'Recuperar':'No ritmo',a.recup>0?'alarm-clock':'circle-check')}</div>
    <p class="val">${kbrl(a.hoje)} <small class="hsub">${fx(nec.bol)} boletos</small></p>
+   ${a.realRef!=null?`<p class="hreal">Realizado no dia: <b class="${a.realRef>=a.hoje?'c-ok':'c-bad'}">${kbrl(a.realRef)}</b> · ${pct(a.hoje?a.realRef/a.hoje:0)} do objetivo</p>`:''}
    <p class="hnota hf"><span>Meta de hoje = meta diarizada + gap ÷ ${a.diasRest} dias que faltam</span><b>${brl(a.hoje)} = ${brl(a.metaHoje)} + ${brl(a.recup)}</b>
     <small>${a.gapR<0?`Gap até ontem: ${brl(-a.gapR)} ÷ ${a.diasRest} dias = ${brl(a.recup)}`:`Sem gap: ${brl(a.gapR)} acima do deveria estar até ontem`}</small></p>
    <div class="hgrid">
@@ -1189,7 +1221,7 @@ function render(){
  ({hoje:vHoje,hojecons:vHojeCons,entender:vEntender,lojas:vLojas,consultores:vCons,uso:vUso})[S.tab](ls,cs,a);
  icons();
  // registra o acesso (página do mês, aba e filtro); o uso.js não repete a mesma tela antes de 30 minutos
- if(window.PulsarUso)PulsarUso.registrar({pagina:'mes',aba:S.tab+(DESAFIO?' · desafio':''),regional:S.reg,praca:S.praca,gvo:S.gvo,loja_id:S.loja||(S.tab==='lojas'&&S.foco?S.foco:'')});
+ if(window.PulsarUso)PulsarUso.registrar({pagina:'mes',aba:S.tab+(DESAFIO?' · desafio':'')+(REF!==LASTR+1?` · dia ${dd(Math.min(REF,DAYS))}`:''),regional:S.reg,praca:S.praca,gvo:S.gvo,loja_id:S.loja||(S.tab==='lojas'&&S.foco?S.foco:'')});
 }
 /* ================= Uso: quem está acessando o PULSAR ================= */
 // Lê a aba "acessos" da planilha (gravada pelo uso.js) e cruza com as pessoas do cadastro (GVO, GCVO/GPVO, GRVO).
@@ -1326,7 +1358,7 @@ function acaoFluxoLoja(t){
 // Barras = meta do dia; linha = realizado do dia; rótulo = atingimento (verde se bateu).
 function drawMetaDia(a,el){
  const N=Math.min(TODAY,DAYS),cw=Math.max(34,672/N),L=58,Rr=14,T=30,B=40,W=L+Rr+cw*N,H=300,ih=H-T-B,bw=cw*.62;
- const vals=[...a.metaDays.slice(0,N),...a.days,a.hoje];
+ const vals=[...a.metaDays.slice(0,N),...a.days,a.hoje,a.realRef||0];
  const MAX=Math.max(...vals)*1.18||1;
  const xc=d=>L+cw*(d-.5),y=v=>T+(1-v/MAX)*ih;
  const DS=['dom','seg','ter','qua','qui','sex','sáb'];
@@ -1335,11 +1367,14 @@ function drawMetaDia(a,el){
  const pts=[];
  for(let d=1;d<=N;d++){
   const mt=a.metaDays[d-1],dow=DS[new Date(ANO,MES,d).getDay()],on=SEL.has(d);
-  g+=`<text class="ax" x="${xc(d)}" y="${H-22}" text-anchor="middle">${pad(d)}</text><text class="ax s" x="${xc(d)}" y="${H-8}" text-anchor="middle">${d===TODAY?'hoje':dow}</text>`;
+  g+=`<text class="ax" x="${xc(d)}" y="${H-22}" text-anchor="middle">${pad(d)}</text><text class="ax s" x="${xc(d)}" y="${H-8}" text-anchor="middle">${d===TODAY&&REF===LASTR+1?'hoje':dow}</text>`;
   if(d===TODAY){
+   if(a.realRef!=null&&a.hoje>0){const yy=y(a.realRef),ok=a.realRef>=a.hoje;
+    g+=`<circle class="rd ${ok?'ok':'no'}" cx="${xc(d)}" cy="${yy}" r="5.5"><title>Realizado no dia: ${kbrl(a.realRef)}</title></circle><text class="pl ${ok?'ok':'no'}" x="${xc(d)}" y="${yy+18>y(0)-4?yy-10:yy+18}" text-anchor="middle">${pct(a.realRef/a.hoje)}</text>`}
    if(a.hoje>0)g+=`<rect class="bo" x="${xc(d)-bw/2}" y="${y(a.hoje)}" width="${bw}" height="${y(0)-y(a.hoje)}" rx="4"><title>Hoje: meta do dia ${kbrl(a.metaHoje)} + ${kbrl(a.recup)} de recuperação${a.aa.ok?` · ${AAtxt()} neste dia: ${kbrl(a.aaDays[d-1])}`:''}</title></rect><text class="bl o" x="${xc(d)}" y="${y(a.hoje)-8}" text-anchor="middle">${kbrl(a.hoje)}</text>`;
    continue;
   }
+  if(d>LAST){if(mt>0)g+=`<rect class="mb fut" x="${xc(d)-bw/2}" y="${y(mt)}" width="${bw}" height="${y(0)-y(mt)}" rx="4"><title>${dd(d)} · meta ${kbrl(mt)}</title></rect>`;continue}
   const rv=a.days[d-1];pts.push([xc(d),y(rv),d]);
   if(mt>0)g+=`<rect class="mb ${on?'on':''}" x="${xc(d)-bw/2}" y="${y(mt)}" width="${bw}" height="${y(0)-y(mt)}" rx="4"/>`;
   const at=mt>0?rv/mt:null,top=Math.min(mt>0?y(mt):y(0),y(rv))-10;
@@ -1382,7 +1417,7 @@ function cicloCard(ls){
 const numMeta=t=>{const x=(t||'').match(/Meta:\D*?(\d[\d.]*(?:,\d+)?)/);return x?parseFloat(x[1].replace(/\./g,'').replace(',','.')):null};
 const KDOGAT={fluxo:'bol',ritmo:'bol',ipb:'ipb',b1:'ipb',btbp:'ipb',pm:'pm',bmsaud:'bm'};
 function placarHTML(ls){
- const d=LAST,ids=new Set(ls.map(l=>l.id));
+ const d=LAST,ids=new Set(ls.map(l=>l.id));if(!d)return '';
  const comMeta=ls.filter(l=>l.meta[d-1]>0),bat=comMeta.filter(l=>l.rec[d-1]>=l.meta[d-1]);
  const ac=acoesMes().filter(x=>x.dia===d&&ids.has(x.loja));
  const linhas=ac.slice(0,6).map(x=>{
@@ -1441,7 +1476,7 @@ function timeDaLoja(lid){
 // meta diarizada de hoje + gap do consultor até ontem ÷ dias que faltam com meta (mesma regra da loja)
 function metaHojeCons(c){
  const mt=c.meta;if(!mt)return null;
- const mh=TODAY<=DAYS?mt[TODAY-1]||0:0,ate=sum(mt.slice(0,LAST)),rec=sum(c.rec),rest=mt.slice(TODAY-1).filter(v=>v>0).length,gap=Math.max(0,ate-rec);
+ const mh=TODAY<=DAYS?mt[TODAY-1]||0:0,ate=sum(mt.slice(0,LAST)),rec=sum(c.rec),rest=mt.slice(R0()-1).filter(v=>v>0).length,gap=Math.max(0,ate-rec);
  return{mh,gap,rec,ate,mes:sum(mt),recup:mh>0&&rest?gap/rest:0,hoje:mh+(mh>0&&rest?gap/rest:0),rest};
 }
 function metaConsHTML(l){
@@ -1553,7 +1588,8 @@ function decCard(d,n){
   <div class="hd"><div class="l"><span class="num">${n}</span><span class="tag">${esc(l.gestor)}</span>${ok?`<span class="status-do ok">${ic('circle-check')}Ação registrada hoje</span>`:''}</div>
    <div class="imp"><b>${kbrl(d.valor)}</b><small>em risco hoje</small></div></div>
   <h3>${ic('store')}${esc(l.nome)}</h3>
-  <p class="head">Vender ${kbrl(m.hoje)} hoje</p>
+  <p class="head">Vender ${kbrl(m.hoje)} ${ehPassado()||ehFuturo()?'em '+dd(REF):'hoje'}</p>
+  ${ehPassado()?(r=>`<p class="real">Fez <b class="${r>=m.hoje?'c-ok':'c-bad'}">${kbrl(r)}</b> no dia · ${pct(m.hoje?r/m.hoje:0)} do objetivo</p>`)(realDia([l])):''}
   ${garantirHTML(d)}
   ${cm.html}
   <p class="resp">${ic('user-check')}<span>Responsável: gerente da loja · conferir às 14h e às 18h${d.ref==='aa'?` · <b class="c-bad">abaixo de ${AAtxt()}</b>`:''}</span></p>
@@ -1595,7 +1631,7 @@ function gvoHTML(ls){
 const NIVEL=()=>S.loja?'loja':S.gvo?'gvo':'rede';
 // Mês já encerrado (consulta pelo filtro de mês): não há "hoje" nesse mês
 const mesFechado=()=>TODAY>DAYS;
-const avisoMesFechado=()=>`<section class="sec"><div class="card pad"><h2 style="font-size:18px">${MESES[MES][0].toUpperCase()+MESES[MES].slice(1)} de ${ANO} já fechou</h2><p class="mf">As abas de hoje valem para o mês atual. Para ${MESES[MES]}, use Consultores, Lojas e Entender, ou volte o filtro de mês para o mês atual.</p></div></section>`;
+const avisoMesFechado=()=>`<section class="sec"><div class="card pad"><h2 style="font-size:18px">${MESES[MES][0].toUpperCase()+MESES[MES].slice(1)} de ${ANO} já fechou</h2><p class="mf">Escolha um dia de ${MESES[MES]} no filtro <b>Dia</b> para ver os objetivos daquele dia e o que foi feito. Com o mês inteiro, use Consultores, Lojas e Entender.</p></div></section>`;
 function vHoje(ls,cs,a){
  if(mesFechado()){$('view').innerHTML=avisoMesFechado();return}
  DEC=ls.map(decisao).filter(Boolean).sort((x,y)=>y.valor-x.valor);
@@ -1610,35 +1646,53 @@ function vHoje(ls,cs,a){
   <div class="plan-hd"><div><h2>${titulo}</h2><p>${sub}</p></div></div>
   <div class="acts3">${lj?(DEC[0]?decCard(DEC[0],1):okCard(lj)):top.map((d,n)=>decCard(d,n+1)).join('')||'<p class="empty">Nenhuma loja com venda em risco hoje. Reconheça o time.</p>'}</div>
   ${!lj&&resto.length?`<details class="card" ${nv==='gvo'?'open':''}><summary class="card-hd" style="cursor:pointer"><div><h2>Demais lojas em risco (${resto.length})</h2></div></summary><div class="next">${resto.slice(0,nv==='gvo'?40:15).map(decLinha).join('')}</div></details>`:''}
+  ${metaDiaHTML(a)}
+  ${constHTML(ls)}
   ${nv==='rede'?gvoHTML(ls):''}
   ${lj?metaConsHTML(lj):''}
   ${lj?acoesRegHTML(ids):''}
   <p class="mf" style="text-align:center">Diagnóstico completo (onde está a perda, ${a.aa.ok?`comparação com ${AAtxt()}, `:''}ciclo e histórico) na aba <button class="lk" data-tab="entender">Entender</button>.</p>
  </section>`;
+ drawMetaDia(a,'chartMeta');
 }
 /* ================= Constância: bate a meta todo dia ou só no dia de sorte? =================
-   Calculada no processamento (bloco l.const): últimos 30 dias com meta, atravessando o mês anterior.
+   Calculada no painel (cst): últimos 30 dias com meta até a véspera do dia escolhido, atravessando o mês anterior (l.pm).
    Constante = bate em 50% dos dias ou mais e tem até 20% de dias ruins (abaixo de 70% da meta).
    Inconstante = bate em menos de 25% dos dias ou tem 40% ou mais de dias ruins. Oscila = o resto.
    bom/mau = [boletos/dia, IPB, BM] no dia em que bate × no dia em que não bate. */
+let CST=null;
+// janela: últimos 30 dias com meta até a véspera do dia escolhido (mês anterior vem em l.pm, gerado no processamento)
+function cst(l){
+ CST=CST||{};if(l.id in CST)return CST[l.id];
+ const f=fatorMeta(),P=l.pm,H=[];
+ if(P)P.meta.forEach((m,i)=>H.push({meta:m*f,rec:P.rec[i],bol:P.bol[i],it:P.it[i],b1:P.b1[i],aab:P.aab[i]}));
+ for(let i=0;i<LAST;i++)if(l.meta[i]>0)H.push({meta:l.meta[i],rec:l.rec[i],bol:l.bol[i],it:l.it[i],b1:l.b1[i],aab:l.aa?l.aa.bol[i]||0:0});
+ const d=H.slice(-30);if(d.length<10)return CST[l.id]=null;
+ const bate=d.filter(x=>x.rec>=x.meta),nao=d.filter(x=>x.rec<x.meta),ruim=d.filter(x=>x.rec<.7*x.meta).length;
+ const S_=(g,k)=>sum(g.map(x=>x[k])),B=S_(d,'bol')||1,comp=d.filter(x=>x.aab>0);
+ const grupo=g=>{const b=S_(g,'bol');return g.length&&b?[b/g.length,S_(g,'it')/b,S_(g,'rec')/b]:null};
+ const bat=bate.length/d.length,rr=ruim/d.length;
+ return CST[l.id]={n:d.length,bate:bate.length,ruim,selo:bat>=.5&&rr<=.2?'constante':bat<.25||rr>=.4?'inconstante':'oscila',
+  ipb:S_(d,'it')/B,b1:S_(d,'b1')/B,bm:S_(d,'rec')/B,yoyb:comp.length?S_(comp,'bol')/S_(comp,'aab')-1:null,bom:grupo(bate),mau:grupo(nao)};
+}
 const SELO={constante:['p-ok','Constante'],oscila:['p-warn','Oscila'],inconstante:['p-bad','Inconstante']};
 const seloC=c=>`<span class="pill ${SELO[c.selo][0]}">${SELO[c.selo][1]}</span>`;
 const medC=a=>{const s=a.filter(v=>v!=null).sort((x,y)=>x-y),n=s.length;return n?(n%2?s[(n-1)/2]:(s[n/2-1]+s[n/2])/2):null};
 // loja constante para copiar: mesmo cluster (QDB com QDB), de preferência da mesma praça; a que mais bate
 function refConst(l){
- const c=lojas.filter(x=>x.id!==l.id&&x.const&&x.const.selo==='constante'&&x.cluster===l.cluster);
- const ord=(a,b)=>(b.const.bate/b.const.n-a.const.bate/a.const.n)||(a.const.ruim-b.const.ruim);
+ const c=lojas.filter(x=>x.id!==l.id&&cst(x)&&cst(x).selo==='constante'&&x.cluster===l.cluster);
+ const ord=(a,b)=>(cst(b).bate/cst(b).n-cst(a).bate/cst(a).n)||(cst(a).ruim-cst(b).ruim);
  return c.filter(x=>x.praca===l.praca).sort(ord)[0]||c.sort(ord)[0]||null;
 }
 const yoyTxt=v=>v==null?'—':pct(v,0,true);
 function constHTML(ls){
- const v=ls.filter(l=>l.const);if(!v.length)return '';
+ const v=ls.filter(l=>cst(l));if(!v.length)return '';
  const hd=(t,sub)=>`<div class="card-hd"><div><h2>${t}</h2><p>${sub}</p></div><span class="icchip t-accent">${ic('repeat')}</span></div>`;
  if(S.loja){
-  const l=v[0],c=l.const,r=refConst(l),rc=r&&r.const;
+  const l=v[0],c=cst(l),r=refConst(l),rc=r&&cst(r);
   const dif=c.bom&&c.mau?c.bom[0]/c.mau[0]-1:null;
   const lin=(nm,a,b,f,menor)=>{const ok=b==null?'':(menor?a<=b:a>=b)?'c-ok':'c-bad';return `<span><small>${nm}</small><b class="${ok}">${f(a)}</b><em class="mf">${r?esc(r.nome)+': '+f(b):''}</em></span>`};
-  return `<div class="card pad">${hd('Constância',`Últimos ${c.n} dias com meta · o que faz a loja bater todo dia, não só no dia de sorte`)}
+  return `<div class="card pad">${hd('Constância',`Últimos ${c.n} dias com meta até ${LAST?dd(LAST):'o fim do mês anterior'} · o que faz a loja bater todo dia, não só no dia de sorte`)}
    <p style="font-size:15px;margin:4px 0 10px">${seloC(c)} Bateu a meta em <b>${c.bate} de ${c.n} dias</b> · <b class="${c.ruim/c.n>.2?'c-bad':''}">${c.ruim} ${c.ruim===1?'dia ruim':'dias ruins'}</b> (abaixo de 70% da meta)</p>
    ${c.bom&&c.mau?`<p class="mf" style="margin:0 0 6px"><b>No dia em que bate × no dia em que não bate</b>${dif!=null?` · o que decide é ${dif>.15?'<b>a quantidade de boletos</b>':'o boleto'}`:''}</p>
    <div class="avg">${[['Boletos/dia',0,x=>fx(x,1)],['IPB',1,x=>fx(x,2)],['Boleto médio',2,x=>brl(x)]].map(([n,i,f])=>{const d=c.bom[i]/c.mau[i]-1;
@@ -1647,27 +1701,35 @@ function constHTML(ls){
    ${r?`<div class="avg" style="grid-template-columns:repeat(4,minmax(0,1fr))">${lin('Boletos vs ano passado',c.yoyb,rc.yoyb,yoyTxt)}${lin('IPB',c.ipb,rc.ipb,x=>fx(x,2))}${lin('%B1',c.b1,rc.b1,x=>pct(x),true)}${lin('Boleto médio',c.bm,rc.bm,x=>brl(x))}</div>`:''}
   </div>`;
  }
- const cnt=k=>v.filter(l=>l.const.selo===k).length;
- const rows=[...v].sort((a,b)=>(b.const.bate/b.const.n-a.const.bate/a.const.n)||(a.const.ruim/a.const.n-b.const.ruim/b.const.n));
+ const cnt=k=>v.filter(l=>cst(l).selo===k).length;
+ const rows=[...v].sort((a,b)=>(cst(b).bate/cst(b).n-cst(a).bate/cst(a).n)||(cst(a).ruim/cst(a).n-cst(b).ruim/cst(b).n));
  // o que as constantes fazem diferente (rede inteira, para ter base mesmo com filtro pequeno)
- const g=k=>lojas.filter(l=>l.const&&l.const.selo===k).map(l=>l.const),G=[g('constante'),g('inconstante')];
+ const g=k=>lojas.filter(l=>cst(l)&&cst(l).selo===k).map(cst),G=[g('constante'),g('inconstante')];
  const cmp=[['Boletos vs ano passado','yoyb',yoyTxt],['IPB','ipb',x=>fx(x,2)],['%B1','b1',x=>pct(x)],['Boleto médio','bm',x=>brl(x)],['Dias ruins','r',x=>pct(x)]].map(([n,k,f])=>{
   const m=G.map(a=>medC(a.map(c=>k==='r'?c.ruim/c.n:c[k])));return `<span><small>${n}</small><b>${f(m[0])}</b><em class="mf">inconstantes ${f(m[1])}</em></span>`}).join('');
- return `<div class="card">${hd('Constância das lojas',`Últimos 30 dias com meta · <b class="c-ok">${cnt('constante')} constantes</b> · ${cnt('oscila')} oscilam · <b class="c-bad">${cnt('inconstante')} inconstantes</b>`)}
+ return `<div class="card">${hd('Constância das lojas',`Últimos 30 dias com meta até ${LAST?dd(LAST):'o fim do mês anterior'} · <b class="c-ok">${cnt('constante')} constantes</b> · ${cnt('oscila')} oscilam · <b class="c-bad">${cnt('inconstante')} inconstantes</b>`)}
   <div class="pad" style="padding-top:0"><p class="mf" style="margin:0 0 6px"><b>O que as lojas constantes da rede têm</b> (mediana)</p>
   <div class="avg" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">${cmp}</div></div>
   <div class="tw tall"><table><thead><tr><th>Loja</th><th></th><th class="r">Bateu a meta</th><th class="r">Dias ruins</th><th class="r">Boletos vs ano passado</th><th class="r">IPB</th><th class="r">%B1</th><th class="r">Boleto médio</th><th>Para copiar</th></tr></thead><tbody>
-  ${rows.map(l=>{const c=l.const,r=c.selo==='constante'?null:refConst(l);return `<tr><td><p class="nm">${esc(l.nome)}</p><p class="sub">${esc(l.gestor||'')}</p></td><td>${seloC(c)}</td>
+  ${rows.map(l=>{const c=cst(l),r=c.selo==='constante'?null:refConst(l);return `<tr><td><p class="nm">${esc(l.nome)}</p><p class="sub">${esc(l.gestor||'')}</p></td><td>${seloC(c)}</td>
    <td class="r tnum"><b>${c.bate} de ${c.n}</b></td><td class="r tnum ${c.ruim/c.n>.2?'c-bad':''}">${c.ruim}</td><td class="r tnum ${c.yoyb==null?'':c.yoyb>=0?'c-ok':'c-bad'}">${yoyTxt(c.yoyb)}</td>
    <td class="r tnum">${fx(c.ipb,2)}</td><td class="r tnum">${pct(c.b1)}</td><td class="r tnum">${brl(c.bm)}</td>
    <td>${r?`<button class="lk" data-constl="${r.id}" title="abrir esta loja">${esc(r.nome)}</button>`:'<span class="mf">—</span>'}</td></tr>`}).join('')}
   </tbody></table></div></div>`;
 }
+// Atingimento da meta por dia até o dia escolhido (barras = meta, linha = realizado; o dia escolhido tracejado)
+function metaDiaHTML(a){
+ const ab=[];for(let d=1;d<=LAST;d++)if(a.metaDays[d-1]>0)ab.push(a.days[d-1]>=a.metaDays[d-1]);
+ return `<div class="card pad">
+   <div class="crumb" style="justify-content:space-between"><div><h2 style="font-size:18px">Atingimento da meta por dia</h2><p class="mf">${ab.length?`Bateu a meta em <b>${ab.filter(Boolean).length} de ${ab.length} dias</b> até ${dd(LAST)}`:'Sem dias fechados no mês'}</p></div></div>
+   <div class="tw"><div class="chart" id="chartMeta"></div></div>
+   <div class="legend"><span><i class="bx mb"></i>Meta</span><span><i class="ln"></i>Realizado</span><span><i class="bx o"></i>${ehPassado()?'Objetivo do dia escolhido':ehFuturo()?'Dia escolhido':'Hoje'}</span></div>
+  </div>`;
+}
 // Entender: o porquê (árvore da perda, ano passado, ciclo, histórico e ações do mês)
 function vEntender(ls,cs,a){
  const ids=new Set(ls.map(l=>l.id));
  const ritmoRest=(a.metaMes-a.metaAte)*a.proj,k=ritmoRest>0?(a.metaMes-a.rec)/ritmoRest:0;
- const ab=[];for(let d=1;d<=LAST;d++)if(a.metaDays[d-1]>0)ab.push(a.days[d-1]>=a.metaDays[d-1]);
  $('view').innerHTML=`<section class="sec">
   <div class="card pad">
    <div class="crumb" style="justify-content:space-between"><div><h2 style="font-size:18px">Onde está a perda</h2><p class="mf">${perTxt()} · cada variação é contra o alvo (receita contra a meta do período)</p></div></div>
@@ -1678,16 +1740,9 @@ function vEntender(ls,cs,a){
     :`${ic('target')}<b>Acumulado do mês (${a.diasRest} dias que faltam), para fechar 100%:</b><span class="lv">+${pct(k-1,1)} boletos</span><span class="ou">ou</span><span class="lv">IPB ${fx(a.ipb*k,2)}</span><span class="ou">ou</span><span class="lv">PM ${brl(a.pm*k,2)}</span>`}</div>
   </div>
   ${anoAntHTML(ls,a)}
-  <div class="card pad">
-   <div class="crumb" style="justify-content:space-between"><div><h2 style="font-size:18px">Meta × realizado por dia</h2><p class="mf">Bateu a meta em <b>${ab.filter(Boolean).length} de ${ab.length} dias</b></p></div></div>
-   <div class="tw"><div class="chart" id="chartMeta"></div></div>
-   <div class="legend"><span><i class="bx mb"></i>Meta</span><span><i class="ln"></i>Realizado</span><span><i class="bx o"></i>Hoje</span></div>
-  </div>
-  ${constHTML(ls)}
   ${cicloCard(ls)}
   ${acoesRegHTML(ids)}
  </section>`;
- drawMetaDia(a,'chartMeta');
 }
 
 
@@ -2089,7 +2144,7 @@ function abrir(t,lojaId,consId){
  $('dLoja').innerHTML=ls.map(l=>`<option value="${l.id}">${esc(l.nome)}</option>`).join('');$('dLoja').value=lid||ls[0].id;
  fillCons(lid,consId||'');
  $('dTipo').value=t?(t.acao||GT[t.g].acao):'Push do time';
- $('dDia').min=isoDia(1);$('dDia').max=isoDia(DAYS);$('dDia').value=isoDia(Math.min(TODAY,DAYS));$('dDesc').value='';
+ $('dDia').min=isoDia(1);$('dDia').max=isoDia(DAYS);$('dDia').value=isoDia(Math.min(LASTR+1,DAYS));$('dDesc').value='';
  $('dCtx').innerHTML=t?`<b>Gatilho:</b> ${GT[t.g].nome} · ${esc(t.loja.nome)}<br><b>Meta da ação:</b> ${t.meta}`:'Ação avulsa, sem gatilho associado.';
  try{const u=window.PulsarUso&&PulsarUso.usuario();$('dAutor').value=(u&&u.nome)||$('dAutor').value||localStorage.getItem(KEY_AUTOR)||''}catch(e){}
  $('dlg').showModal();icons();
@@ -2151,25 +2206,21 @@ $('fLimpar').addEventListener('click',()=>{S.reg=S.praca=S.gvo=S.loja=S.cons='';
 let ultDia=null;
 // Filete de cada data = atingimento do dia no filtro atual (verde ≥ 100%, amarelo ≥ 90%, vermelho abaixo)
 let AGG_DIAS=null;
-function fillDias(a){
- if(a)AGG_DIAS=a;a=AGG_DIAS;
- const DS=['D','S','T','Q','Q','S','S'];
- $('fDias').innerHTML=Array.from({length:LAST},(_,i)=>{const d=i+1,w=new Date(ANO,MES,d).getDay();
-  const mt=a?a.metaDays[d-1]:0,r=mt>0?a.days[d-1]/mt:null,cl=!a||r==null?'':r>=1?'r-ok':r>=.9?'r-mid':'r-no';
-  const tt=`${dd(d)}${r==null?'':` · ${pct(r)} da meta do dia`}`;
-  return `<button type="button" class="dia ${SEL.has(d)?'on':''} ${w===0?'fds':''} ${cl}" data-dia="${d}" aria-pressed="${SEL.has(d)}" title="${tt}"><b>${pad(d)}</b><small>${DS[w]}</small></button>`}).join('');
+// Um dia só: o filete mostra o atingimento real do dia (série completa), o dia escolhido fica marcado.
+function fillDias(ls){
+ const DS=['D','S','T','Q','Q','S','S'],hj=LASTR+1;
+ const dias=Array.from({length:DAYS},(_,i)=>{const d=i+1,w=new Date(ANO,MES,d).getDay();
+  let mt=0,rv=0;if(d<=LASTR)ls.forEach(l=>{mt+=l.meta[d-1]||0;rv+=(l._f.rec[d-1]||0)});
+  const r=mt>0?rv/mt:null,cl=r==null?'':r>=1?'r-ok':r>=.9?'r-mid':'r-no';
+  const tt=`${dd(d)}${r==null?(d===hj?' · hoje':d>hj?' · futuro':''):` · ${pct(r)} da meta do dia`}`;
+  return `<button type="button" class="dia ${d===REF?'on':''} ${w===0?'fds':''} ${d>hj?'fut':''} ${d===hj?'hj':''} ${cl}" data-dia="${d}" aria-pressed="${d===REF}" title="${tt}"><b>${pad(d)}</b><small>${d===hj?'hoje':DS[w]}</small></button>`});
+ // mês já fechado: opção de ver o mês inteiro
+ if(hj>DAYS)dias.push(`<button type="button" class="dia mes ${REF>DAYS?'on':''}" data-dia="${DAYS+1}" aria-pressed="${REF>DAYS}"><b>Mês</b><small>inteiro</small></button>`);
+ $('fDias').innerHTML=dias.join('');
 }
-function setDias(novos){if(!novos.size)return;SEL=novos;recalc();render()}
 $('fDias').addEventListener('click',e=>{
- const b=e.target.closest('[data-dia]');if(!b)return;const d=+b.dataset.dia,n=new Set(SEL);
- if(e.shiftKey&&ultDia){const[a,z]=[Math.min(ultDia,d),Math.max(ultDia,d)];for(let x=a;x<=z;x++)n.add(x)}
- else if(n.has(d))n.delete(d);else n.add(d);
- ultDia=d;setDias(n);
-});
-document.querySelector('.datas .pres').addEventListener('click',e=>{
- const p=e.target.closest('[data-pre]')?.dataset.pre;if(!p)return;
- const r=(a,z)=>new Set(Array.from({length:z-a+1},(_,i)=>a+i));
- setDias(p==='ontem'?r(LAST,LAST):p==='7'?r(Math.max(1,LAST-6),LAST):r(1,LAST));
+ const b=e.target.closest('[data-dia]');if(!b)return;const d=+b.dataset.dia;if(d===REF)return;
+ aplicarRef(d);recalc();calcBmMax();cabecalho();render();
 });
 function irFoco(id){if(S.foco!==id)S.acSel=null;S.foco=id;S.tab='lojas';render();requestAnimationFrame(()=>$('foco')?.scrollIntoView({behavior:'smooth',block:'start'}))}
 document.addEventListener('click',e=>{
@@ -2209,7 +2260,7 @@ function cabecalho(){
 let MESES_DISP=[],MES_ATUAL='';
 async function trocarMes(arq){
  const j=await fetch('data/'+arq,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()});
- init(j);cabecalho();fillFiltros();fillDias();S.foco=S.loja||null;render();sincronizar().then(render);
+ init(j);cabecalho();fillFiltros();S.foco=S.loja||null;render();sincronizar().then(render);
 }
 function fillMes(){
  if(MESES_DISP.length<2)return;

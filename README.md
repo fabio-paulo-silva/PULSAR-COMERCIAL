@@ -134,8 +134,15 @@ Primeiro a tabela dos consultores de loja e a dos digitais, com receita/dia, bol
 - Campo **Meta** nos filtros (painel do mês e hoje.html): **Oficial** ou **Desafio (+5%)**. No desafio, todas as metas de loja e de consultor são multiplicadas por 1,05 (`FATOR_DESAFIO`) antes de qualquer cálculo: % da meta, deveria estar, gap, meta de hoje, boletos e BM necessários, "Garantir", consultores e avaliações.
 - O selo "Meta Desafio · +5%" aparece no topo. A escolha fica lembrada no navegador; o link com `?meta=desafio` abre direto no desafio. Na aba Uso, os acessos aparecem como "… · desafio".
 
-## Constância (aba Entender)
-- Mede se a loja bate a meta todo dia ou só no dia de sorte: últimos 30 dias com meta (atravessa o mês anterior), calculado no `processar_dados.py` (bloco `const` de cada loja).
+## Filtro de dia
+- Um filtro só, com os dias do mês. O dia escolhido vira o "hoje" do painel: resultado até a véspera, meta do dia + gap ÷ dias que faltam.
+- **Dia anterior:** mostra os objetivos que o dia tinha naquela manhã e o que foi feito (realizado do dia e % do objetivo, no card da meta e em cada loja).
+- **Dia futuro:** meta do dia + a parte do gap de hoje (gap até ontem ÷ dias que faltam a partir de hoje); o resultado continua até ontem.
+- **Mês fechado:** opção "Mês inteiro" (padrão) para Consultores, Lojas e Entender; escolher um dia mostra os objetivos daquele dia.
+- Consultores, Lojas e Entender usam o mês até a véspera do dia escolhido.
+
+## Constância (aba Hoje · Lojas)
+- Mede se a loja bate a meta todo dia ou só no dia de sorte: últimos 30 dias com meta até a véspera do dia escolhido (atravessa o mês anterior, que vem no bloco `pm` de cada loja gerado pelo `processar_dados.py`). Fica na aba Hoje · Lojas, junto do gráfico de atingimento da meta por dia.
 - **Dia ruim** = venda abaixo de 70% da meta do dia.
 - **Constante**: bate em 50% dos dias ou mais e tem até 20% de dias ruins. **Inconstante**: bate em menos de 25% dos dias ou tem 40% ou mais de dias ruins. **Oscila**: o resto.
 - Sem filtro de loja: tabela das lojas (dias batidos, dias ruins, boletos vs ano passado, IPB, %B1, BM) e o que as constantes da rede têm contra as inconstantes (mediana).

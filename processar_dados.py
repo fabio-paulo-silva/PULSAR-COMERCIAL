@@ -729,6 +729,10 @@ def calcular_constancia(arquivos):
         ate = int(d["ontem"][-2:])
         for l in d["lojas"]:
             h = hist.setdefault(l["id"], [])
+            # 'pm': últimos 30 dias com meta dos meses anteriores. O painel junta com o mês e recalcula a constância
+            # para o dia escolhido no filtro de data.
+            ant = [x for x in h if x["meta"] > 0][-JANELA_CONST:]
+            l["pm"] = {k: [round(x[k], 2) for x in ant] for k in ("meta", "rec", "bol", "it", "b1", "aab")} if ant else None
             aa = l.get("aa") or {}
             for i in range(ate):
                 h.append(dict(meta=l["meta"][i], rec=l["rec"][i], bol=l["bol"][i], it=l["it"][i], b1=l["b1"][i],
