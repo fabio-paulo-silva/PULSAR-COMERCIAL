@@ -147,3 +147,8 @@ Primeiro a tabela dos consultores de loja e a dos digitais, com receita/dia, bol
 - **Constante**: bate em 50% dos dias ou mais e tem até 20% de dias ruins. **Inconstante**: bate em menos de 25% dos dias ou tem 40% ou mais de dias ruins. **Oscila**: o resto.
 - Sem filtro de loja: tabela das lojas (dias batidos, dias ruins, boletos vs ano passado, IPB, %B1, BM) e o que as constantes da rede têm contra as inconstantes (mediana).
 - Com loja: dia que bate × dia que não bate (boletos/dia, IPB, BM) e a loja constante para copiar (mesmo cluster, de preferência da mesma praça, a que mais bate).
+
+## Ranking (aba Ranking)
+- Ranking de atingimento do mês por GR (GRVO), GVO e loja, dentro do filtro.
+- Atingimento diarizado = realizado até a véspera do dia escolhido ÷ meta diarizada até a véspera.
+- Medalhas (sobre o % arredondado a 1 casa): **Diamante** ≥ 100% · **Ouro** ≥ 99% · **Prata** ≥ 98% · **Bronze** ≥ 97%.
