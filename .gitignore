@@ -12,3 +12,9 @@ __pycache__/
 
 # Configuração local do Claude
 .claude/
+
+# Segurança: não publicar o código e o passo a passo do Apps Script (endpoints, operações e chave)
+# nem material interno do franqueador (guias do ciclo em .md). Ficam só no computador.
+apps-script/
+Ciclo/*.md
+config.local.js

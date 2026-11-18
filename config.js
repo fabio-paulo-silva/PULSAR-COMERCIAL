@@ -2,27 +2,14 @@
 // O ambiente é escolhido pelo endereço da página:
 //   .../dev/  ou  aberto no computador (localhost)  -> desenvolvimento
 //   qualquer outro endereço                          -> produção
-// Cada ambiente pode gravar as ações numa planilha diferente (apps-script/PASSO_A_PASSO.md).
+//
+// Segurança: a URL do Apps Script e a chave NÃO ficam no repositório. Os marcadores abaixo são trocados na
+// publicação (GitHub Actions) pelos segredos PULSAR_PLANILHA_URL e PULSAR_PLANILHA_CHAVE do repositório.
+// Sem os segredos (ex.: painel aberto no computador), a planilha de ações fica desligada.
 window.PULSAR_CONFIG = (function () {
   var dev = /\/dev(\/|$)/.test(location.pathname) || /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
-  var ambientes = {
-    producao: {
-      nome: 'Produção',
-      planilha: {
-        url: 'https://script.google.com/macros/s/AKfycbxGdHjf5dv2LXH7d5HDwDH5KVuEFTkLenMEbZqFSLT8vbtIbPtpiNaO7xPTJ6quuAOp8g/exec',
-        chave: 'pulsar-gn-2026'
-      }
-    },
-    desenvolvimento: {
-      nome: 'Desenvolvimento',
-      // Usa a MESMA planilha de produção: quem abre /dev/ vê e registra as mesmas ações.
-      // Para separar, crie a planilha "PULSAR · Ações (dev)" (apps-script/PASSO_A_PASSO.md) e troque a URL e a chave aqui.
-      planilha: {
-        url: 'https://script.google.com/macros/s/AKfycbxGdHjf5dv2LXH7d5HDwDH5KVuEFTkLenMEbZqFSLT8vbtIbPtpiNaO7xPTJ6quuAOp8g/exec',
-        chave: 'pulsar-gn-2026'
-      }
-    }
-  };
+  var url = '__PULSAR_PLANILHA_URL__', chave = '__PULSAR_PLANILHA_CHAVE__';
+  if (url.indexOf('__') === 0) { url = ''; chave = ''; }
   var amb = dev ? 'desenvolvimento' : 'producao';
-  return { ambiente: amb, nome: ambientes[amb].nome, planilha: ambientes[amb].planilha };
+  return { ambiente: amb, nome: dev ? 'Desenvolvimento' : 'Produção', planilha: { url: url, chave: chave } };
 })();
