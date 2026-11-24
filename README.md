@@ -152,3 +152,8 @@ Primeiro a tabela dos consultores de loja e a dos digitais, com receita/dia, bol
 - Ranking de atingimento do mês por GR (GRVO), GVO e loja, dentro do filtro.
 - Atingimento diarizado = realizado até a véspera do dia escolhido ÷ meta diarizada até a véspera.
 - Medalhas (sobre o % arredondado a 1 casa): **Diamante** ≥ 100% · **Ouro** ≥ 99% · **Prata** ≥ 98% · **Bronze** ≥ 97%.
+
+## Domingo sem meta (Rua e Galeria)
+- Lojas dos clusters **Rua** e **Galeria** (coluna CLUSTER do dCentros) não abrem aos domingos: a meta do domingo é zerada e redistribuída nos outros dias do mês, na proporção da diarização. O total do mês não muda.
+- A meta dos consultores dessas lojas segue a mesma diarização (também sem domingo).
+- Exceções (loja desses clusters que abre no domingo): código da loja em `LOJAS_ABREM_DOMINGO`, no `processar_dados.py`.

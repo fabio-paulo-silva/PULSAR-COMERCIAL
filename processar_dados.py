@@ -393,6 +393,31 @@ def diarizar(diaria: pd.DataFrame, mensal: pd.Series, info: pd.DataFrame) -> pd.
     return pd.DataFrame(linhas, columns=["loja", "data", "meta", "loja_nome"])
 
 
+# Lojas de Rua e Galeria não abrem aos domingos: a meta do domingo vai para os outros dias do mês, na proporção
+# da diarização (o total do mês não muda). A meta dos consultores segue a da loja. Exceções: lojas desses clusters
+# que abrem no domingo (código da loja em LOJAS_ABREM_DOMINGO).
+CLUSTERS_SEM_DOMINGO = {"RUA", "GALERIA"}
+LOJAS_ABREM_DOMINGO: set = set()
+
+
+def sem_domingo(metas: pd.DataFrame, centros: pd.DataFrame) -> pd.DataFrame:
+    clu = centros["CLUSTER"].astype(str).str.strip().str.upper() if "CLUSTER" in centros.columns else pd.Series(dtype=str)
+    lojas = set(clu[clu.isin(CLUSTERS_SEM_DOMINGO)].index) - LOJAS_ABREM_DOMINGO
+    m = metas.copy()
+    alvo = m["loja"].isin(lojas)
+    domingo = alvo & (pd.to_datetime(m["data"]).dt.weekday == 6)
+    if not domingo.any():
+        return m
+    tot = m[alvo].groupby("loja")["meta"].sum()
+    m.loc[domingo, "meta"] = 0.0
+    resto = m[alvo].groupby("loja")["meta"].sum()
+    fator = (tot / resto.where(resto > 0)).fillna(1.0)
+    m.loc[alvo, "meta"] = m.loc[alvo, "meta"] * m.loc[alvo, "loja"].map(fator)
+    print(f"  Domingo sem meta (Rua e Galeria): {len(lojas & set(m['loja']))} lojas; "
+          f"R$ {(tot.sum() - resto.sum()):,.0f} de meta de domingo redistribuídos nos outros dias")
+    return m
+
+
 # ---------------------------------------------------------------- cadastro
 def ler_centros() -> pd.DataFrame:
     c = ler_excel(ARQ_CENTROS)
@@ -544,6 +569,7 @@ def main(alvo=None, saida_arq=None):
         print(f"  Metas: {arq_mes.name} (R$ {meta_mes.sum():,.0f}), diarizadas pelo formato de {ARQ_METAS.name}"
               + (f"; pela praça: {', '.join(sem_forma)}" if sem_forma else ""))
     centros = ler_centros()
+    metas = sem_domingo(metas, centros)
     meta_cons, arq_mc = ler_meta_consultores(ini_mes.month)
     meta_cons, sem_nome = ligar_por_nome(meta_cons, vendas)
     if meta_cons is not None:
