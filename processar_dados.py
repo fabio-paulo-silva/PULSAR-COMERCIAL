@@ -282,7 +282,9 @@ def ler_meta_consultores(mes: int):
                 if ch in c and not any(e in c for e in evita):
                     return i
         return None
-    c_meta = col("META")
+    # com mais de uma coluna de meta (ex.: "Meta padrão" e "META SALÁRIO"), vale a META SALÁRIO (meta ajustada por consultor)
+    c_meta = col("META SALARIO")
+    c_meta = c_meta if c_meta is not None else col("META")
     c_loja = col("PDV", "BCPS", "COD. LOJA", "COD LOJA", "LOJA", evita=("META",))
     c_cons = col("MATRICULA", "COD. CONSULTOR", "COD CONSULTOR", "CODIGO", "CONSULTOR", "CPMSULTOR", "CONSULT", "VENDEDOR", "NOME",
                  evita=("META", "LOJA", "PDV"))
