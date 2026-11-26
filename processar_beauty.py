@@ -38,6 +38,8 @@ ARQ_SAIDA = p.BASE / "data" / "beauty.json"
 FECHA_SHOPPING, FECHA_DEMAIS = 22, 19
 VD_ABRE, VD_FECHA = 8, 19
 CANCELADO_VD = "CANCELADO PELO USUÁRIO"
+# Códigos cujo realizado soma em outro PDV (estrutura sem meta própria que pertence a outra loja/ER)
+SOMAR_EM = {"25047": "20933"}   # 25047 -> Santa Luzia (20933)
 AVISOS = []   # metas repetidas (mesmo PDV no mesmo dia): vale a primeira linha da aba
 
 cod = lambda v: (re.match(r"\s*(\d+)", str(v)) or [None, None])[1]
@@ -90,7 +92,7 @@ def realizado_varejo():
         camp = v["Campanhas"].fillna("").astype(str).str.upper()
         itens = (v["Qtd itens"] - camp.str.contains("SACOLA").astype(int)).clip(lower=0)
         venda = v["Receita liquida (-) trocas"] >= p.LIMITE_BRINDE
-        df = pd.DataFrame({"id": v["Loja"].map(cod), "dia": pd.to_datetime(v["Data"], format="%d/%m/%Y").dt.strftime("%Y-%m-%d"),
+        df = pd.DataFrame({"id": v["Loja"].map(cod).replace(SOMAR_EM), "dia": pd.to_datetime(v["Data"], format="%d/%m/%Y").dt.strftime("%Y-%m-%d"),
                            "hm": v["Hora"].astype(str).str.slice(0, 5), "valor": v["Receita liquida (-) trocas"],
                            "bol": venda.astype(int), "it": itens.where(venda, 0), "b1": (venda & (itens <= 1)).astype(int)})
         for d, g in df.groupby("dia"):
@@ -106,7 +108,7 @@ def realizado_vd():
     for a in arquivos("VD"):
         v = p.ler_excel(a)
         v = v[v["DetalheSituaçãoComercial"].astype(str).str.strip().str.upper() != CANCELADO_VD]
-        loja = v["EstruturaPai"].map(cod).fillna(v["CanalDistribuicao"].map(cod))
+        loja = v["EstruturaPai"].map(cod).fillna(v["CanalDistribuicao"].map(cod)).replace(SOMAR_EM)
         aut = pd.to_datetime(v["DataAutorizaçãoFaturamento"], format="%d/%m/%Y %H:%M", errors="coerce")
         fr.append(pd.DataFrame({"id": loja, "hub": v["CanalDistribuicao"].map(cod),
                                 "dia": pd.to_datetime(v["DataFaturamento"], format="%d/%m/%Y").dt.strftime("%Y-%m-%d"),
