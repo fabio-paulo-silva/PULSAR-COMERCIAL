@@ -18,3 +18,6 @@ __pycache__/
 apps-script/
 Ciclo/*.md
 config.local.js
+
+# Beauty Week: planilhas de metas e realizados (pedidos do VD têm dados de clientes) ficam só no computador
+Acompanhamento Beauty Week/
