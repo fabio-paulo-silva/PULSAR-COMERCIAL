@@ -643,6 +643,9 @@ dialog .hd h3{font-size:18px}
 .toast.erro{background:var(--destructive);color:#fff}
 @media (prefers-reduced-motion:no-preference){.fade{animation:fade .35s ease-out}}
 @keyframes fade{from{opacity:.4;transform:translateY(8px)}to{opacity:1;transform:none}}
+.bwtop{display:flex;justify-content:flex-start}
+.bwbtn{display:inline-flex;align-items:center;gap:8px;border-radius:12px;padding:10px 18px;font-weight:800;text-decoration:none;background:var(--primary);color:var(--primary-fg);box-shadow:var(--shadow-card)}
+.bwbtn:hover{filter:brightness(1.06)}
 </style>
 
 <header class="hero">
@@ -667,6 +670,7 @@ dialog .hd h3{font-size:18px}
 </header>
 
 <main class="wrap">
+  <div class="bwtop"><a class="bwbtn" href="beauty.html"><i data-lucide="sparkles"></i>Acompanhamento Beauty Week</a></div>
   <section class="card filter">
     <button type="button" class="ttl" id="fToggle" aria-expanded="false"><i data-lucide="sliders-horizontal"></i>Filtros<span class="fres" id="fRes"></span><i data-lucide="chevron-down" class="fchev"></i></button>
     <div class="row">
