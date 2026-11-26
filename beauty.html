@@ -1,9 +1,10 @@
 <!doctype html>
-<html lang="pt-BR" data-theme="dark" data-bw>
+<html lang="pt-BR" data-bw>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pulsar · Beauty Week</title>
+<script>(function(){var t=null;try{t=localStorage.getItem('bw-tema')}catch(e){}if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t)})()</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,600;0,700;0,800;0,900;1,800;1,900&family=Manrope:wght@400;500;600;700;800&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js" integrity="sha384-hJnF5AwidE18GSWTAGHv3ByzzvfNZ1Tcx5y1UUV3WkauuMCEzBJBMSwSt/PUPXnM" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -143,7 +144,7 @@ tr.click{cursor:pointer} tr.click:hover td{background:var(--muted)}
 </style>
 <style>
 /* Beauty Week: identidade da campanha (grafite, vermelho, Poppins pesada, faixas "A maior promo do ano") */
-:root[data-bw]{
+:root[data-bw][data-theme="dark"]{
   --background:#1c1d1d; --foreground:#fff; --card:#262828; --muted:#333535; --muted-fg:#b9bcbb;
   --primary:#d4121a; --primary-fg:#fff; --accent:#d4121a; --chart-3:#e8262d; --border:rgb(255 255 255 / .1);
   --success-ink:oklch(0.78 0.18 152); --warning:oklch(0.82 0.16 85); --warning-ink:oklch(0.85 0.15 85); --destructive:#ff4d4f;
@@ -151,7 +152,17 @@ tr.click{cursor:pointer} tr.click:hover td{background:var(--muted)}
   --shadow-card:0 1px 2px rgb(0 0 0 / .35),0 10px 28px -14px rgb(0 0 0 / .7);
   --font-display:"Poppins",ui-sans-serif,system-ui,sans-serif; --bw-grad:linear-gradient(90deg,#ff1f8f 0%,#7b5cff 50%,#14d6a0 100%);
   color-scheme:dark}
-body{background:radial-gradient(1200px 600px at 85% -10%,#3a3d3c 0%,transparent 60%),linear-gradient(180deg,#1c1d1d,#161717) fixed}
+:root[data-bw][data-theme="light"]{
+  --background:#f3f3f2; --foreground:#1a1b1b; --card:#fff; --muted:#eeeeec; --muted-fg:#5c605f;
+  --primary:#d4121a; --primary-fg:#fff; --accent:#d4121a; --chart-3:#d4121a; --border:rgb(0 0 0 / .1);
+  --success-ink:oklch(0.52 0.15 152); --warning:oklch(0.80 0.16 80); --warning-ink:oklch(0.55 0.14 60); --destructive:#d4121a;
+  --gradient-primary:linear-gradient(160deg,#141515 0%,#2b2e2d 100%);
+  --shadow-card:0 1px 2px rgb(0 0 0 / .05),0 8px 24px -12px rgb(0 0 0 / .15);
+  --font-display:"Poppins",ui-sans-serif,system-ui,sans-serif; --bw-grad:linear-gradient(90deg,#ff1f8f 0%,#7b5cff 50%,#14d6a0 100%);
+  --bg-page:linear-gradient(180deg,#f3f3f2,#ececea); color-scheme:light}
+:root[data-bw][data-theme="dark"]{--bg-page:radial-gradient(1200px 600px at 85% -10%,#3a3d3c 0%,transparent 60%),linear-gradient(180deg,#1c1d1d,#161717)}
+body{background:var(--bg-page) fixed;background-color:var(--background)}
+.tema{cursor:pointer;font:inherit;font-weight:600}
 .hero{background:var(--gradient-primary);margin-bottom:24px;border-bottom:4px solid var(--primary)}
 .hero .in{padding-block:34px 30px;min-height:190px}
 .fita{position:absolute;left:-10%;right:-10%;height:34px;background:var(--primary);color:#fff;font:800 13px/34px var(--font-display);letter-spacing:.32em;text-transform:uppercase;white-space:nowrap;overflow:hidden;box-shadow:0 6px 18px rgb(0 0 0 / .45)}
@@ -172,15 +183,15 @@ body{background:radial-gradient(1200px 600px at 85% -10%,#3a3d3c 0%,transparent 
 .kpi.hero2{background:var(--primary)!important}
 .kpi.hero2 .prog{background:rgb(0 0 0 / .25)} .kpi.hero2 .prog i{background:#fff!important} .kpi.hero2 .prog b{background:#111}
 .kpi.hero2 .lbl,.kpi.hero2 .kl{color:rgb(255 255 255 / .85)}
-select{background:#1c1d1d}
-.chart .rl{stroke:#fff} .chart .hb{opacity:.55} .chart .hb.now{opacity:.85}
-.legend .l-rl{border-color:#fff}
+select{background:var(--background)}
+.chart .rl{stroke:var(--foreground)} .chart .hb{opacity:.55} .chart .hb.now{opacity:.85}
+.legend .l-rl{border-color:var(--foreground)}
 
 .tabs{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .tab{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);background:var(--card);border-radius:12px;padding:9px 16px;font-weight:800;color:var(--muted-fg)}
 .tab:hover{color:var(--foreground)}
 .tab.on{background:var(--primary);color:#fff;border-color:var(--primary)}
-.tab.rk{margin-left:auto;border:2px solid var(--primary);color:#fff;text-transform:uppercase;font-family:var(--font-display);letter-spacing:.04em}
+.tab.rk{margin-left:auto;border:2px solid var(--primary);color:var(--primary);text-transform:uppercase;font-family:var(--font-display);letter-spacing:.04em}
 .tab.rk.on{background:var(--primary);color:var(--primary-fg);border-color:var(--primary)}
 @media (max-width:640px){.tab.rk{margin-left:0}}
 .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -208,6 +219,38 @@ select{background:#1c1d1d}
 .tleg span{display:inline-flex;align-items:center;gap:6px}
 tfoot td{font-weight:800;background:var(--muted);border-bottom:0}
 .nota{font-size:12px;color:var(--muted-fg)}
+.msort{display:none}
+@media (max-width:700px){
+  .hero .in{padding-block:26px 22px;min-height:0}
+  .bwlogo .b1,.bwlogo .b2{font-size:40px}
+  .chips{width:100%} .glass{padding:7px 12px;font-size:13px}
+  .tabs .tab{flex:1 1 auto;justify-content:center;padding:9px 10px}
+  .tab.rk{flex-basis:100%}
+  .kpi{padding:14px 16px} .kpi .val{font-size:22px} .kpi.hero2 .val{font-size:30px}
+  .card-hd{padding:14px 16px} .card-hd h2{font-size:16px}
+  .cl{padding:10px 16px} .tleg{padding:10px 16px}
+  .msort{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid var(--border);font-size:12px;font-weight:700;color:var(--muted-fg)}
+  .msort select{flex:1;min-width:0;height:34px}
+  .tall{max-height:none;overflow:visible}
+  .tb,.tb tbody,.tb tfoot{display:block;width:100%}
+  .tb thead{display:none}
+  .tb tbody tr{counter-increment:pos}
+  .tb tr{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;padding:12px 16px;border-bottom:1px solid var(--border)}
+  .tb td{border:0;padding:0;white-space:normal;display:flex;justify-content:space-between;align-items:center;gap:8px;min-width:0;background:none!important}
+  .tb td::before{content:attr(data-l);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--muted-fg)}
+  .tb td.c-pos{display:none}
+  .tb td.c-nome{grid-column:1/-1;justify-content:flex-start;align-items:flex-start}
+  .tb td.c-nome::before{content:counter(pos) "º";font-family:var(--font-display);font-size:14px;color:var(--primary);min-width:28px}
+  .tb td.c-gap{grid-column:1/-1;border-top:1px dashed var(--border);padding-top:6px}
+  .tb .nm{min-width:0;flex:1}
+  .tb td.c-nome{flex-wrap:wrap;column-gap:0}
+  .tb td.c-nome .sub{flex-basis:100%;padding-left:28px;white-space:normal}
+  .tb .cv{white-space:nowrap}
+  .tb td::before{flex:none}
+  .tb tfoot tr{background:var(--muted)} .tb tfoot td.c-pos{display:flex;grid-column:1/-1} .tb tfoot td.c-pos::before{content:none}
+  .tb tfoot td.c-nome{display:none}
+  .seg{width:100%} .seg button{flex:1;padding:7px 8px}
+}
 </style>
 </head>
 <body>
@@ -220,6 +263,7 @@ tfoot td{font-weight:800;background:var(--muted);border-bottom:0}
       <div class="glass"><i data-lucide="clock"></i><span id="hData">Carregando…</span></div>
       <a class="glass" href="hoje.html"><i data-lucide="activity"></i><span>Acompanhar o dia</span></a>
       <a class="glass" href="index.html"><i data-lucide="calendar-days"></i><span>Painel do mês</span></a>
+      <button class="glass tema" type="button" id="bTema" aria-label="Alternar modo claro ou escuro"></button>
     </div>
   </div></div>
 </header>
@@ -336,9 +380,10 @@ function tabela(id,titulo,sub,cols,rows,extra='',rodape=''){
  const o=S.ord[id]||{k:'at',d:-1};const col=cols.find(c=>c.k===o.k)||cols.find(c=>c.k==='at');
  rows=[...rows].sort((a,b)=>{const x=col.v(a),y=col.v(b);return (x==null)-(y==null)||(x<y?-1:x>y?1:0)*o.d});
  return `<div class="card"><div class="card-hd"><div><h2>${titulo}</h2><p>${sub}</p></div></div>${extra}
+  <div class="msort"><label for="ms_${id}">Ordenar por</label><select id="ms_${id}" data-ms="${id}">${cols.map(c=>`<option value="${c.k}" ${c.k===o.k?'selected':''}>${c.t}${c.k==='nome'?' (A–Z)':' (maior primeiro)'}</option>`).join('')}</select></div>
   <div class="tw tall"><table class="tb"><thead><tr><th>#</th>${cols.map(c=>`<th class="s ${c.r?'r':''} ${c.k===o.k?'on':''}" data-tb="${id}" data-k="${c.k}">${c.t}${c.k===o.k?` <span class="ar">${o.d<0?'↓':'↑'}</span>`:''}</th>`).join('')}</tr></thead>
-  <tbody>${rows.map((r,i)=>`<tr><td class="mf tnum">${i+1}</td>${cols.map(c=>`<td class="${c.r?'r':''}">${c.h(r)}</td>`).join('')}</tr>`).join('')||`<tr><td colspan="${cols.length+1}" class="mf">Sem dados.</td></tr>`}</tbody>
-  ${rows.length?`<tfoot><tr><td></td>${cols.map(c=>`<td class="${c.r?'r':''}">${c.tot?c.tot(rows):''}</td>`).join('')}</tr></tfoot>`:''}</table></div>${rodape}</div>`;
+  <tbody>${rows.map((r,i)=>`<tr><td class="mf tnum c-pos">${i+1}</td>${cols.map(c=>`<td class="${c.r?'r':''} c-${c.k}" data-l="${c.t}">${c.h(r)}</td>`).join('')}</tr>`).join('')||`<tr><td colspan="${cols.length+1}" class="mf">Sem dados.</td></tr>`}</tbody>
+  ${rows.length?`<tfoot><tr><td class="c-pos"><b>Total</b></td>${cols.map(c=>`<td class="${c.r?'r':''} c-${c.k}" data-l="${c.t}">${c.tot?c.tot(rows):''}</td>`).join('')}</tr></tfoot>`:''}</table></div>${rodape}</div>`;
 }
 const tot=(rows,k)=>sum(rows.map(r=>r[k]));
 const colsBase=()=>[
@@ -403,6 +448,10 @@ document.addEventListener('click',e=>{
  const r=e.target.closest('[data-rk]');if(r){S.rk=r.dataset.rk;render();return}
  const h=e.target.closest('th[data-tb]');if(h){const id=h.dataset.tb,k=h.dataset.k,o=S.ord[id]||{k:'at',d:-1};S.ord[id]={k,d:o.k===k?-o.d:(k==='nome'?1:-1)};render()}
 });
+document.addEventListener('change',e=>{const m=e.target.closest('[data-ms]');if(m){const k=m.value;S.ord[m.dataset.ms]={k,d:k==='nome'?1:-1};render()}});
+function pintarTema(){const t=document.documentElement.getAttribute('data-theme');$('bTema').innerHTML=t==='dark'?ic('sun')+'<span>Modo claro</span>':ic('moon')+'<span>Modo escuro</span>';lucide.createIcons()}
+$('bTema').addEventListener('click',()=>{const t=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',t);try{localStorage.setItem('bw-tema',t)}catch(e){}pintarTema()});
+pintarTema();
 $('fDia').addEventListener('change',e=>{S.dia=e.target.value;render()});
 $('fReg').addEventListener('change',e=>{S.reg=e.target.value;S.praca=S.gvo='';fillFiltros();render()});
 $('fPraca').addEventListener('change',e=>{S.praca=e.target.value;S.gvo='';fillFiltros();render()});
