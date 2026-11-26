@@ -7,9 +7,13 @@ Fica vigiando as pastas de realizado (Varejo e VD). Quando um arquivo novo é sa
   3. grava o data/beauty.json nas branches main e develop (sem trocar de branch nem mexer em outros arquivos);
   4. envia as duas para o GitHub (o site publica em 1 a 2 minutos).
 
-Uso: dê dois cliques em "Beauty Week - atualizar sozinho.bat" (ou: python beauty_auto.py).
-Para parar: feche a janela. O que acontece fica em "Acompanhamento Beauty Week/atualizacao_automatica.log".
+Uso:
+  python beauty_auto.py            vigia as pastas sem parar (dois cliques em "Beauty Week - atualizar sozinho.bat"; feche a janela para parar)
+  python beauty_auto.py --uma-vez  roda uma vez e termina (para a tarefa agendada do Windows, de hora em hora).
+                                   Só processa e publica se algum arquivo de realizado ou a planilha de metas mudou
+                                   desde a última publicação. O que acontece fica em "Acompanhamento Beauty Week/atualizacao_automatica.log".
 """
+import json
 import os
 import subprocess
 import sys
@@ -20,6 +24,8 @@ from pathlib import Path
 BASE = Path(__file__).resolve().parent
 PASTAS = [BASE / "Acompanhamento Beauty Week" / "REALIZADOS" / "VAREJO",
           BASE / "Acompanhamento Beauty Week" / "REALIZADOS" / "VD"]
+METAS = BASE / "Acompanhamento Beauty Week" / "METAS" / "METAS DIA.xlsx"
+ESTADO = BASE / ".cache" / "beauty_auto_estado.json"   # arquivos da última publicação (modo --uma-vez)
 LOG = BASE / "Acompanhamento Beauty Week" / "atualizacao_automatica.log"
 DADOS = "data/beauty.json"
 INTERVALO = 30      # segundos entre as checagens
@@ -47,10 +53,15 @@ def assinatura():
     return tuple((str(a), a.stat().st_size, a.stat().st_mtime) for a in arqs)
 
 
-def pronto(sig):
+def assinatura_com_metas():
+    m = ((str(METAS), METAS.stat().st_size, METAS.stat().st_mtime),) if METAS.exists() else ()
+    return assinatura() + m
+
+
+def pronto(sig, ler=assinatura):
     """Arquivo terminou de gravar: tamanho igual por ESTAVEL segundos e dá para abrir."""
     time.sleep(ESTAVEL)
-    if assinatura() != sig:
+    if ler() != sig:
         return False
     try:
         for nome, _, _ in sig:
@@ -104,6 +115,24 @@ def atualizar():
     publicar(resumo)
 
 
+def uma_vez():
+    sig = assinatura_com_metas()
+    try:
+        antes = tuple(tuple(x) for x in json.loads(ESTADO.read_text(encoding="utf-8")))
+    except (OSError, ValueError):
+        antes = None
+    if sig == antes:
+        log("Rodada agendada: nenhum arquivo novo de realizado ou de metas; nada a fazer.")
+        return
+    if not pronto(sig, assinatura_com_metas):
+        log("Rodada agendada: arquivo ainda sendo gravado; fica para a próxima hora.")
+        return
+    log("Rodada agendada: arquivos novos, atualizando.")
+    atualizar()
+    ESTADO.parent.mkdir(exist_ok=True)
+    ESTADO.write_text(json.dumps(sig), encoding="utf-8")
+
+
 def main():
     log("Atualização automática ligada. Vigiando: " + ", ".join(str(p.relative_to(BASE)) for p in PASTAS))
     ultima = assinatura()
@@ -126,6 +155,13 @@ def main():
 
 if __name__ == "__main__":
     try:
-        main()
+        if "--uma-vez" in sys.argv:
+            try:
+                uma_vez()
+            except Exception as e:
+                log(f"ERRO na rodada agendada: {e}")
+                sys.exit(1)
+        else:
+            main()
     except KeyboardInterrupt:
         log("Atualização automática desligada.")
