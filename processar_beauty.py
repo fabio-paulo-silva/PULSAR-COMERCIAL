@@ -17,6 +17,7 @@ Regras:
   HUB (aba HUB das metas): realizado da base do VD pelo código do CanalDistribuicao, sem os cancelados, somando ValorPedido.
       Linha sem DIA vale para o dia mais recente; linha sem META aparece sem meta. Fica fora do Total canais e do Ranking
       (os mesmos pedidos já estão nas ERs).
+  Metas repetidas (mesmo PDV no mesmo dia na mesma aba): vale a primeira linha; as outras são avisadas no rodapé da página.
   Ritmo ("horaização"): quanto do dia já deveria estar vendido até a hora do último cupom/pedido.
       Varejo: curva de venda por hora das lojas do mesmo tipo (shopping x demais) nas mesmas semanas do mês, no mesmo
       dia da semana, cortada no horário de fechamento. VD: distribuição uniforme das 8h às 19h.
@@ -37,6 +38,7 @@ ARQ_SAIDA = p.BASE / "data" / "beauty.json"
 FECHA_SHOPPING, FECHA_DEMAIS = 22, 19
 VD_ABRE, VD_FECHA = 8, 19
 CANCELADO_VD = "CANCELADO PELO USUÁRIO"
+AVISOS = []   # metas repetidas (mesmo PDV no mesmo dia): vale a primeira linha da aba
 
 cod = lambda v: (re.match(r"\s*(\d+)", str(v)) or [None, None])[1]
 
@@ -56,6 +58,14 @@ def ler_metas(aba, dia_padrao=None, sem_meta_ok=False):
     if dia_padrao:
         m["dia"] = m["dia"].fillna(dia_padrao)
     m = m[m["dia"].notna()]
+    m["linha"] = m.index + 2   # linha no Excel (cabeçalho na 1)
+    rep = m[m.duplicated(["id", "dia"], keep=False)]
+    for (i, d), g in rep.groupby(["id", "dia"], sort=False):
+        usadas = g.iloc[0]
+        AVISOS.append({"aba": aba, "id": i, "dia": d, "usada": int(usadas["linha"]), "meta": round(float(usadas["META"]), 2),
+                       "ignoradas": [{"linha": int(r["linha"]), "nome": str(r[nome]).strip(), "meta": round(float(r["META"]), 2)}
+                                     for _, r in g.iloc[1:].iterrows()]})
+    m = m.drop_duplicates(["id", "dia"], keep="first")
     return m.rename(columns={nome: "nome", "PRAÇA": "praca", "GVO": "gvo", "META": "meta"})[["id", "nome", "praca", "gvo", "meta", "dia"]]
 
 
@@ -163,7 +173,7 @@ def main():
     saida = {"geradoEm": datetime.now().isoformat(timespec="minutes"), "dias": dias,
              "varejo": {"ate": av, "lojas": lv, "semMeta": sv, "curvas": curvas},
              "vd": {"ate": ad, "lojas": ld, "semMeta": sd, "curva": curva_vd(), "abre": VD_ABRE, "fecha": VD_FECHA},
-             "hub": {"ate": ah, "lojas": lh, "semMeta": [], "curva": curva_vd()}}
+             "hub": {"ate": ah, "lojas": lh, "semMeta": [], "curva": curva_vd()}, "avisos": AVISOS}
     ARQ_SAIDA.write_text(json.dumps(saida, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     for canal, ls, sm, ate in (("Varejo", lv, sv, av), ("VD", ld, sd, ad)):
         for d in dias:
@@ -173,6 +183,9 @@ def main():
                   + (f" | sem meta: R$ {s:,.0f} ({', '.join(x['id'] for x in sm if x['dia'] == d)})" if s else ""))
     for x in lh:
         print(f"HUB {x['dia']} {x['nome']}: meta {'R$ {:,.0f}'.format(x['meta']) if x['temMeta'] else 'sem meta'} | realizado R$ {x['real']:,.0f}")
+    for a in AVISOS:
+        print(f"ATENÇÃO aba {a['aba']}: PDV {a['id']} repetido em {a['dia']}. Usei a linha {a['usada']} (R$ {a['meta']:,.0f}); "
+              + "ignorei " + ", ".join(f"linha {x['linha']} {x['nome']} (R$ {x['meta']:,.0f})" for x in a["ignoradas"]))
     print(f"OK -> {ARQ_SAIDA.relative_to(p.BASE)}")
 
 
