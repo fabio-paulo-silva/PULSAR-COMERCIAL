@@ -300,7 +300,7 @@ const ic=n=>`<i data-lucide="${n}"></i>`;
 const sum=a=>a.reduce((s,x)=>s+x,0);
 const tom=r=>r==null?'':r>=1?'ok':r>=.9?'warn':'bad';
 const SEMANA=['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
-const CANAIS=[['total','Total canais','layers'],['varejo','Varejo','store'],['vd','VD','truck']];
+const CANAIS=[['total','Total canais','layers'],['varejo','Varejo','store'],['vd','VD','truck'],['hub','HUBs','warehouse']];
 const VISOES=[['regional','Regional'],['praca','Praça'],['gvo','GVO']];
 let B=null;const S={canal:'total',dia:'',reg:'',praca:'',gvo:'',rk:'gvo',ord:{}};
 
@@ -316,7 +316,7 @@ const atCel=(real,meta)=>{const a=meta?real/meta:0;return `<span class="cv">${pc
 // Parte do dia que já deveria estar vendida até hh:mm, pela curva (participação de cada hora)
 function fracao(curva,hm){if(!curva||!hm)return 0;const[h,m]=hm.split(':').map(Number);let f=0;for(let i=0;i<h&&i<24;i++)f+=curva[i];if(h<24)f+=curva[h]*(m/60);return Math.min(1,f)}
 const ultimoDia=c=>Object.keys(B[c].ate||{}).sort().pop()||'';
-const curvaDe=l=>l.canal==='vd'?B.vd.curva:((B.varejo.curvas[l.dia]||{})[l.shopping?'shopping':'demais'])||[];
+const curvaDe=l=>l.canal==='vd'||l.canal==='hub'?B.vd.curva:((B.varejo.curvas[l.dia]||{})[l.shopping?'shopping':'demais'])||[];
 function fracLoja(c,l){const ate=B[c].ate[l.dia];if(!ate)return 0;if(l.dia<ultimoDia(c))return 1;return fracao(curvaDe({...l,canal:c}),ate)}
 const canaisAtivos=()=>S.canal==='total'||S.canal==='ranking'?['varejo','vd']:[S.canal];
 function linhas(canais=canaisAtivos()){
@@ -335,7 +335,7 @@ function mediasCluster(){
 }
 
 function fillFiltros(){
- const todas=[...B.varejo.lojas,...B.vd.lojas];
+ const todas=[...B.varejo.lojas,...B.vd.lojas,...B.hub.lojas];
  const opt=(el,vals,tudo,sel)=>{$(el).innerHTML=`<option value="">${tudo}</option>`+[...new Set(vals)].filter(Boolean).sort((a,b)=>a.localeCompare(b,'pt-BR')).map(v=>`<option ${v===sel?'selected':''}>${esc(v)}</option>`).join('')};
  $('fDia').innerHTML=B.dias.map(d=>{const x=new Date(d+'T12:00');return `<option value="${d}" ${d===S.dia?'selected':''}>${SEMANA[x.getDay()]}, ${d.slice(8)}/${d.slice(5,7)}</option>`}).join('');
  opt('fReg',todas.map(l=>l.regional),'Todas',S.reg);
@@ -345,7 +345,9 @@ function fillFiltros(){
 
 function kpis(a,ls){
  const por=c=>{const x=agg(ls.filter(l=>l.canal===c));return x.meta?`${c==='vd'?'VD':'Varejo'} ${kbrl(x.real)} de ${kbrl(x.meta)} (${pct(x.at)})`:''};
- const parte=S.canal==='total'||S.canal==='ranking'?`<p class="kl">${[por('varejo'),por('vd')].filter(Boolean).join(' · ')}</p>`:'';
+ const semM=ls.filter(l=>l.canal==='hub'&&!(l.meta>0));
+ const parte=S.canal==='total'||S.canal==='ranking'?`<p class="kl">${[por('varejo'),por('vd')].filter(Boolean).join(' · ')}</p>`:
+  S.canal==='hub'&&semM.length?`<p class="kl">HUBs com meta. Sem meta: ${semM.map(l=>`${esc(l.nome)} ${kbrl(l.real)}`).join(' · ')}</p>`:'';
  const g=a.real-a.meta;
  $('kpis').innerHTML=`
   <div class="card kpi hero2"><p class="lbl">Realizado</p><p class="val">${kbrl(a.real)} <small>${pct(a.at,1)} da meta</small></p>
@@ -372,7 +374,7 @@ function grafico(ls){
  g+=`<polyline class="esp" points="${Array.from({length:N},(_,k)=>`${x(h0+k)+cw/2},${y(E[h0+k])}`).join(' ')}"/>`;
  if(ateH>=h0)g+=`<polyline class="rl" points="${Array.from({length:Math.min(ateH,h1)-h0+1},(_,k)=>`${x(h0+k)+cw/2},${y(acc[h0+k])}`).join(' ')}"/>`;
  $('chart').innerHTML=`<svg viewBox="0 0 ${W} ${Ht}" style="min-width:560px" role="img" aria-label="Vendido acumulado e esperado acumulado por hora">${g}</svg>`;
- $('curvaTxt').textContent=S.canal==='vd'?'VD (ERs): das 8h às 19h, pedidos faturados pela hora da autorização':S.canal==='varejo'?'Varejo: shopping até 22h; rua, galeria, hipermercado e cash & carry até 19h':'Varejo (shopping até 22h, demais até 19h) + VD (8h às 19h)';
+ $('curvaTxt').textContent=S.canal==='hub'?'HUBs: das 8h às 19h, pedidos faturados pela hora da autorização (só HUBs com meta)':S.canal==='vd'?'VD (ERs): das 8h às 19h, pedidos faturados pela hora da autorização':S.canal==='varejo'?'Varejo: shopping até 22h; rua, galeria, hipermercado e cash & carry até 19h':'Varejo (shopping até 22h, demais até 19h) + VD (8h às 19h)';
 }
 
 // Tabela genérica com ordenação por coluna. cols: [{k,t,r?,v(row)->número p/ ordenar, h(row)->html, tot?->html}]
@@ -386,11 +388,13 @@ function tabela(id,titulo,sub,cols,rows,extra='',rodape=''){
   ${rows.length?`<tfoot><tr><td class="c-pos"><b>Total</b></td>${cols.map(c=>`<td class="${c.r?'r':''} c-${c.k}" data-l="${c.t}">${c.tot?c.tot(rows):''}</td>`).join('')}</tr></tfoot>`:''}</table></div>${rodape}</div>`;
 }
 const tot=(rows,k)=>sum(rows.map(r=>r[k]));
+const comMeta=rs=>rs.filter(r=>r.meta>0);
+const SEMMETA='<span class="mf">sem meta</span>',TRACO='<span class="mf">—</span>';
 const colsBase=()=>[
- {k:'meta',t:'Meta',r:1,v:r=>r.meta,h:r=>brl(r.meta),tot:rs=>brl(tot(rs,'meta'))},
+ {k:'meta',t:'Meta',r:1,v:r=>r.meta,h:r=>r.meta>0?brl(r.meta):SEMMETA,tot:rs=>brl(tot(rs,'meta'))},
  {k:'real',t:'Realizado',r:1,v:r=>r.real,h:r=>`<b>${brl(r.real)}</b>`,tot:rs=>brl(tot(rs,'real'))},
- {k:'at',t:'% Ating.',r:1,v:r=>r.meta?r.real/r.meta:0,h:r=>atCel(r.real,r.meta),tot:rs=>atCel(tot(rs,'real'),tot(rs,'meta'))}];
-const colGap={k:'gap',t:'GAP',r:1,v:r=>r.real-r.meta,h:r=>gapCel(r.real-r.meta),tot:rs=>gapCel(tot(rs,'real')-tot(rs,'meta'))};
+ {k:'at',t:'% Ating.',r:1,v:r=>r.meta>0?r.real/r.meta:null,h:r=>r.meta>0?atCel(r.real,r.meta):TRACO,tot:rs=>comMeta(rs).length?atCel(tot(comMeta(rs),'real'),tot(comMeta(rs),'meta')):TRACO}];
+const colGap={k:'gap',t:'GAP',r:1,v:r=>r.meta>0?r.real-r.meta:null,h:r=>r.meta>0?gapCel(r.real-r.meta):TRACO,tot:rs=>comMeta(rs).length?gapCel(tot(comMeta(rs),'real')-tot(comMeta(rs),'meta')):TRACO};
 const LEG=`<div class="tleg"><span>${sinal('ok')}100% ou mais da meta</span><span>${sinal('warn')}85% a 99%</span><span>${sinal('bad')}abaixo de 85%</span><span class="gap up">${ic('arrow-up')}acima da meta</span><span class="gap dn">${ic('arrow-down')}falta para a meta</span></div>`;
 const LEGV=`<div class="tleg" style="border-top:0;padding-top:0"><span>BM, IPB e % B1 comparados à média do cluster:</span><span>${sinal('ok')}na média ou melhor</span><span>${sinal('warn')}até 5% pior</span><span>${sinal('bad')}mais de 5% pior</span><span>(no % B1, menor é melhor)</span></div>`;
 
@@ -413,6 +417,11 @@ function tabelaVD(ls){
  const cols=[{k:'nome',t:'ER',v:r=>r.nome,h:r=>`<p class="nm">${esc(r.nome)}</p><p class="sub">${esc(r.id)} · ${esc(r.praca)} · ${esc(r.gvo)}</p>`},...colsBase(),colGap];
  return tabela('vd',`ERs · VD (${rows.length})`,`VD até ${B.vd.ate[S.dia]||'—'} · pedidos com NF emitida no dia`,cols,rows,'',LEG);
 }
+function tabelaHub(ls){
+ const rows=ls.filter(l=>l.canal==='hub');const sem=rows.filter(r=>!(r.meta>0));
+ const cols=[{k:'nome',t:'HUB',v:r=>r.nome,h:r=>`<p class="nm">${esc(r.nome)}</p><p class="sub">${esc(r.id)} · ${esc(r.praca)} · ${esc(r.gvo)}</p>`},...colsBase(),colGap];
+ return tabela('hub',`HUBs (${rows.length})`,`Pedidos da base do VD pelo canal de distribuição do HUB, sem os cancelados · até ${B.hub.ate[S.dia]||'—'}`+(sem.length?` · % e GAP do total só com os HUBs que têm meta`:''),cols,rows,'',LEG);
+}
 function tabelaRanking(ls){
  const g={};ls.forEach(l=>{const k=l[S.rk];const x=g[k]=g[k]||{nome:k,meta:0,real:0,mv:0,rv:0,md:0,rd:0,nv:0,nd:0};
   x.meta+=l.meta;x.real+=l.real;if(l.canal==='vd'){x.md+=l.meta;x.rd+=l.real;x.nd++}else{x.mv+=l.meta;x.rv+=l.real;x.nv++}});
@@ -426,22 +435,22 @@ function tabelaRanking(ls){
 function render(){
  $('tabs').innerHTML=CANAIS.map(([k,t,i])=>`<button class="tab ${S.canal===k?'on':''}" data-canal="${k}">${ic(i)}${t}</button>`).join('')+
   `<button class="tab rk ${S.canal==='ranking'?'on':''}" data-canal="ranking">${ic('trophy')}Ranking</button>`;
- const ls=linhas(),a=agg(ls);
+ const ls=linhas(),a=agg(S.canal==='hub'?ls.filter(l=>l.meta>0):ls);
  $('aviso').innerHTML=!ls.length?'<div class="aviso">Sem meta para este filtro.</div>':'';
  kpis(a,ls);
- $('tabelas').innerHTML=S.canal==='ranking'?tabelaRanking(ls):(S.canal!=='vd'?tabelaVarejo(ls):'')+(S.canal!=='varejo'?tabelaVD(ls):'');
+ $('tabelas').innerHTML=S.canal==='ranking'?tabelaRanking(ls):S.canal==='hub'?tabelaHub(ls):(S.canal!=='vd'?tabelaVarejo(ls):'')+(S.canal!=='varejo'?tabelaVD(ls):'');
  $('cardCurva').hidden=S.canal==='ranking';
- if(S.canal!=='ranking')grafico(ls);
+ if(S.canal!=='ranking')grafico(S.canal==='hub'?ls.filter(l=>l.meta>0):ls);
  const sem=canaisAtivos().flatMap(c=>B[c].semMeta.filter(x=>x.dia===S.dia).map(x=>({...x,c})));
  $('hData').textContent=`${S.dia.slice(8)}/${S.dia.slice(5,7)} · Varejo até ${B.varejo.ate[S.dia]||'—'} · VD até ${B.vd.ate[S.dia]||'—'}`;
- $('regras').innerHTML=`Varejo: cupons efetivados, receita líquida (−) trocas; boletos sem os brindes (abaixo de R$ 1) e itens sem a sacola. VD: pedidos com NF emitida no dia, sem os cancelados pelo usuário, loja pela estrutura pai, valor do pedido. GAP = realizado − meta do dia.`+
+ $('regras').innerHTML=`Varejo: cupons efetivados, receita líquida (−) trocas; boletos sem os brindes (abaixo de R$ 1) e itens sem a sacola. VD: pedidos com NF emitida no dia, sem os cancelados pelo usuário, loja pela estrutura pai, valor do pedido. HUBs: mesma base do VD pelo código do canal de distribuição (fora do Total canais e do Ranking, porque os mesmos pedidos já contam nas ERs). GAP = realizado − meta do dia.`+
   (sem.length?` Fora das tabelas (venda sem meta da Beauty Week): ${kbrl(sum(sem.map(x=>x.real)))} em ${sem.length} loja(s)/ER(s): ${sem.map(x=>esc(x.id)+(canaisAtivos().length>1?` (${x.c==='vd'?'VD':'Varejo'})`:'')).join(', ')}.`:'')+
   ` Atualizado em ${B.geradoEm.slice(8,10)}/${B.geradoEm.slice(5,7)} às ${B.geradoEm.slice(11,16)}.`;
  lucide.createIcons();
 }
 
 // Mesmo gestor nas duas abas (VAREJO e VD) com grafia diferente vira um nome só
-function normalizar(){const n={};for(const c of ['varejo','vd'])B[c].lojas.forEach(l=>{const k=String(l.gvo||'').trim().toUpperCase();l.gvo=n[k]=n[k]||String(l.gvo||'').trim()})}
+function normalizar(){B.hub=B.hub||{ate:{},lojas:[],semMeta:[],curva:B.vd.curva};const n={};for(const c of ['varejo','vd','hub'])B[c].lojas.forEach(l=>{const k=String(l.gvo||'').trim().toUpperCase();l.gvo=n[k]=n[k]||String(l.gvo||'').trim()})}
 
 document.addEventListener('click',e=>{
  const t=e.target.closest('[data-canal]');if(t){S.canal=t.dataset.canal;render();return}

@@ -14,6 +14,9 @@ Regras:
       abaixo de R$ 1 fora dos boletos, sacola descontada dos itens) e o cluster, para comparar BM, IPB e % B1 com a média do cluster.
    Cluster da loja de varejo: dCentros (Shopping fecha às 22h; Rua, Galeria,
       Hipermercado e Cash & Carry às 19h). VD (ERs): funcionam das 8h às 19h.
+  HUB (aba HUB das metas): realizado da base do VD pelo código do CanalDistribuicao, sem os cancelados, somando ValorPedido.
+      Linha sem DIA vale para o dia mais recente; linha sem META aparece sem meta. Fica fora do Total canais e do Ranking
+      (os mesmos pedidos já estão nas ERs).
   Ritmo ("horaização"): quanto do dia já deveria estar vendido até a hora do último cupom/pedido.
       Varejo: curva de venda por hora das lojas do mesmo tipo (shopping x demais) nas mesmas semanas do mês, no mesmo
       dia da semana, cortada no horário de fechamento. VD: distribuição uniforme das 8h às 19h.
@@ -38,13 +41,21 @@ CANCELADO_VD = "CANCELADO PELO USUÁRIO"
 cod = lambda v: (re.match(r"\s*(\d+)", str(v)) or [None, None])[1]
 
 
-def ler_metas(aba):
-    m = pd.read_excel(ARQ_METAS, sheet_name=aba, engine="calamine")
+def ler_metas(aba, dia_padrao=None, sem_meta_ok=False):
+    """Metas de uma aba. HUB: linha sem DIA usa o dia_padrao e, com sem_meta_ok, linha sem META entra com meta 0."""
+    try:
+        m = pd.read_excel(ARQ_METAS, sheet_name=aba, engine="calamine")
+    except ValueError:
+        return pd.DataFrame(columns=["id", "nome", "praca", "gvo", "meta", "dia"])
     m.columns = [str(c).strip().upper() for c in m.columns]
-    nome = next(c for c in m.columns if c in ("LOJA", "ER"))
-    m = m[m["PDV"].notna() & m["META"].notna()].copy()
+    nome = next(c for c in m.columns if c in ("LOJA", "ER", "HUB"))
+    m = m[m["PDV"].notna() & (sem_meta_ok or m["META"].notna())].copy()
+    m["META"] = pd.to_numeric(m["META"], errors="coerce").fillna(0)
     m["id"] = m["PDV"].map(cod)
-    m["dia"] = pd.to_datetime(m["DIA"]).dt.strftime("%Y-%m-%d")
+    m["dia"] = pd.to_datetime(m["DIA"], errors="coerce").dt.strftime("%Y-%m-%d")
+    if dia_padrao:
+        m["dia"] = m["dia"].fillna(dia_padrao)
+    m = m[m["dia"].notna()]
     return m.rename(columns={nome: "nome", "PRAÇA": "praca", "GVO": "gvo", "META": "meta"})[["id", "nome", "praca", "gvo", "meta", "dia"]]
 
 
@@ -74,9 +85,10 @@ def realizado_vd():
         v = v[v["DetalheSituaçãoComercial"].astype(str).str.strip().str.upper() != CANCELADO_VD]
         loja = v["EstruturaPai"].map(cod).fillna(v["CanalDistribuicao"].map(cod))
         aut = pd.to_datetime(v["DataAutorizaçãoFaturamento"], format="%d/%m/%Y %H:%M", errors="coerce")
-        fr.append(pd.DataFrame({"id": loja, "dia": pd.to_datetime(v["DataFaturamento"], format="%d/%m/%Y").dt.strftime("%Y-%m-%d"),
+        fr.append(pd.DataFrame({"id": loja, "hub": v["CanalDistribuicao"].map(cod),
+                                "dia": pd.to_datetime(v["DataFaturamento"], format="%d/%m/%Y").dt.strftime("%Y-%m-%d"),
                                 "hm": aut.dt.strftime("%H:%M"), "valor": v["ValorPedido"]}))
-    return pd.concat(fr, ignore_index=True) if fr else pd.DataFrame(columns=["id", "dia", "hm", "valor"])
+    return pd.concat(fr, ignore_index=True) if fr else pd.DataFrame(columns=["id", "hub", "dia", "hm", "valor"])
 
 
 def curva_varejo(dia: pd.Timestamp, shopping: set):
@@ -131,10 +143,17 @@ def main():
     shopping = set(clu[clu == "SHOPPING"].index)
     mv, md = ler_metas("VAREJO"), ler_metas("VD")
     rv, rd = realizado_varejo(), realizado_vd()
+    # HUB: mesma base do VD, mas pelo código do CanalDistribuicao (sem os cancelados, somando ValorPedido)
+    dia_hub = max(set(mv["dia"]) | set(md["dia"]) | set(rd["dia"].dropna()), default=None)
+    mh = ler_metas("HUB", dia_padrao=dia_hub, sem_meta_ok=True)
+    rh = rd.drop(columns="id").rename(columns={"hub": "id"})
     lv, sv, av = montar(mv, rv, centros, lambda i: {"shopping": i in shopping, "fecha": FECHA_SHOPPING if i in shopping else FECHA_DEMAIS,
                                                     "cluster": str(centros["CLUSTER"].get(i, "Sem cluster")).strip()})
     ld, sd, ad = montar(md, rd, centros, lambda i: {"fecha": VD_FECHA})
-    dias = sorted(set(mv["dia"]) | set(md["dia"]))
+    lh, _, ah = montar(mh, rh, centros, lambda i: {"fecha": VD_FECHA})
+    for x in lh:
+        x["temMeta"] = x["meta"] > 0
+    dias = sorted(set(mv["dia"]) | set(md["dia"]) | set(mh["dia"]))
     curvas = {}
     for d in dias:
         try:
@@ -143,7 +162,8 @@ def main():
             curvas[d] = None
     saida = {"geradoEm": datetime.now().isoformat(timespec="minutes"), "dias": dias,
              "varejo": {"ate": av, "lojas": lv, "semMeta": sv, "curvas": curvas},
-             "vd": {"ate": ad, "lojas": ld, "semMeta": sd, "curva": curva_vd(), "abre": VD_ABRE, "fecha": VD_FECHA}}
+             "vd": {"ate": ad, "lojas": ld, "semMeta": sd, "curva": curva_vd(), "abre": VD_ABRE, "fecha": VD_FECHA},
+             "hub": {"ate": ah, "lojas": lh, "semMeta": [], "curva": curva_vd()}}
     ARQ_SAIDA.write_text(json.dumps(saida, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     for canal, ls, sm, ate in (("Varejo", lv, sv, av), ("VD", ld, sd, ad)):
         for d in dias:
@@ -151,6 +171,8 @@ def main():
             s = sum(x["real"] for x in sm if x["dia"] == d)
             print(f"{canal} {d}: meta R$ {m:,.0f} | realizado R$ {r:,.0f} ({r / m if m else 0:.1%}) até {ate.get(d, '—')}"
                   + (f" | sem meta: R$ {s:,.0f} ({', '.join(x['id'] for x in sm if x['dia'] == d)})" if s else ""))
+    for x in lh:
+        print(f"HUB {x['dia']} {x['nome']}: meta {'R$ {:,.0f}'.format(x['meta']) if x['temMeta'] else 'sem meta'} | realizado R$ {x['real']:,.0f}")
     print(f"OK -> {ARQ_SAIDA.relative_to(p.BASE)}")
 
 
