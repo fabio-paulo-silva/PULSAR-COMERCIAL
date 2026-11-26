@@ -157,3 +157,12 @@ Primeiro a tabela dos consultores de loja e a dos digitais, com receita/dia, bol
 - Lojas dos clusters **Rua** e **Galeria** (coluna CLUSTER do dCentros) não abrem aos domingos: a meta do domingo é zerada e redistribuída nos outros dias do mês, na proporção da diarização. O total do mês não muda.
 - A meta dos consultores dessas lojas segue a mesma diarização (também sem domingo).
 - Exceções (loja desses clusters que abre no domingo): código da loja em `LOJAS_ABREM_DOMINGO`, no `processar_dados.py`.
+
+## Beauty Week (beauty.html)
+- Página de acompanhamento da Beauty Week: **Total canais**, **Varejo** e **VD**, com ranking por regional, praça e GVO, e a lista de lojas/ERs.
+- Bases (pasta `Acompanhamento Beauty Week`, fora do GitHub): `METAS/METAS DIA.xlsx` (abas VAREJO e VD: PDV, praça, GVO, META, DIA) e os realizados em `REALIZADOS/VAREJO` (cupons) e `REALIZADOS/VD` (pedidos com NF emitida).
+- **Varejo:** só cupons Efetivados; realizado = soma de "Receita liquida (-) trocas".
+- **VD:** sem os pedidos "Cancelado Pelo Usuário" (DetalheSituaçãoComercial); loja = código da EstruturaPai (sem estrutura pai, como o Omnichannel, usa o CanalDistribuicao); realizado = soma do ValorPedido; dia = DataFaturamento.
+- **Ritmo (horaização):** realizado ÷ esperado até a hora do último cupom/pedido. Varejo: curva de venda por hora do mês, no mesmo dia da semana, separada em shopping (até 22h) e demais (rua, galeria, hipermercado e cash & carry, até 19h). VD (ERs): uniforme das 8h às 19h. Projeção do dia = realizado ÷ parte do dia já passada.
+- Regional pela praça (dCentros). Venda de loja/ER sem meta da Beauty Week aparece só no rodapé, fora do ranking.
+- Atualizar: salve os arquivos novos nas pastas e rode **Atualizar Beauty Week.bat** (ou `python processar_beauty.py`); depois publique o `data/beauty.json`.
