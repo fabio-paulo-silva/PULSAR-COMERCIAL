@@ -10,7 +10,9 @@ Regras:
   VD: fora os pedidos "Cancelado Pelo Usuário" (DetalheSituaçãoComercial); loja = código da "EstruturaPai"
       (pedido sem estrutura pai, como o Omnichannel, usa o código do CanalDistribuicao); realizado = soma de "ValorPedido";
       dia = DataFaturamento; hora = DataAutorizaçãoFaturamento.
-  Regional: pela praça (dCentros). Cluster da loja de varejo: dCentros (Shopping fecha às 22h; Rua, Galeria,
+  Regional: pela praça (dCentros). Varejo também leva boletos, itens e B1 de cada loja (mesmas regras do painel: brinde
+      abaixo de R$ 1 fora dos boletos, sacola descontada dos itens) e o cluster, para comparar BM, IPB e % B1 com a média do cluster.
+   Cluster da loja de varejo: dCentros (Shopping fecha às 22h; Rua, Galeria,
       Hipermercado e Cash & Carry às 19h). VD (ERs): funcionam das 8h às 19h.
   Ritmo ("horaização"): quanto do dia já deveria estar vendido até a hora do último cupom/pedido.
       Varejo: curva de venda por hora das lojas do mesmo tipo (shopping x demais) nas mesmas semanas do mês, no mesmo
@@ -54,11 +56,15 @@ def arquivos(sub):
 def realizado_varejo():
     fr = []
     for a in arquivos("VAREJO"):
-        v = p.ler_excel(a, usecols=["Loja", "Data", "Hora", "Status cupom", "Receita liquida (-) trocas"])
+        v = p.ler_excel(a, usecols=["Loja", "Data", "Hora", "Status cupom", "Qtd itens", "Campanhas", "Receita liquida (-) trocas"])
         v = v[v["Status cupom"] == "Efetivado"]
+        camp = v["Campanhas"].fillna("").astype(str).str.upper()
+        itens = (v["Qtd itens"] - camp.str.contains("SACOLA").astype(int)).clip(lower=0)
+        venda = v["Receita liquida (-) trocas"] >= p.LIMITE_BRINDE
         fr.append(pd.DataFrame({"id": v["Loja"].map(cod), "dia": pd.to_datetime(v["Data"], format="%d/%m/%Y").dt.strftime("%Y-%m-%d"),
-                                "hm": v["Hora"].astype(str).str.slice(0, 5), "valor": v["Receita liquida (-) trocas"]}))
-    return pd.concat(fr, ignore_index=True) if fr else pd.DataFrame(columns=["id", "dia", "hm", "valor"])
+                                "hm": v["Hora"].astype(str).str.slice(0, 5), "valor": v["Receita liquida (-) trocas"],
+                                "bol": venda.astype(int), "it": itens.where(venda, 0), "b1": (venda & (itens <= 1)).astype(int)}))
+    return pd.concat(fr, ignore_index=True) if fr else pd.DataFrame(columns=["id", "dia", "hm", "valor", "bol", "it", "b1"])
 
 
 def realizado_vd():
@@ -99,6 +105,7 @@ def montar(metas, real, centros, extra):
     reg = centros.groupby("PRAÇA")["REGIONAL"].first().to_dict()
     real = real.dropna(subset=["id"])
     tot = real.groupby(["id", "dia"])["valor"].sum()
+    ind = real.groupby(["id", "dia"])[["bol", "it", "b1"]].sum() if "bol" in real else None
     hora = real.assign(h=pd.to_numeric(real["hm"].str.slice(0, 2), errors="coerce")).dropna(subset=["h"])
     hora = hora.groupby(["id", "dia", "h"])["valor"].sum()
     lojas = []
@@ -109,7 +116,9 @@ def montar(metas, real, centros, extra):
                 hs[int(hh)] = round(float(v), 2)
         lojas.append({"id": r.id, "nome": str(r.nome).strip().title(), "praca": r.praca, "regional": reg.get(r.praca, "—"),
                       "gvo": str(r.gvo).strip(), "dia": r.dia, "meta": round(float(r.meta), 2),
-                      "real": round(float(tot.get((r.id, r.dia), 0)), 2), "h": hs, **extra(r.id)})
+                      "real": round(float(tot.get((r.id, r.dia), 0)), 2), "h": hs, **extra(r.id),
+                      **({k: int(ind.loc[(r.id, r.dia), k]) if (r.id, r.dia) in ind.index else 0 for k in ("bol", "it", "b1")}
+                         if ind is not None else {})})
     com_meta = set(zip(metas["id"], metas["dia"]))
     sem = [{"id": i, "dia": d, "real": round(float(v), 2)} for (i, d), v in tot.items() if (i, d) not in com_meta and v]
     ate = real.groupby("dia")["hm"].max().to_dict()
@@ -122,7 +131,8 @@ def main():
     shopping = set(clu[clu == "SHOPPING"].index)
     mv, md = ler_metas("VAREJO"), ler_metas("VD")
     rv, rd = realizado_varejo(), realizado_vd()
-    lv, sv, av = montar(mv, rv, centros, lambda i: {"shopping": i in shopping, "fecha": FECHA_SHOPPING if i in shopping else FECHA_DEMAIS})
+    lv, sv, av = montar(mv, rv, centros, lambda i: {"shopping": i in shopping, "fecha": FECHA_SHOPPING if i in shopping else FECHA_DEMAIS,
+                                                    "cluster": str(centros["CLUSTER"].get(i, "Sem cluster")).strip()})
     ld, sd, ad = montar(md, rd, centros, lambda i: {"fecha": VD_FECHA})
     dias = sorted(set(mv["dia"]) | set(md["dia"]))
     curvas = {}

@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark" data-bw>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pulsar · Beauty Week</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,600;0,700;0,800;0,900;1,800;1,900&family=Manrope:wght@400;500;600;700;800&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js" integrity="sha384-hJnF5AwidE18GSWTAGHv3ByzzvfNZ1Tcx5y1UUV3WkauuMCEzBJBMSwSt/PUPXnM" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <style>
 /* Mesmo sistema visual do painel do mês (index.html) */
@@ -137,34 +137,88 @@ tr.click{cursor:pointer} tr.click:hover td{background:var(--muted)}
 .mais{padding:12px 20px}
 .lk{border:0;background:none;padding:0;font-weight:700;color:var(--foreground);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
 @media (max-width:640px){.filter select{min-width:0;width:100%}.fld{flex:1 1 140px}}
+.bwtop{display:flex;justify-content:flex-start}
+.bwbtn{display:inline-flex;align-items:center;gap:8px;border-radius:12px;padding:10px 18px;font-weight:800;text-decoration:none;background:var(--primary);color:var(--primary-fg);box-shadow:var(--shadow-card)}
+.bwbtn:hover{filter:brightness(1.06)}
 </style>
-
 <style>
-/* Beauty Week */
-.tabs{display:flex;gap:6px;flex-wrap:wrap}
+/* Beauty Week: identidade da campanha (grafite, vermelho, Poppins pesada, faixas "A maior promo do ano") */
+:root[data-bw]{
+  --background:#1c1d1d; --foreground:#fff; --card:#262828; --muted:#333535; --muted-fg:#b9bcbb;
+  --primary:#d4121a; --primary-fg:#fff; --accent:#d4121a; --chart-3:#e8262d; --border:rgb(255 255 255 / .1);
+  --success-ink:oklch(0.78 0.18 152); --warning:oklch(0.82 0.16 85); --warning-ink:oklch(0.85 0.15 85); --destructive:#ff4d4f;
+  --gradient-primary:linear-gradient(160deg,#141515 0%,#2b2e2d 100%);
+  --shadow-card:0 1px 2px rgb(0 0 0 / .35),0 10px 28px -14px rgb(0 0 0 / .7);
+  --font-display:"Poppins",ui-sans-serif,system-ui,sans-serif; --bw-grad:linear-gradient(90deg,#ff1f8f 0%,#7b5cff 50%,#14d6a0 100%);
+  color-scheme:dark}
+body{background:radial-gradient(1200px 600px at 85% -10%,#3a3d3c 0%,transparent 60%),linear-gradient(180deg,#1c1d1d,#161717) fixed}
+.hero{background:var(--gradient-primary);margin-bottom:24px;border-bottom:4px solid var(--primary)}
+.hero .in{padding-block:34px 30px;min-height:190px}
+.fita{position:absolute;left:-10%;right:-10%;height:34px;background:var(--primary);color:#fff;font:800 13px/34px var(--font-display);letter-spacing:.32em;text-transform:uppercase;white-space:nowrap;overflow:hidden;box-shadow:0 6px 18px rgb(0 0 0 / .45)}
+.fita.f1{top:22px;transform:rotate(9deg);transform-origin:70% 50%}
+.fita.f2{bottom:18px;transform:rotate(-6deg);opacity:.92}
+@media (max-width:640px){.fita.f1{top:6px}}
+.bwlogo{display:inline-flex;flex-direction:column;align-items:flex-start;line-height:.9;font-family:var(--font-display);color:#fff;text-shadow:0 4px 18px rgb(0 0 0 / .5)}
+.bwlogo .b1{font-weight:800;font-size:clamp(38px,5vw,58px);letter-spacing:-.02em}
+.bwlogo .b2{font-weight:900;font-style:italic;font-size:clamp(38px,5vw,58px);letter-spacing:-.04em;margin-left:.9em}
+.bwlogo .b3{display:block;height:6px;width:62%;margin:8px 0 0 1.4em;border-radius:3px;background:var(--bw-grad)}
+.bwsub{margin-top:14px;display:table;background:var(--primary);color:#fff;font:800 13px var(--font-display);letter-spacing:.06em;text-transform:uppercase;padding:4px 10px}
+.hero .chips{position:relative;z-index:1}
+.glass{background:rgb(20 20 20 / .7);backdrop-filter:blur(6px);border:1px solid rgb(255 255 255 / .12)}
+.glass svg{color:#fff}
+.card-hd h2{font-family:var(--font-display);font-weight:800;text-transform:uppercase;letter-spacing:.01em}
+.card-hd h2::before{content:"";display:inline-block;width:6px;height:.9em;background:var(--primary);margin-right:10px;vertical-align:-1px}
+.kpi .val{font-family:var(--font-display)}
+.kpi.hero2{background:var(--primary)!important}
+.kpi.hero2 .prog{background:rgb(0 0 0 / .25)} .kpi.hero2 .prog i{background:#fff!important} .kpi.hero2 .prog b{background:#111}
+.kpi.hero2 .lbl,.kpi.hero2 .kl{color:rgb(255 255 255 / .85)}
+select{background:#1c1d1d}
+.chart .rl{stroke:#fff} .chart .hb{opacity:.55} .chart .hb.now{opacity:.85}
+.legend .l-rl{border-color:#fff}
+
+.tabs{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .tab{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);background:var(--card);border-radius:12px;padding:9px 16px;font-weight:800;color:var(--muted-fg)}
-.tab.on{background:var(--foreground);color:var(--background);border-color:var(--foreground)}
+.tab:hover{color:var(--foreground)}
+.tab.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+.tab.rk{margin-left:auto;border:2px solid var(--primary);color:#fff;text-transform:uppercase;font-family:var(--font-display);letter-spacing:.04em}
+.tab.rk.on{background:var(--primary);color:var(--primary-fg);border-color:var(--primary)}
+@media (max-width:640px){.tab.rk{margin-left:0}}
 .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
 @media (min-width:1024px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
-.rk3{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;align-items:start}
-.rkl{max-height:34rem;overflow-y:auto}
-.rkr{display:grid;grid-template-columns:30px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:9px 16px;border-top:1px solid var(--border)}
-.rkr .pos{font-family:var(--font-display);font-weight:800;color:var(--muted-fg);text-align:right;font-variant-numeric:tabular-nums}
-.rkr .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .rkr .sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rkr .v{text-align:right;font-family:var(--font-display);font-weight:800;font-variant-numeric:tabular-nums} .rkr .v small{display:block;font-family:var(--font-sans);font-size:11px;font-weight:600;color:var(--muted-fg)}
-.pill{display:inline-flex;align-items:center;border-radius:999px;padding:3px 9px;font-size:12px;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums}
-.pill.ok{background:oklch(0.76 0.19 152 / .16);color:var(--success-ink)} .pill.warn{background:oklch(0.78 0.16 70 / .2);color:var(--warning-ink)} .pill.bad{background:oklch(0.58 0.21 22 / .14);color:var(--destructive)}
-.nota{font-size:12px;color:var(--muted-fg)}
 .kpi.hero2 .val{white-space:normal} .kpi.hero2 .val small{display:block;margin:2px 0 0}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:12px;padding:3px;background:var(--background)}
+.seg button{border:0;background:none;border-radius:9px;padding:6px 14px;font-weight:800;color:var(--muted-fg)}
+.seg button.on{background:var(--primary);color:#fff}
+.tb td,.tb th{padding:9px 12px}
+.tb th.s{cursor:pointer} .tb th.s:hover{color:var(--foreground)}
+.tb th .ar{opacity:.8}
+.tb .nm{white-space:normal;min-width:150px}
+.cv{display:inline-flex;align-items:center;gap:6px;justify-content:flex-end;font-variant-numeric:tabular-nums}
+.sx{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;flex:none}
+.sx svg{width:12px;height:12px;stroke-width:3.2}
+.sx.ok{background:var(--success-ink);color:#fff}
+.sx.warn{background:var(--warning);color:oklch(0.25 0.06 70)}
+.sx.bad{background:none;color:var(--destructive)} .sx.bad svg{width:16px;height:16px}
+.gap{font-weight:800} .gap.up{color:var(--success-ink)} .gap.dn{color:var(--destructive)}
+.gap svg{width:15px;height:15px;stroke-width:3}
+.cl{display:flex;flex-wrap:wrap;gap:8px;padding:12px 20px;border-bottom:1px solid var(--border)}
+.cl span{border-radius:10px;background:var(--muted);padding:5px 10px;font-size:12px;color:var(--muted-fg);font-weight:600}
+.cl b{color:var(--foreground)}
+.tleg{display:flex;flex-wrap:wrap;gap:14px;padding:10px 20px;font-size:12px;color:var(--muted-fg);font-weight:600;border-top:1px solid var(--border)}
+.tleg span{display:inline-flex;align-items:center;gap:6px}
+tfoot td{font-weight:800;background:var(--muted);border-bottom:0}
+.nota{font-size:12px;color:var(--muted-fg)}
 </style>
 </head>
 <body>
-<header class="hero"><div class="blob"></div>
+<header class="hero">
+  <div class="fita f1" aria-hidden="true">A maior promo do ano &nbsp;▪&nbsp; A maior promo do ano &nbsp;▪&nbsp; A maior promo do ano &nbsp;▪&nbsp; A maior promo do ano &nbsp;▪&nbsp; A maior promo do ano &nbsp;▪&nbsp; A maior promo do ano</div>
   <div class="wrap"><div class="in">
-    <div class="brand"><div class="ic"><i data-lucide="sparkles"></i></div>
-      <div><p class="eyebrow">Acompanhamento</p><h1>BEAUTY WEEK</h1></div></div>
+    <div><h1 class="bwlogo" aria-label="Beauty Week"><span class="b1">Beauty</span><span class="b2">WEEK</span><span class="b3"></span></h1>
+      <p class="bwsub">Acompanhamento comercial</p></div>
     <div class="chips">
       <div class="glass"><i data-lucide="clock"></i><span id="hData">Carregando…</span></div>
+      <a class="glass" href="hoje.html"><i data-lucide="activity"></i><span>Acompanhar o dia</span></a>
       <a class="glass" href="index.html"><i data-lucide="calendar-days"></i><span>Painel do mês</span></a>
     </div>
   </div></div>
@@ -181,13 +235,12 @@ tr.click{cursor:pointer} tr.click:hover td{background:var(--muted)}
   <nav class="tabs" id="tabs"></nav>
   <div id="aviso"></div>
   <section class="kpis" id="kpis"></section>
-  <div class="card pad">
+  <div id="tabelas" style="display:flex;flex-direction:column;gap:20px"></div>
+  <div class="card pad" id="cardCurva">
     <div><h2 style="font-size:18px">Vendido × esperado por hora</h2><p class="mf" id="curvaTxt"></p></div>
     <div class="tw"><div class="chart" id="chart"></div></div>
     <div class="legend"><span><i class="l-rl"></i>Vendido acumulado</span><span><i class="l-esp"></i>Esperado acumulado</span><span><i class="l-hb"></i>Vendido na hora</span><span><i class="l-mt"></i>Meta do dia</span></div>
   </div>
-  <section class="rk3" id="ranks"></section>
-  <div class="card" id="cardLojas"></div>
   <p class="nota" id="regras"></p>
 </main>
 
@@ -204,31 +257,42 @@ const sum=a=>a.reduce((s,x)=>s+x,0);
 const tom=r=>r==null?'':r>=1?'ok':r>=.9?'warn':'bad';
 const SEMANA=['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
 const CANAIS=[['total','Total canais','layers'],['varejo','Varejo','store'],['vd','VD','truck']];
-let B=null;const S={canal:'total',dia:'',reg:'',praca:'',gvo:''};
+const VISOES=[['regional','Regional'],['praca','Praça'],['gvo','GVO']];
+let B=null;const S={canal:'total',dia:'',reg:'',praca:'',gvo:'',rk:'gvo',ord:{}};
+
+// Indicadores: atingimento (<85% x vermelho, 85–99% amarelo, 100%+ verde) e comparação com a média do cluster
+const SINAL={ok:'<span class="sx ok" title="%T">'+ic('check')+'</span>',warn:'<span class="sx warn" title="%T">'+ic('minus')+'</span>',bad:'<span class="sx bad" title="%T">'+ic('x')+'</span>'};
+const sinal=(t,tit='')=>t?SINAL[t].replace('%T',esc(tit)):'';
+const tomAt=a=>a>=1?'ok':a>=.85?'warn':'bad';
+// valor ÷ média do cluster: na média ou acima = verde; até 5% abaixo = amarelo; mais que isso = vermelho (B1: invertido, menor é melhor)
+const tomCl=(v,m,menor)=>{if(v==null||!m)return'';const r=menor?m/v:v/m;return v===0&&menor?'ok':r>=1?'ok':r>=.95?'warn':'bad'};
+const gapCel=g=>`<span class="cv gap ${g>=0?'up':'dn'}">${g>=0?ic('arrow-up'):ic('arrow-down')}${g>=0?'+':'−'}${brl(Math.abs(g))}</span>`;
+const atCel=(real,meta)=>{const a=meta?real/meta:0;return `<span class="cv">${pct(a,1)}${sinal(tomAt(a),a>=1?'Bateu a meta':a>=.85?'Entre 85% e 99% da meta':'Abaixo de 85% da meta')}</span>`};
 
 // Parte do dia que já deveria estar vendida até hh:mm, pela curva (participação de cada hora)
 function fracao(curva,hm){if(!curva||!hm)return 0;const[h,m]=hm.split(':').map(Number);let f=0;for(let i=0;i<h&&i<24;i++)f+=curva[i];if(h<24)f+=curva[h]*(m/60);return Math.min(1,f)}
 const ultimoDia=c=>Object.keys(B[c].ate||{}).sort().pop()||'';
-// fração esperada da loja no dia: dia já fechado = 100%; dia em curso = curva até a hora do último cupom/pedido
-function fracLoja(c,l){
- const ate=B[c].ate[l.dia];if(!ate)return 0;
- if(l.dia<ultimoDia(c))return 1;
- const curva=c==='vd'?B.vd.curva:((B.varejo.curvas[l.dia]||{})[l.shopping?'shopping':'demais']);
- return fracao(curva,ate);
-}
-function linhas(){
+const curvaDe=l=>l.canal==='vd'?B.vd.curva:((B.varejo.curvas[l.dia]||{})[l.shopping?'shopping':'demais'])||[];
+function fracLoja(c,l){const ate=B[c].ate[l.dia];if(!ate)return 0;if(l.dia<ultimoDia(c))return 1;return fracao(curvaDe({...l,canal:c}),ate)}
+const canaisAtivos=()=>S.canal==='total'||S.canal==='ranking'?['varejo','vd']:[S.canal];
+function linhas(canais=canaisAtivos()){
  const out=[];
- for(const c of ['varejo','vd'])if(S.canal==='total'||S.canal===c)
-  B[c].lojas.forEach(l=>{if(l.dia!==S.dia)return;if(S.reg&&l.regional!==S.reg||S.praca&&l.praca!==S.praca||S.gvo&&l.gvo!==S.gvo)return;
-   const f=fracLoja(c,l);out.push({...l,canal:c,f,esp:l.meta*f})});
+ for(const c of canais)B[c].lojas.forEach(l=>{if(l.dia!==S.dia)return;if(S.reg&&l.regional!==S.reg||S.praca&&l.praca!==S.praca||S.gvo&&l.gvo!==S.gvo)return;
+  const f=fracLoja(c,l);out.push({...l,canal:c,f,esp:l.meta*f})});
  return out;
 }
 const agg=ls=>{const meta=sum(ls.map(l=>l.meta)),real=sum(ls.map(l=>l.real)),esp=sum(ls.map(l=>l.esp));
  return{meta,real,esp,at:meta?real/meta:0,ritmo:esp>0?real/esp:null,proj:esp>0?real/esp*meta:null,f:meta?esp/meta:0}};
 
+// Média de cada cluster no dia (todas as lojas de varejo com meta, sem filtro): BM, IPB e % B1
+function mediasCluster(){
+ const g={};B.varejo.lojas.filter(l=>l.dia===S.dia).forEach(l=>{const k=l.cluster||'Sem cluster';const x=g[k]=g[k]||{rec:0,bol:0,it:0,b1:0};x.rec+=l.real;x.bol+=l.bol||0;x.it+=l.it||0;x.b1+=l.b1||0});
+ const o={};for(const[k,x]of Object.entries(g))o[k]=x.bol?{bm:x.rec/x.bol,ipb:x.it/x.bol,b1:x.b1/x.bol,bol:x.bol}:null;return o;
+}
+
 function fillFiltros(){
  const todas=[...B.varejo.lojas,...B.vd.lojas];
- const opt=(el,vals,tudo,sel)=>{$(el).innerHTML=`<option value="">${tudo}</option>`+[...new Set(vals)].filter(Boolean).sort().map(v=>`<option ${v===sel?'selected':''}>${esc(v)}</option>`).join('')};
+ const opt=(el,vals,tudo,sel)=>{$(el).innerHTML=`<option value="">${tudo}</option>`+[...new Set(vals)].filter(Boolean).sort((a,b)=>a.localeCompare(b,'pt-BR')).map(v=>`<option ${v===sel?'selected':''}>${esc(v)}</option>`).join('')};
  $('fDia').innerHTML=B.dias.map(d=>{const x=new Date(d+'T12:00');return `<option value="${d}" ${d===S.dia?'selected':''}>${SEMANA[x.getDay()]}, ${d.slice(8)}/${d.slice(5,7)}</option>`}).join('');
  opt('fReg',todas.map(l=>l.regional),'Todas',S.reg);
  opt('fPraca',todas.filter(l=>!S.reg||l.regional===S.reg).map(l=>l.praca),'Todas',S.praca);
@@ -236,24 +300,22 @@ function fillFiltros(){
 }
 
 function kpis(a,ls){
- const ch=(r,t)=>`<span class="ritmo ${tom(r)}">${t}</span>`;
  const por=c=>{const x=agg(ls.filter(l=>l.canal===c));return x.meta?`${c==='vd'?'VD':'Varejo'} ${kbrl(x.real)} de ${kbrl(x.meta)} (${pct(x.at)})`:''};
- const parte=S.canal==='total'?`<p class="kl">${[por('varejo'),por('vd')].filter(Boolean).join(' · ')}</p>`:'';
+ const parte=S.canal==='total'||S.canal==='ranking'?`<p class="kl">${[por('varejo'),por('vd')].filter(Boolean).join(' · ')}</p>`:'';
+ const g=a.real-a.meta;
  $('kpis').innerHTML=`
   <div class="card kpi hero2"><p class="lbl">Realizado</p><p class="val">${kbrl(a.real)} <small>${pct(a.at,1)} da meta</small></p>
    <div class="prog"><i style="width:${Math.min(100,a.at*100)}%;background:var(--primary)"></i><b style="left:${Math.min(100,a.f*100)}%"></b></div>${parte}</div>
-  <div class="card kpi"><p class="lbl">Meta do dia</p><p class="val">${kbrl(a.meta)}</p><p class="kl">falta <b>${kbrl(Math.max(0,a.meta-a.real))}</b></p></div>
+  <div class="card kpi"><p class="lbl">Meta do dia</p><p class="val">${kbrl(a.meta)}</p><p class="kl">GAP <b class="gap ${g>=0?'up':'dn'}">${g>=0?'+':'−'}${kbrl(Math.abs(g))}</b></p></div>
   <div class="card kpi"><p class="lbl">Ritmo agora</p><p class="val ${a.ritmo==null?'':'c-'+tom(a.ritmo)}">${a.ritmo==null?'—':pct(a.ritmo)}</p>
-   ${a.ritmo==null?'<p class="kl">sem venda registrada ainda</p>':`${ch(a.ritmo,a.ritmo>=1?'No ritmo':a.ritmo>=.9?'Atenção':'Abaixo')}<p class="kl">esperado até agora <b>${kbrl(a.esp)}</b> (${pct(a.f)} do dia)</p>`}</div>
+   <p class="kl">${a.ritmo==null?'sem venda registrada ainda':`esperado até agora <b>${kbrl(a.esp)}</b> (${pct(a.f)} do dia)`}</p></div>
   <div class="card kpi"><p class="lbl">Projeção do dia</p><p class="val ${a.proj==null?'':'c-'+tom(a.proj/a.meta)}">${a.proj==null?'—':kbrl(a.proj)}</p><p class="kl">${a.proj==null?'':`${pct(a.proj/a.meta)} da meta no ritmo atual`}</p></div>`;
 }
 
 function grafico(ls){
  const H=Array(24).fill(0),E=Array(24).fill(0);let meta=0;
- ls.forEach(l=>{l.h.forEach((v,i)=>H[i]+=v);meta+=l.meta;
-  const curva=l.canal==='vd'?B.vd.curva:((B.varejo.curvas[l.dia]||{})[l.shopping?'shopping':'demais'])||[];
-  let acc=0;for(let i=0;i<24;i++){acc+=curva[i]||0;E[i]+=l.meta*acc}});
- const ates=['varejo','vd'].filter(c=>S.canal==='total'||S.canal===c).map(c=>B[c].ate[S.dia]).filter(Boolean).sort();
+ ls.forEach(l=>{l.h.forEach((v,i)=>H[i]+=v);meta+=l.meta;const curva=curvaDe(l);let acc=0;for(let i=0;i<24;i++){acc+=curva[i]||0;E[i]+=l.meta*acc}});
+ const ates=canaisAtivos().map(c=>B[c].ate[S.dia]).filter(Boolean).sort();
  const ateH=S.dia<[ultimoDia('varejo'),ultimoDia('vd')].sort().pop()?23:ates.length?+ates[ates.length-1].slice(0,2):-1;
  const h0=7,h1=22,N=h1-h0+1,W=760,Ht=280,L=60,R=14,T=24,Bt=30,iw=W-L-R,ih=Ht-T-Bt,cw=iw/N;
  const acc=[];let s=0;for(let i=0;i<24;i++){s+=H[i];acc.push(s)}
@@ -266,54 +328,91 @@ function grafico(ls){
  g+=`<polyline class="esp" points="${Array.from({length:N},(_,k)=>`${x(h0+k)+cw/2},${y(E[h0+k])}`).join(' ')}"/>`;
  if(ateH>=h0)g+=`<polyline class="rl" points="${Array.from({length:Math.min(ateH,h1)-h0+1},(_,k)=>`${x(h0+k)+cw/2},${y(acc[h0+k])}`).join(' ')}"/>`;
  $('chart').innerHTML=`<svg viewBox="0 0 ${W} ${Ht}" style="min-width:560px" role="img" aria-label="Vendido acumulado e esperado acumulado por hora">${g}</svg>`;
- $('curvaTxt').textContent=S.canal==='vd'?'VD (ERs): das 8h às 19h, pedidos faturados pela hora da autorização':S.canal==='varejo'?'Varejo: shopping até 22h; rua, galeria, hipermercado e cash & carry até 19h (curva das quintas e demais dias do mês)':'Varejo (shopping até 22h, demais até 19h) + VD (8h às 19h)';
+ $('curvaTxt').textContent=S.canal==='vd'?'VD (ERs): das 8h às 19h, pedidos faturados pela hora da autorização':S.canal==='varejo'?'Varejo: shopping até 22h; rua, galeria, hipermercado e cash & carry até 19h':'Varejo (shopping até 22h, demais até 19h) + VD (8h às 19h)';
 }
 
-function ranking(titulo,icone,chave,ls){
- const g={};ls.forEach(l=>{(g[l[chave]]=g[l[chave]]||[]).push(l)});
- const rows=Object.entries(g).map(([k,v])=>({nome:k,n:v.length,...agg(v)})).filter(r=>r.meta>0)
-  .sort((a,b)=>(b.ritmo??-1)-(a.ritmo??-1)||b.at-a.at);
- return `<div class="card"><div class="card-hd"><div><h2>${titulo}</h2><p>${rows.length} · ordenado pelo ritmo agora</p></div><span class="mf">${ic(icone)}</span></div>
-  <div class="rkl">${rows.map((r,i)=>`<div class="rkr"><span class="pos">${i+1}º</span><div style="min-width:0"><p class="nm" title="${esc(r.nome)}">${esc(r.nome)}</p><p class="sub">${r.n} ${S.canal==='vd'?'ER':'loja'}${r.n>1?'s':''} · ${kbrl(r.real)} de ${kbrl(r.meta)}</p></div>
-   <span class="v">${pct(r.at)}<small>da meta</small></span><span class="pill ${tom(r.ritmo)}" title="realizado ÷ esperado até agora">${r.ritmo==null?'—':pct(r.ritmo)}</span></div>`).join('')||'<p class="pad mf">Sem dados.</p>'}</div></div>`;
+// Tabela genérica com ordenação por coluna. cols: [{k,t,r?,v(row)->número p/ ordenar, h(row)->html, tot?->html}]
+function tabela(id,titulo,sub,cols,rows,extra='',rodape=''){
+ const o=S.ord[id]||{k:'at',d:-1};const col=cols.find(c=>c.k===o.k)||cols.find(c=>c.k==='at');
+ rows=[...rows].sort((a,b)=>{const x=col.v(a),y=col.v(b);return (x==null)-(y==null)||(x<y?-1:x>y?1:0)*o.d});
+ return `<div class="card"><div class="card-hd"><div><h2>${titulo}</h2><p>${sub}</p></div></div>${extra}
+  <div class="tw tall"><table class="tb"><thead><tr><th>#</th>${cols.map(c=>`<th class="s ${c.r?'r':''} ${c.k===o.k?'on':''}" data-tb="${id}" data-k="${c.k}">${c.t}${c.k===o.k?` <span class="ar">${o.d<0?'↓':'↑'}</span>`:''}</th>`).join('')}</tr></thead>
+  <tbody>${rows.map((r,i)=>`<tr><td class="mf tnum">${i+1}</td>${cols.map(c=>`<td class="${c.r?'r':''}">${c.h(r)}</td>`).join('')}</tr>`).join('')||`<tr><td colspan="${cols.length+1}" class="mf">Sem dados.</td></tr>`}</tbody>
+  ${rows.length?`<tfoot><tr><td></td>${cols.map(c=>`<td class="${c.r?'r':''}">${c.tot?c.tot(rows):''}</td>`).join('')}</tr></tfoot>`:''}</table></div>${rodape}</div>`;
 }
+const tot=(rows,k)=>sum(rows.map(r=>r[k]));
+const colsBase=()=>[
+ {k:'meta',t:'Meta',r:1,v:r=>r.meta,h:r=>brl(r.meta),tot:rs=>brl(tot(rs,'meta'))},
+ {k:'real',t:'Realizado',r:1,v:r=>r.real,h:r=>`<b>${brl(r.real)}</b>`,tot:rs=>brl(tot(rs,'real'))},
+ {k:'at',t:'% Ating.',r:1,v:r=>r.meta?r.real/r.meta:0,h:r=>atCel(r.real,r.meta),tot:rs=>atCel(tot(rs,'real'),tot(rs,'meta'))}];
+const colGap={k:'gap',t:'GAP',r:1,v:r=>r.real-r.meta,h:r=>gapCel(r.real-r.meta),tot:rs=>gapCel(tot(rs,'real')-tot(rs,'meta'))};
+const LEG=`<div class="tleg"><span>${sinal('ok')}100% ou mais da meta</span><span>${sinal('warn')}85% a 99%</span><span>${sinal('bad')}abaixo de 85%</span><span class="gap up">${ic('arrow-up')}acima da meta</span><span class="gap dn">${ic('arrow-down')}falta para a meta</span></div>`;
+const LEGV=`<div class="tleg" style="border-top:0;padding-top:0"><span>BM, IPB e % B1 comparados à média do cluster:</span><span>${sinal('ok')}na média ou melhor</span><span>${sinal('warn')}até 5% pior</span><span>${sinal('bad')}mais de 5% pior</span><span>(no % B1, menor é melhor)</span></div>`;
 
-function tabela(ls){
- const rows=[...ls].sort((a,b)=>(b.real/(b.esp||1e-9))-(a.real/(a.esp||1e-9)));
- $('cardLojas').innerHTML=`<div class="card-hd"><div><h2>${S.canal==='vd'?'ERs':S.canal==='varejo'?'Lojas':'Lojas e ERs'} (${rows.length})</h2><p>Ritmo = realizado ÷ esperado até agora</p></div></div>
-  <div class="tw tall"><table><thead><tr><th>#</th><th>${S.canal==='vd'?'ER':'Loja'}</th>${S.canal==='total'?'<th>Canal</th>':''}<th>Praça</th><th>GVO</th><th class="r">Meta do dia</th><th class="r">Realizado</th><th class="r">% meta</th><th class="r">Esperado agora</th><th class="r">Ritmo</th><th class="r">Projeção</th></tr></thead><tbody>
-  ${rows.map((l,i)=>{const r=l.esp>0?l.real/l.esp:null;return `<tr><td class="mf tnum">${i+1}</td><td><p class="nm">${esc(l.nome)}</p><p class="sub">${esc(l.id)}${l.canal==='varejo'?` · ${l.shopping?'shopping · até 22h':'até 19h'}`:''}</p></td>${S.canal==='total'?`<td>${l.canal==='vd'?'VD':'Varejo'}</td>`:''}
-   <td>${esc(l.praca)}</td><td>${esc(l.gvo)}</td><td class="r tnum">${brl(l.meta)}</td><td class="r tnum"><b>${brl(l.real)}</b></td><td class="r tnum">${pct(l.meta?l.real/l.meta:0)}</td>
-   <td class="r tnum mf">${brl(l.esp)}</td><td class="r"><span class="pill ${tom(r)}">${r==null?'—':pct(r)}</span></td><td class="r tnum">${r==null?'—':pct(r)}</td></tr>`}).join('')}
-  </tbody></table></div>`;
+function tabelaVarejo(ls){
+ const M=mediasCluster();
+ const rows=ls.filter(l=>l.canal==='varejo').map(l=>({...l,bm:l.bol?l.real/l.bol:null,ipb:l.bol?l.it/l.bol:null,pb1:l.bol?l.b1/l.bol:null,m:M[l.cluster||'Sem cluster']}));
+ const kpiCl=(r,k,fmt,menor)=>r[k]==null?'<span class="mf">—</span>':`<span class="cv">${fmt(r[k])}${sinal(tomCl(r[k],r.m&&r.m[k],menor),r.m?`Média ${r.cluster}: ${fmt(r.m[k])}`:'')}</span>`;
+ const totInd=(rs,k)=>{const bol=tot(rs,'bol');if(!bol)return'—';return k==='bm'?brl(tot(rs,'real')/bol,2):k==='ipb'?fx(tot(rs,'it')/bol,2):pct(tot(rs,'b1')/bol,1)};
+ const cols=[{k:'nome',t:'Loja',v:r=>r.nome,h:r=>`<p class="nm">${esc(r.nome)}</p><p class="sub">${esc(r.id)} · ${esc(r.cluster||'—')} · ${esc(r.praca)} · ${esc(r.gvo)}</p>`},
+  ...colsBase(),
+  {k:'bm',t:'Boleto Médio',r:1,v:r=>r.bm,h:r=>kpiCl(r,'bm',v=>brl(v,2)),tot:rs=>totInd(rs,'bm')},
+  {k:'ipb',t:'Itens/Boleto',r:1,v:r=>r.ipb,h:r=>kpiCl(r,'ipb',v=>fx(v,2)),tot:rs=>totInd(rs,'ipb')},
+  {k:'pb1',t:'% B1',r:1,v:r=>r.pb1,h:r=>{const x={...r,m:r.m&&{pb1:r.m.b1}};return kpiCl(x,'pb1',v=>pct(v,1),true)},tot:rs=>totInd(rs,'b1')},
+  colGap];
+ const chips=`<div class="cl">${Object.entries(M).filter(([,m])=>m).sort().map(([k,m])=>`<span>${esc(k)} · BM <b>${brl(m.bm,2)}</b> · IPB <b>${fx(m.ipb,2)}</b> · B1 <b>${pct(m.b1,1)}</b></span>`).join('')}</div>`;
+ return tabela('varejo',`Lojas · Varejo (${rows.length})`,`Varejo até ${B.varejo.ate[S.dia]||'—'} · médias do cluster no dia:`,cols,rows,chips,LEG+LEGV);
+}
+function tabelaVD(ls){
+ const rows=ls.filter(l=>l.canal==='vd');
+ const cols=[{k:'nome',t:'ER',v:r=>r.nome,h:r=>`<p class="nm">${esc(r.nome)}</p><p class="sub">${esc(r.id)} · ${esc(r.praca)} · ${esc(r.gvo)}</p>`},...colsBase(),colGap];
+ return tabela('vd',`ERs · VD (${rows.length})`,`VD até ${B.vd.ate[S.dia]||'—'} · pedidos com NF emitida no dia`,cols,rows,'',LEG);
+}
+function tabelaRanking(ls){
+ const g={};ls.forEach(l=>{const k=l[S.rk];const x=g[k]=g[k]||{nome:k,meta:0,real:0,mv:0,rv:0,md:0,rd:0,nv:0,nd:0};
+  x.meta+=l.meta;x.real+=l.real;if(l.canal==='vd'){x.md+=l.meta;x.rd+=l.real;x.nd++}else{x.mv+=l.meta;x.rv+=l.real;x.nv++}});
+ const rows=Object.values(g);const nomeV=VISOES.find(v=>v[0]===S.rk)[1];
+ const canal=(r,m,v,n,t)=>n?`${t} ${kbrl(v)} de ${kbrl(m)} (${pct(m?v/m:0)})`:'';
+ const cols=[{k:'nome',t:nomeV,v:r=>r.nome,h:r=>`<p class="nm">${esc(r.nome)}</p><p class="sub">${[canal(r,r.mv,r.rv,r.nv,'Varejo'),canal(r,r.md,r.rd,r.nd,'VD')].filter(Boolean).join(' · ')}</p>`},...colsBase(),colGap];
+ const seg=`<div class="filter" style="border-bottom:1px solid var(--border)"><div class="fld"><label>Ver ranking por</label><div class="seg" role="group">${VISOES.map(([k,t])=>`<button type="button" class="${S.rk===k?'on':''}" data-rk="${k}">${t}</button>`).join('')}</div></div></div>`;
+ return tabela('rk_'+S.rk,`Ranking por ${nomeV} · Varejo + VD`,`Meta e realizado dos dois canais somados${S.rk==='gvo'?' (gestor que cuida de lojas e de ERs aparece uma vez só)':''}`,cols,rows,seg,LEG);
 }
 
 function render(){
- $('tabs').innerHTML=CANAIS.map(([k,t,i])=>`<button class="tab ${S.canal===k?'on':''}" data-canal="${k}">${ic(i)}${t}</button>`).join('');
+ $('tabs').innerHTML=CANAIS.map(([k,t,i])=>`<button class="tab ${S.canal===k?'on':''}" data-canal="${k}">${ic(i)}${t}</button>`).join('')+
+  `<button class="tab rk ${S.canal==='ranking'?'on':''}" data-canal="ranking">${ic('trophy')}Ranking</button>`;
  const ls=linhas(),a=agg(ls);
- const sem=['varejo','vd'].filter(c=>S.canal==='total'||S.canal===c).flatMap(c=>B[c].semMeta.filter(x=>x.dia===S.dia).map(x=>({...x,c})));
  $('aviso').innerHTML=!ls.length?'<div class="aviso">Sem meta para este filtro.</div>':'';
- kpis(a,ls);grafico(ls);
- $('ranks').innerHTML=ranking('Regional','map','regional',ls)+ranking('Praça','map-pin','praca',ls)+ranking('GVO','user-round','gvo',ls);
- tabela(ls);
- const ateV=B.varejo.ate[S.dia],ateD=B.vd.ate[S.dia];
- $('hData').textContent=`${S.dia.slice(8)}/${S.dia.slice(5,7)} · Varejo até ${ateV||'—'} · VD até ${ateD||'—'}`;
- $('regras').innerHTML=`Varejo: cupons efetivados, receita líquida (−) trocas. VD: pedidos com NF emitida no dia, sem os cancelados pelo usuário, loja pela estrutura pai, valor do pedido.`+
-  (sem.length?` Fora do ranking (venda sem meta da Beauty Week): ${kbrl(sum(sem.map(x=>x.real)))} em ${sem.length} loja(s)/ER(s): ${sem.map(x=>esc(x.id)+(S.canal==='total'?` (${x.c==='vd'?'VD':'Varejo'})`:'')).join(', ')}.`:'')+
+ kpis(a,ls);
+ $('tabelas').innerHTML=S.canal==='ranking'?tabelaRanking(ls):(S.canal!=='vd'?tabelaVarejo(ls):'')+(S.canal!=='varejo'?tabelaVD(ls):'');
+ $('cardCurva').hidden=S.canal==='ranking';
+ if(S.canal!=='ranking')grafico(ls);
+ const sem=canaisAtivos().flatMap(c=>B[c].semMeta.filter(x=>x.dia===S.dia).map(x=>({...x,c})));
+ $('hData').textContent=`${S.dia.slice(8)}/${S.dia.slice(5,7)} · Varejo até ${B.varejo.ate[S.dia]||'—'} · VD até ${B.vd.ate[S.dia]||'—'}`;
+ $('regras').innerHTML=`Varejo: cupons efetivados, receita líquida (−) trocas; boletos sem os brindes (abaixo de R$ 1) e itens sem a sacola. VD: pedidos com NF emitida no dia, sem os cancelados pelo usuário, loja pela estrutura pai, valor do pedido. GAP = realizado − meta do dia.`+
+  (sem.length?` Fora das tabelas (venda sem meta da Beauty Week): ${kbrl(sum(sem.map(x=>x.real)))} em ${sem.length} loja(s)/ER(s): ${sem.map(x=>esc(x.id)+(canaisAtivos().length>1?` (${x.c==='vd'?'VD':'Varejo'})`:'')).join(', ')}.`:'')+
   ` Atualizado em ${B.geradoEm.slice(8,10)}/${B.geradoEm.slice(5,7)} às ${B.geradoEm.slice(11,16)}.`;
  lucide.createIcons();
 }
 
-document.addEventListener('click',e=>{const t=e.target.closest('[data-canal]');if(t){S.canal=t.dataset.canal;render()}});
+// Mesmo gestor nas duas abas (VAREJO e VD) com grafia diferente vira um nome só
+function normalizar(){const n={};for(const c of ['varejo','vd'])B[c].lojas.forEach(l=>{const k=String(l.gvo||'').trim().toUpperCase();l.gvo=n[k]=n[k]||String(l.gvo||'').trim()})}
+
+document.addEventListener('click',e=>{
+ const t=e.target.closest('[data-canal]');if(t){S.canal=t.dataset.canal;render();return}
+ const r=e.target.closest('[data-rk]');if(r){S.rk=r.dataset.rk;render();return}
+ const h=e.target.closest('th[data-tb]');if(h){const id=h.dataset.tb,k=h.dataset.k,o=S.ord[id]||{k:'at',d:-1};S.ord[id]={k,d:o.k===k?-o.d:(k==='nome'?1:-1)};render()}
+});
 $('fDia').addEventListener('change',e=>{S.dia=e.target.value;render()});
 $('fReg').addEventListener('change',e=>{S.reg=e.target.value;S.praca=S.gvo='';fillFiltros();render()});
 $('fPraca').addEventListener('change',e=>{S.praca=e.target.value;S.gvo='';fillFiltros();render()});
 $('fGvo').addEventListener('change',e=>{S.gvo=e.target.value;render()});
 $('fLimpar').addEventListener('click',()=>{S.reg=S.praca=S.gvo='';fillFiltros();render()});
 
-fetch('data/beauty.json?v='+Math.floor(Date.now()/60000),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(j=>{
- B=j;S.dia=[ultimoDia('varejo'),ultimoDia('vd')].sort().pop()||B.dias[B.dias.length-1];fillFiltros();render();
- setInterval(()=>fetch('data/beauty.json?v='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(k=>{B=k;render()}).catch(()=>{}),5*60000);
+const carregar=()=>fetch('data/beauty.json?v='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()});
+carregar().then(j=>{
+ B=j;normalizar();S.dia=[ultimoDia('varejo'),ultimoDia('vd')].sort().pop()||B.dias[B.dias.length-1];fillFiltros();render();
+ setInterval(()=>carregar().then(k=>{B=k;normalizar();render()}).catch(()=>{}),5*60000);
 }).catch(()=>{$('aviso').innerHTML='<div class="aviso">Ainda não há dados da Beauty Week. Rode o processar_beauty.py.</div>'});
 </script>
 </body>
