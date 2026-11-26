@@ -74,17 +74,30 @@ def arquivos(sub):
     return sorted(a for a in pasta.glob("*.xlsx") if not a.name.startswith("~$")) if pasta.exists() else []
 
 
+def arquivos_varejo():
+    """Cupons da pasta da Beauty Week e da pasta Dados/Hoje (mesmo export do acompanhamento do dia)."""
+    hoje = p.PASTA_VENDAS / "Hoje"
+    extra = [a for a in hoje.glob("cupom_venda*.xlsx") if not a.name.startswith("~$")] if hoje.exists() else []
+    return sorted(arquivos("VAREJO") + extra, key=lambda a: a.stat().st_mtime)
+
+
 def realizado_varejo():
-    fr = []
-    for a in arquivos("VAREJO"):
+    """Para cada dia vale o arquivo salvo por último que tem aquele dia (evita somar o mesmo cupom duas vezes)."""
+    por_dia = {}
+    for a in arquivos_varejo():
         v = p.ler_excel(a, usecols=["Loja", "Data", "Hora", "Status cupom", "Qtd itens", "Campanhas", "Receita liquida (-) trocas"])
         v = v[v["Status cupom"] == "Efetivado"]
         camp = v["Campanhas"].fillna("").astype(str).str.upper()
         itens = (v["Qtd itens"] - camp.str.contains("SACOLA").astype(int)).clip(lower=0)
         venda = v["Receita liquida (-) trocas"] >= p.LIMITE_BRINDE
-        fr.append(pd.DataFrame({"id": v["Loja"].map(cod), "dia": pd.to_datetime(v["Data"], format="%d/%m/%Y").dt.strftime("%Y-%m-%d"),
-                                "hm": v["Hora"].astype(str).str.slice(0, 5), "valor": v["Receita liquida (-) trocas"],
-                                "bol": venda.astype(int), "it": itens.where(venda, 0), "b1": (venda & (itens <= 1)).astype(int)}))
+        df = pd.DataFrame({"id": v["Loja"].map(cod), "dia": pd.to_datetime(v["Data"], format="%d/%m/%Y").dt.strftime("%Y-%m-%d"),
+                           "hm": v["Hora"].astype(str).str.slice(0, 5), "valor": v["Receita liquida (-) trocas"],
+                           "bol": venda.astype(int), "it": itens.where(venda, 0), "b1": (venda & (itens <= 1)).astype(int)})
+        for d, g in df.groupby("dia"):
+            por_dia[d] = (a, g)
+    for d, (a, _) in sorted(por_dia.items()):
+        print(f"  Varejo {d}: {a.relative_to(p.BASE)}")
+    fr = [g for _, g in por_dia.values()]
     return pd.concat(fr, ignore_index=True) if fr else pd.DataFrame(columns=["id", "dia", "hm", "valor", "bol", "it", "b1"])
 
 
