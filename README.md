@@ -109,5 +109,63 @@ Primeiro a tabela dos consultores de loja e a dos digitais, com receita/dia, bol
 - A identificação é declarada pela própria pessoa (não há login).
 
 ## Avaliação das ações (aba Lojas)
-- Cada ação registrada mostra **IPB, preço médio e BM do dia seguinte ao dia da ação** contra a média dos **3 últimos dias iguais da semana** (ex.: quinta contra as 3 quintas anteriores; no começo do mês, os que houver). Se a ação foi para um consultor, a conta é com a venda dele; senão, a da loja.
-- Veredito: **Melhorou** (2 dos 3 indicadores subiram), **Piorou** (2 dos 3 caíram) ou **Misto**. Sem o dia seguinte fechado: "Aguardando"; sem venda no dia: "Sem venda para medir". A coluna Ação da tabela de lojas mostra o veredito da última ação.
+- **Dias avaliados (2):** ação cadastrada **antes das 14h** do dia da ação → o próprio dia e o seguinte; cadastrada **a partir das 14h** → os 2 dias seguintes. O horário vem do `criado_em` da planilha (ou do cadastro no navegador). Ação cadastrada depois do dia da ação conta a partir do próprio dia.
+- **Base:** cada dia avaliado contra o mesmo dia da semana das 3 semanas anteriores (ex.: sex 06 e sáb 07 × as 3 sextas e os 3 sábados antes). No começo do mês a base usa o fim do mês anterior (`ant`: últimos 21 dias, gravado pelo processamento). No último dia do mês fechado, vale só o dia do mês.
+- **Indicadores:** IPB, preço médio e boleto médio dos 2 dias contra a base, da loja ou do consultor (ação para consultor). **Deu certo** = 2 dos 3 subiram; **Não deu certo** = 2 dos 3 caíram; **Neutro** = o resto. "Aguardando dd/mm" até o 2º dia fechar.
+- Aparece no painel "Ação em análise" (veredito, "N de 3 indicadores subiram", período e os 3 indicadores antes → depois), na lista de ações da loja, na coluna Ação da tabela de lojas e nas ações do mês (aba Entender). O gráfico da loja destaca os 2 dias avaliados.
+
+## Metas por consultor
+- Pasta `Metas/Consultores` (fica só no computador, como as outras planilhas). O arquivo com o nome do mês (ex.: `METAS NOVEMBRO CONSULTORES.xlsx`) traz uma linha por consultor e loja: loja (PDV), consultor (código/matrícula do Retaguarda), nome (opcional) e a meta do mês (coluna com "META" no nome). O LEIA-ME da pasta descreve o formato.
+- **Diarização:** meta do dia do consultor = meta do mês do consultor × (meta do dia da loja ÷ meta do mês da loja), ou seja, a mesma diarização da loja. Consultor com meta e ainda sem venda também entra no painel.
+- **Meta de hoje do consultor** = meta diarizada de hoje + gap do consultor até ontem ÷ dias que faltam (mesma regra da loja). Usada na "Meta de hoje por consultor" (painel do mês, com loja filtrada) e na hoje.html. Loja sem metas por consultor continua com a meta da loja dividida em partes iguais entre o time.
+
+## Meses (filtro de mês)
+- O `processar_dados.py` processa cada mês com vendas em `Dados/` e meta no `Metas_Canal_Loja.xlsx` e grava `data/pulsar_AAAA-MM.json`; `data/pulsar.json` é o mês mais recente e `data/meses.json` lista os meses. Cada mês usa os 3 meses anteriores como referência e o mesmo mês do ano anterior (ex.: `Dados/NOVEMBRO 2025`).
+- O painel abre no mês atual (visão de hoje com o resultado até ontem). O filtro **Mês** abre um mês anterior para consulta; nele as abas de hoje mostram que o mês já fechou.
+- Meta mensal de loja (`METAS <MÊS> VAREJO…xlsx`, aba VAREJO): o código da loja é reconhecido pelo conteúdo da coluna, mesmo com o título trocado.
+- Metas por consultor sem código: ligadas pelo **nome** às vendas (nome completo na mesma loja; em qualquer loja; nome cortado pelo começo; primeiro e último nome; nome abreviado com todas as palavras contidas no nome das vendas; nome muito parecido na mesma loja, para erros de digitação). Quem não for encontrado aparece só com a meta e é listado no processamento.
+
+## Hoje · Consultor
+- Aba com o desafio de cada consultor hoje: vender R$ X (meta própria diarizada como a loja + o gap dele ÷ dias que faltam), garantir N boletos com o BM alvo da loja (limitado ao maior BM do cluster), IPB alvo da loja, BT 32% e BP 30%, comparados com a média dos últimos 7 dias com venda dele.
+- Ordem: R$ em risco hoje (meta de hoje − venda média por dia recente). A aba de lojas passou a se chamar **Hoje · Lojas**.
+- O maior BM do cluster (teto do "Garantir") usa o mês somado aos 3 meses de referência.
+
+## Acompanhamento Meta Desafio
+- Campo **Meta** nos filtros (painel do mês e hoje.html): **Oficial** ou **Desafio (+5%)**. No desafio, todas as metas de loja e de consultor são multiplicadas por 1,05 (`FATOR_DESAFIO`) antes de qualquer cálculo: % da meta, deveria estar, gap, meta de hoje, boletos e BM necessários, "Garantir", consultores e avaliações.
+- O selo "Meta Desafio · +5%" aparece no topo. A escolha fica lembrada no navegador; o link com `?meta=desafio` abre direto no desafio. Na aba Uso, os acessos aparecem como "… · desafio".
+
+## Filtro de dia
+- Um filtro só, com os dias do mês. O dia escolhido vira o "hoje" do painel: resultado até a véspera, meta do dia + gap ÷ dias que faltam.
+- **Dia anterior:** mostra os objetivos que o dia tinha naquela manhã e o que foi feito (realizado do dia e % do objetivo, no card da meta e em cada loja).
+- **Dia futuro:** meta do dia + a parte do gap de hoje (gap até ontem ÷ dias que faltam a partir de hoje); o resultado continua até ontem.
+- **Mês fechado:** opção "Mês inteiro" (padrão) para Consultores, Lojas e Entender; escolher um dia mostra os objetivos daquele dia.
+- Consultores, Lojas e Entender usam o mês até a véspera do dia escolhido.
+
+## Constância (aba Hoje · Lojas)
+- Mede se a loja bate a meta todo dia ou só no dia de sorte: últimos 30 dias com meta até a véspera do dia escolhido (atravessa o mês anterior, que vem no bloco `pm` de cada loja gerado pelo `processar_dados.py`). Fica na aba Hoje · Lojas, junto do gráfico de atingimento da meta por dia.
+- **Dia ruim** = venda abaixo de 70% da meta do dia.
+- **Constante**: bate em 50% dos dias ou mais e tem até 20% de dias ruins. **Inconstante**: bate em menos de 25% dos dias ou tem 40% ou mais de dias ruins. **Oscila**: o resto.
+- Sem filtro de loja: tabela das lojas (dias batidos, dias ruins, boletos vs ano passado, IPB, %B1, BM) e o que as constantes da rede têm contra as inconstantes (mediana).
+- Com loja: dia que bate × dia que não bate (boletos/dia, IPB, BM) e a loja constante para copiar (mesmo cluster, de preferência da mesma praça, a que mais bate).
+
+## Ranking (aba Ranking)
+- Ranking de atingimento do mês por GR (GRVO), GVO e loja, dentro do filtro.
+- Atingimento diarizado = realizado até a véspera do dia escolhido ÷ meta diarizada até a véspera.
+- Medalhas (sobre o % arredondado a 1 casa): **Diamante** ≥ 100% · **Ouro** ≥ 99% · **Prata** ≥ 98% · **Bronze** ≥ 97%.
+
+## Domingo sem meta (Rua e Galeria)
+- Lojas dos clusters **Rua** e **Galeria** (coluna CLUSTER do dCentros) não abrem aos domingos: a meta do domingo é zerada e redistribuída nos outros dias do mês, na proporção da diarização. O total do mês não muda.
+- A meta dos consultores dessas lojas segue a mesma diarização (também sem domingo).
+- Exceções (loja desses clusters que abre no domingo): código da loja em `LOJAS_ABREM_DOMINGO`, no `processar_dados.py`.
+
+## Beauty Week (beauty.html)
+- Página de acompanhamento da Beauty Week: **Total canais**, **Varejo** e **VD**, com ranking por regional, praça e GVO, e a lista de lojas/ERs.
+- Bases (pasta `Acompanhamento Beauty Week`, fora do GitHub): `METAS/METAS DIA.xlsx` (abas VAREJO e VD: PDV, praça, GVO, META, DIA) e os realizados em `REALIZADOS/VAREJO` (cupons) e `REALIZADOS/VD` (pedidos com NF emitida).
+- **Varejo:** só cupons Efetivados; realizado = soma de "Receita liquida (-) trocas".
+- **VD:** sem os pedidos "Cancelado Pelo Usuário" (DetalheSituaçãoComercial); loja = código da EstruturaPai (sem estrutura pai, como o Omnichannel, usa o CanalDistribuicao); realizado = soma do ValorPedido; dia = DataFaturamento.
+- **Ritmo (horaização):** realizado ÷ esperado até a hora do último cupom/pedido. Varejo: curva de venda por hora do mês, no mesmo dia da semana, separada em shopping (até 22h) e demais (rua, galeria, hipermercado e cash & carry, até 19h). VD (ERs): uniforme das 8h às 19h. Projeção do dia = realizado ÷ parte do dia já passada.
+- Regional pela praça (dCentros). Venda de loja/ER sem meta da Beauty Week aparece só no rodapé, fora do ranking.
+- **HUBs** (aba HUB das metas): realizado da base do VD pelo código do **CanalDistribuicao**, sem os cancelados, somando o ValorPedido. HUB sem DIA vale para o dia mais recente; HUB sem META aparece como "sem meta" (sem % e sem GAP). Fica fora do Total canais e do Ranking, porque esses pedidos já contam nas ERs.
+- Atualização automática: dê dois cliques em `Beauty Week - atualizar sozinho.bat`. A janela vigia `REALIZADOS/VAREJO` e `REALIZADOS/VD` e, a cada arquivo novo, processa e publica nas branches main e develop. Feche a janela para parar. Registro em `Acompanhamento Beauty Week/atualizacao_automatica.log`.
+- Varejo: o processamento também lê o export de cupons de `Dados/Hoje` (o mesmo do acompanhamento do dia) e, para cada dia, usa o arquivo salvo por último.
+- Atualizar: salve os arquivos novos nas pastas e rode **Atualizar Beauty Week.bat** (ou `python processar_beauty.py`); depois publique o `data/beauty.json`.
