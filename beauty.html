@@ -219,6 +219,17 @@ select{background:var(--background)}
 .tleg span{display:inline-flex;align-items:center;gap:6px}
 tfoot td{font-weight:800;background:var(--muted);border-bottom:0}
 .nota{font-size:12px;color:var(--muted-fg)}
+.tab.rk+.tab.rk{margin-left:0}
+.com{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px;align-items:start}
+.com .card-hd .who{display:flex;align-items:center;gap:10px}
+.com .av{width:40px;height:40px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font:800 16px var(--font-display);flex:none}
+.com pre{margin:0;padding:14px 20px;max-height:340px;overflow:auto;white-space:pre-wrap;word-break:break-word;font:500 13px/1.5 var(--font-sans);background:var(--muted);border-block:1px solid var(--border)}
+.com .acts{display:flex;gap:8px;flex-wrap:wrap;padding:14px 20px}
+.wa{display:inline-flex;align-items:center;gap:8px;border-radius:12px;padding:10px 16px;font-weight:800;text-decoration:none;background:#1fa855;color:#fff;border:0}
+.wa:hover{filter:brightness(1.07)}
+.cp{display:inline-flex;align-items:center;gap:8px;border-radius:12px;padding:10px 16px;font-weight:800;background:var(--card);color:var(--foreground);border:1px solid var(--border)}
+.tag{display:inline-block;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:800;background:var(--primary);color:#fff;text-transform:uppercase;letter-spacing:.04em}
+@media (max-width:700px){.com{grid-template-columns:1fr} .com pre{padding:12px 16px} .com .acts{padding:12px 16px} .wa,.cp{flex:1;justify-content:center}}
 .msort{display:none}
 @media (max-width:700px){
   .hero .in{padding-block:26px 22px;min-height:0}
@@ -318,7 +329,7 @@ function fracao(curva,hm){if(!curva||!hm)return 0;const[h,m]=hm.split(':').map(N
 const ultimoDia=c=>Object.keys(B[c].ate||{}).sort().pop()||'';
 const curvaDe=l=>l.canal==='vd'||l.canal==='hub'?B.vd.curva:((B.varejo.curvas[l.dia]||{})[l.shopping?'shopping':'demais'])||[];
 function fracLoja(c,l){const ate=B[c].ate[l.dia];if(!ate)return 0;if(l.dia<ultimoDia(c))return 1;return fracao(curvaDe({...l,canal:c}),ate)}
-const canaisAtivos=()=>S.canal==='total'||S.canal==='ranking'?['varejo','vd']:[S.canal];
+const canaisAtivos=()=>S.canal==='total'||S.canal==='ranking'||S.canal==='com'?['varejo','vd']:[S.canal];
 function linhas(canais=canaisAtivos()){
  const out=[];
  for(const c of canais)B[c].lojas.forEach(l=>{if(l.dia!==S.dia)return;if(S.reg&&l.regional!==S.reg||S.praca&&l.praca!==S.praca||S.gvo&&l.gvo!==S.gvo)return;
@@ -422,6 +433,44 @@ function tabelaHub(ls){
  const cols=[{k:'nome',t:'HUB',v:r=>r.nome,h:r=>`<p class="nm">${esc(r.nome)}</p><p class="sub">${esc(r.id)} · ${esc(r.praca)} · ${esc(r.gvo)}</p>`},...colsBase(),colGap];
  return tabela('hub',`HUBs (${rows.length})`,`Pedidos da base do VD pelo canal de distribuição do HUB, sem os cancelados · até ${B.hub.ate[S.dia]||'—'}`+(sem.length?` · % e GAP do total só com os HUBs que têm meta`:''),cols,rows,'',LEG);
 }
+// Comunicação: mensagem pronta no WhatsApp para cada regional (dia selecionado, sem os demais filtros)
+const CONTATOS=[
+ {reg:'REGIONAL 1',nome:'Clarissa',fone:'5584998838844'},
+ {reg:'REGIONAL 2',nome:'Giovanna',fone:'5598992366384'},
+ {reg:'REGIONAL 3',nome:'Dani',fone:'5584998522684'},
+ {reg:'REGIONAL 4',nome:'Fabiana',fone:'5571996939590',diretoria:true}];
+const LINK_BW=location.hostname.endsWith('github.io')?location.href.split(/[?#]/)[0]:'https://fabio-paulo-silva.github.io/PULSAR-COMERCIAL/beauty.html';
+const foneTxt=f=>{const d=f.slice(2);return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`};
+const emo=a=>a>=1?'✅':a>=.85?'🟡':'❌';
+const gapTxt=g=>`${g>=0?'⬆️ +':'⬇️ −'}${kbrl(Math.abs(g))}`;
+function doDia(canais){const o=[];for(const c of canais)B[c].lojas.forEach(l=>{if(l.dia===S.dia)o.push({...l,canal:c})});return o}
+function bloco(titulo,ls,extra=''){const m=sum(ls.map(l=>l.meta)),r=sum(ls.map(l=>l.real)),a=m?r/m:0;
+ return `*${titulo}*${extra}\nMeta: ${kbrl(m)}\nRealizado: ${kbrl(r)}\nAtingimento: ${pct(a,1)} ${emo(a)}\nGAP: ${gapTxt(r-m)}`}
+function linhaCanal(nome,ls){const m=sum(ls.map(l=>l.meta)),r=sum(ls.map(l=>l.real));return m?`${nome}: ${kbrl(r)} de ${kbrl(m)} (${pct(r/m,1)}) ${emo(r/m)} · GAP ${gapTxt(r-m)}`:''}
+function pracas(ls,det){const g={};ls.forEach(l=>{(g[l.praca]=g[l.praca]||[]).push(l)});
+ return Object.entries(g).map(([k,v])=>({k,v,m:sum(v.map(l=>l.meta)),r:sum(v.map(l=>l.real))})).sort((a,b)=>b.r/b.m-a.r/a.m).map(x=>{const a=x.m?x.r/x.m:0;
+  return det?`${emo(a)} *${x.k}* · ${pct(a,1)}\nMeta ${kbrl(x.m)} · Real ${kbrl(x.r)} · GAP ${gapTxt(x.r-x.m)}`+
+   ['varejo','vd'].map(c=>{const t=linhaCanal(c==='vd'?'VD':'Varejo',x.v.filter(l=>l.canal===c));return t?`\n   ▫️ ${t}`:''}).join(''):
+   `${emo(a)} ${x.k}: ${kbrl(x.r)} de ${kbrl(x.m)} (${pct(a,1)}) · GAP ${gapTxt(x.r-x.m)}`}).join(det?'\n\n':'\n')}
+function mensagem(c){
+ const d=new Date(S.dia+'T12:00'),todas=doDia(['varejo','vd']),reg=todas.filter(l=>l.regional===c.reg),num=c.reg.replace(/\D/g,'');
+ const cab=`*BEAUTY WEEK · Parcial de ${SEMANA[d.getDay()]}, ${S.dia.slice(8)}/${S.dia.slice(5,7)}*\nOlá, ${c.nome}! Seguem os resultados${B.varejo.ate[S.dia]||B.vd.ate[S.dia]?` (Varejo até ${B.varejo.ate[S.dia]||'—'} · VD até ${B.vd.ate[S.dia]||'—'})`:''}.`;
+ const partes=[cab];
+ if(c.diretoria){
+  const hubs=doDia(['hub']).filter(l=>l.meta>0);
+  partes.push('━━━━━━━━━━━━\n📊 *VISÃO GERAL · DIRETORIA*',bloco('Total canais (Varejo + VD)',todas),
+   `*Por canal*\n${[linhaCanal('Varejo',todas.filter(l=>l.canal==='varejo')),linhaCanal('VD',todas.filter(l=>l.canal==='vd')),hubs.length?linhaCanal('HUBs com meta',hubs):''].filter(Boolean).join('\n')}`,
+   `*Por praça*\n${pracas(todas,false)}`,'━━━━━━━━━━━━\n📍 *REGIONAL '+num+'*');
+ }
+ partes.push(bloco(`Total Regional ${num}`,reg),`*Detalhamento por praça*\n${pracas(reg,true)||'Sem dados.'}`,`Acompanhe no Pulsar 👉 ${LINK_BW}`);
+ return partes.join('\n\n');
+}
+function comunicacao(){
+ return `<div class="aviso" style="background:var(--muted);color:var(--muted-fg)">${ic('info')}<span>As mensagens usam o dia selecionado (${S.dia.slice(8)}/${S.dia.slice(5,7)}) e os dados da última atualização, com Varejo + VD de todas as praças da regional. Os outros filtros não entram. Confira a prévia antes de enviar.</span></div>
+ <div class="com">${CONTATOS.map((c,i)=>{const t=mensagem(c);return `<div class="card"><div class="card-hd"><div class="who"><span class="av">${esc(c.nome[0])}</span><div><h2 style="text-transform:none">${esc(c.nome)}</h2><p>${esc(c.reg.replace('REGIONAL','Regional'))} · ${foneTxt(c.fone)}</p></div></div>${c.diretoria?'<span class="tag">Diretoria comercial</span>':''}</div>
+  <pre id="msg${i}">${esc(t)}</pre>
+  <div class="acts"><a class="wa" href="https://wa.me/${c.fone}?text=${encodeURIComponent(t)}" target="_blank" rel="noopener">${ic('message-circle')}Abrir no WhatsApp</a><button class="cp" type="button" data-cp="${i}">${ic('copy')}Copiar</button></div></div>`}).join('')}</div>`;
+}
 function tabelaRanking(ls){
  const g={};ls.forEach(l=>{const k=l[S.rk];const x=g[k]=g[k]||{nome:k,meta:0,real:0,mv:0,rv:0,md:0,rd:0,nv:0,nd:0};
   x.meta+=l.meta;x.real+=l.real;if(l.canal==='vd'){x.md+=l.meta;x.rd+=l.real;x.nd++}else{x.mv+=l.meta;x.rv+=l.real;x.nv++}});
@@ -434,13 +483,15 @@ function tabelaRanking(ls){
 
 function render(){
  $('tabs').innerHTML=CANAIS.map(([k,t,i])=>`<button class="tab ${S.canal===k?'on':''}" data-canal="${k}">${ic(i)}${t}</button>`).join('')+
-  `<button class="tab rk ${S.canal==='ranking'?'on':''}" data-canal="ranking">${ic('trophy')}Ranking</button>`;
+  `<button class="tab rk ${S.canal==='ranking'?'on':''}" data-canal="ranking">${ic('trophy')}Ranking</button>`+
+  `<button class="tab rk ${S.canal==='com'?'on':''}" data-canal="com">${ic('message-circle')}Comunicação</button>`;
  const ls=linhas(),a=agg(S.canal==='hub'?ls.filter(l=>l.meta>0):ls);
  $('aviso').innerHTML=!ls.length?'<div class="aviso">Sem meta para este filtro.</div>':'';
  kpis(a,ls);
- $('tabelas').innerHTML=S.canal==='ranking'?tabelaRanking(ls):S.canal==='hub'?tabelaHub(ls):(S.canal!=='vd'?tabelaVarejo(ls):'')+(S.canal!=='varejo'?tabelaVD(ls):'');
- $('cardCurva').hidden=S.canal==='ranking';
- if(S.canal!=='ranking')grafico(S.canal==='hub'?ls.filter(l=>l.meta>0):ls);
+ $('tabelas').innerHTML=S.canal==='com'?comunicacao():S.canal==='ranking'?tabelaRanking(ls):S.canal==='hub'?tabelaHub(ls):(S.canal!=='vd'?tabelaVarejo(ls):'')+(S.canal!=='varejo'?tabelaVD(ls):'');
+ $('cardCurva').hidden=S.canal==='ranking'||S.canal==='com';
+ $('kpis').hidden=S.canal==='com';
+ if(S.canal!=='ranking'&&S.canal!=='com')grafico(S.canal==='hub'?ls.filter(l=>l.meta>0):ls);
  const sem=canaisAtivos().flatMap(c=>B[c].semMeta.filter(x=>x.dia===S.dia).map(x=>({...x,c})));
  $('hData').textContent=`${S.dia.slice(8)}/${S.dia.slice(5,7)} · Varejo até ${B.varejo.ate[S.dia]||'—'} · VD até ${B.vd.ate[S.dia]||'—'}`;
  $('regras').innerHTML=`Varejo: cupons efetivados, receita líquida (−) trocas; boletos sem os brindes (abaixo de R$ 1) e itens sem a sacola. VD: pedidos com NF emitida no dia, sem os cancelados pelo usuário, loja pela estrutura pai, valor do pedido. HUBs: mesma base do VD pelo código do canal de distribuição (fora do Total canais e do Ranking, porque os mesmos pedidos já contam nas ERs). GAP = realizado − meta do dia.`+
@@ -454,6 +505,8 @@ function normalizar(){B.hub=B.hub||{ate:{},lojas:[],semMeta:[],curva:B.vd.curva}
 
 document.addEventListener('click',e=>{
  const t=e.target.closest('[data-canal]');if(t){S.canal=t.dataset.canal;render();return}
+ const cp=e.target.closest('[data-cp]');if(cp){const t=$('msg'+cp.dataset.cp).textContent;const ok=()=>{cp.lastChild.textContent='Copiado!';setTimeout(()=>{cp.lastChild.textContent='Copiar'},1800)};
+  (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(ok).catch(()=>{const r=document.createRange();r.selectNodeContents($('msg'+cp.dataset.cp));const s=getSelection();s.removeAllRanges();s.addRange(r)});return}
  const r=e.target.closest('[data-rk]');if(r){S.rk=r.dataset.rk;render();return}
  const h=e.target.closest('th[data-tb]');if(h){const id=h.dataset.tb,k=h.dataset.k,o=S.ord[id]||{k:'at',d:-1};S.ord[id]={k,d:o.k===k?-o.d:(k==='nome'?1:-1)};render()}
 });
