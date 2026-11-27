@@ -40,7 +40,11 @@ VD_ABRE, VD_FECHA = 8, 19
 CANCELADO_VD = "CANCELADO PELO USUÁRIO"
 # Códigos cujo realizado soma em outro PDV (estrutura sem meta própria que pertence a outra loja/ER)
 SOMAR_EM = {"25047": "20933"}   # 25047 -> Santa Luzia (20933)
-AVISOS = []   # metas repetidas (mesmo PDV no mesmo dia): vale a primeira linha da aba
+AVISOS = []
+# Detalhe VD: faixas de valor do pedido e ordem das segmentações (coluna Papel)
+FAIXAS_VD = [(0, 150, "Até R$ 150"), (150, 300, "R$ 150 a 300"), (300, 500, "R$ 300 a 500"), (500, 1000, "R$ 500 a 1.000"),
+             (1000, 2000, "R$ 1.000 a 2.000"), (2000, float("inf"), "Acima de R$ 2.000")]
+ORDEM_PAPEL = ["Consumidor Final", "Revendedor", "Cobre", "Bronze", "Prata", "Ouro", "Platina", "Rubi", "Esmeralda GB", "Diamante GB"]   # metas repetidas (mesmo PDV no mesmo dia): vale a primeira linha da aba
 
 cod = lambda v: (re.match(r"\s*(\d+)", str(v)) or [None, None])[1]
 
@@ -112,8 +116,21 @@ def realizado_vd():
         aut = pd.to_datetime(v["DataAutorizaçãoFaturamento"], format="%d/%m/%Y %H:%M", errors="coerce")
         fr.append(pd.DataFrame({"id": loja, "hub": v["CanalDistribuicao"].map(cod),
                                 "dia": pd.to_datetime(v["DataFaturamento"], format="%d/%m/%Y").dt.strftime("%Y-%m-%d"),
-                                "hm": aut.dt.strftime("%H:%M"), "valor": v["ValorPedido"]}))
-    return pd.concat(fr, ignore_index=True) if fr else pd.DataFrame(columns=["id", "hub", "dia", "hm", "valor"])
+                                "hm": aut.dt.strftime("%H:%M"), "valor": v["ValorPedido"],
+                                "papel": v["Papel"].fillna("Sem segmentação").astype(str).str.strip(),
+                                "itens": pd.to_numeric(v["QtdeItens"], errors="coerce").fillna(0)}))
+    return pd.concat(fr, ignore_index=True) if fr else pd.DataFrame(columns=["id", "hub", "dia", "hm", "valor", "papel", "itens"])
+
+
+def detalhe_vd(rd):
+    """Pedidos do VD por dia, ER, segmentação e faixa de valor: [dia, id, papel, faixa, pedidos, valor, itens]."""
+    d = rd.dropna(subset=["id", "dia"]).copy()
+    lim = [f[0] for f in FAIXAS_VD] + [float("inf")]
+    d["faixa"] = pd.cut(d["valor"], bins=lim, labels=False, right=False).fillna(0).astype(int)
+    g = d.groupby(["dia", "id", "papel", "faixa"]).agg(n=("valor", "size"), valor=("valor", "sum"), itens=("itens", "sum")).reset_index()
+    papeis = [x for x in ORDEM_PAPEL if x in set(g["papel"])] + sorted(set(g["papel"]) - set(ORDEM_PAPEL))
+    return {"faixas": [f[2] for f in FAIXAS_VD], "papeis": papeis,
+            "linhas": [[r.dia, r.id, r.papel, int(r.faixa), int(r.n), round(float(r.valor), 2), int(r.itens)] for r in g.itertuples()]}
 
 
 def curva_varejo(dia: pd.Timestamp, shopping: set):
@@ -187,7 +204,8 @@ def main():
             curvas[d] = None
     saida = {"geradoEm": datetime.now().isoformat(timespec="minutes"), "dias": dias,
              "varejo": {"ate": av, "lojas": lv, "semMeta": sv, "curvas": curvas},
-             "vd": {"ate": ad, "lojas": ld, "semMeta": sd, "curva": curva_vd(), "abre": VD_ABRE, "fecha": VD_FECHA},
+             "vd": {"ate": ad, "lojas": ld, "semMeta": sd, "curva": curva_vd(), "abre": VD_ABRE, "fecha": VD_FECHA,
+                    "det": detalhe_vd(rd)},
              "hub": {"ate": ah, "lojas": lh, "semMeta": [], "curva": curva_vd()}, "avisos": AVISOS}
     ARQ_SAIDA.write_text(json.dumps(saida, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     for canal, ls, sm, ate in (("Varejo", lv, sv, av), ("VD", ld, sd, ad)):

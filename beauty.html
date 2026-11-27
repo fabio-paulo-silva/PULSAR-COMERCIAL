@@ -237,6 +237,18 @@ tfoot td{font-weight:800;background:var(--muted);border-bottom:0}
 .cp{cursor:pointer;display:inline-flex;align-items:center;gap:8px;border-radius:12px;padding:10px 16px;font-weight:800;background:var(--card);color:var(--foreground);border:1px solid var(--border)}
 .tag{display:inline-block;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:800;background:var(--primary);color:var(--primary-fg);text-transform:uppercase;letter-spacing:.04em}
 @media (max-width:700px){.com{grid-template-columns:1fr} .com pre{padding:12px 16px} .com .acts{padding:12px 16px} .wa,.cp{flex:1;justify-content:center}}
+.mx th,.mx td{white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
+.mx .l{text-align:left;position:sticky;left:0;background:var(--card);z-index:1}
+.mx tfoot .l,.mx tfoot td{background:var(--muted)}
+.mx small{display:block;font-size:11px;color:var(--muted-fg);font-weight:600}
+.mx td.pk{background:color-mix(in oklab,var(--primary) 16%,var(--card));font-weight:800}
+.mx .tt{border-left:2px solid var(--border);font-weight:700}
+@media (max-width:700px){
+  .tb.mx{display:table;width:100%} .tb.mx thead{display:table-header-group} .tb.mx tbody{display:table-row-group} .tb.mx tfoot{display:table-footer-group}
+  .tb.mx tr{display:table-row;padding:0} .tb.mx td,.tb.mx th{display:table-cell;padding:8px 10px;border-bottom:1px solid var(--border)}
+  .tb.mx td::before{content:none} .tb.mx .l{background:var(--card)!important} .tb.mx tfoot td,.tb.mx tfoot .l{background:var(--muted)!important}
+  .tb.mx td.pk{background:color-mix(in oklab,var(--primary) 16%,var(--card))!important}
+}
 .msort{display:none}
 @media (max-width:700px){
   .hero .in{padding-block:26px 22px;min-height:0}
@@ -318,7 +330,7 @@ const ic=n=>`<i data-lucide="${n}"></i>`;
 const sum=a=>a.reduce((s,x)=>s+x,0);
 const tom=r=>r==null?'':r>=1?'ok':r>=.9?'warn':'bad';
 const SEMANA=['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
-const CANAIS=[['total','Total canais','layers'],['varejo','Varejo','store'],['vd','VD','truck'],['hub','HUBs','warehouse']];
+const CANAIS=[['total','Total canais','layers'],['varejo','Varejo','store'],['vd','VD','truck'],['vddet','Detalhe VD','list'],['hub','HUBs','warehouse']];
 const VISOES=[['regional','Regional'],['praca','Praça'],['gvo','GVO']];
 let B=null;const S={canal:'total',dia:'',reg:'',praca:'',gvo:'',rk:'gvo',ord:{}};
 
@@ -336,7 +348,7 @@ function fracao(curva,hm){if(!curva||!hm)return 0;const[h,m]=hm.split(':').map(N
 const ultimoDia=c=>Object.keys(B[c].ate||{}).sort().pop()||'';
 const curvaDe=l=>l.canal==='vd'||l.canal==='hub'?B.vd.curva:((B.varejo.curvas[l.dia]||{})[l.shopping?'shopping':'demais'])||[];
 function fracLoja(c,l){const ate=B[c].ate[l.dia];if(!ate)return 0;if(l.dia<ultimoDia(c))return 1;return fracao(curvaDe({...l,canal:c}),ate)}
-const canaisAtivos=()=>S.canal==='total'||S.canal==='ranking'||S.canal==='com'?['varejo','vd']:[S.canal];
+const canaisAtivos=()=>S.canal==='total'||S.canal==='ranking'||S.canal==='com'?['varejo','vd']:S.canal==='vddet'?['vd']:[S.canal];
 function linhas(canais=canaisAtivos()){
  const out=[];
  for(const c of canais)B[c].lojas.forEach(l=>{if(l.dia!==S.dia)return;if(S.reg&&l.regional!==S.reg||S.praca&&l.praca!==S.praca||S.gvo&&l.gvo!==S.gvo)return;
@@ -441,6 +453,33 @@ function tabelaHub(ls){
  const cols=[{k:'nome',t:'HUB',v:r=>r.nome,h:r=>`<p class="nm">${esc(r.nome)}</p><p class="sub">${esc(r.id)} · ${esc(r.praca)} · ${esc(r.gvo)}</p>`},...colsBase(),colGap];
  return tabela('hub',`HUBs (${rows.length})`,`Pedidos da base do VD pelo canal de distribuição do HUB, sem os cancelados · até ${B.hub.ate[S.dia]||'—'}`+(sem.length?` · % e GAP do total só com os HUBs que têm meta`:''),cols,rows,'',LEG);
 }
+// Detalhe VD: pedido médio e itens/pedido por segmentação (Papel) e distribuição dos pedidos por faixa de valor
+function detalheVD(ls){
+ const D=B.vd.det;if(!D)return '<div class="card"><div class="card-hd"><div><h2>Detalhe VD</h2><p>Sem dados de pedidos.</p></div></div></div>';
+ const ids=new Set(ls.filter(l=>l.canal==='vd').map(l=>l.id));
+ const L=D.linhas.filter(x=>x[0]===S.dia&&ids.has(x[1]));
+ const z=()=>({n:0,v:0,i:0}),add=(o,n,v,i)=>{o.n+=n;o.v+=v;o.i+=i};
+ const seg={},cel={},fx_=D.faixas.map(z),T=z();
+ for(const[,,p,f,n,v,i]of L){add(seg[p]=seg[p]||z(),n,v,i);add((cel[p]=cel[p]||D.faixas.map(z))[f],n,v,i);add(fx_[f],n,v,i);add(T,n,v,i)}
+ const ps=D.papeis.filter(p=>seg[p]&&seg[p].n);
+ const pm=x=>x.n?brl(x.v/x.n,2):'—',ipp=x=>x.n?fx(x.i/x.n,1):'—';
+ const sub=`VD até ${B.vd.ate[S.dia]||'—'} · ${fx(T.n)} pedidos com NF emitida no dia, sem os cancelados · ERs do filtro`;
+ if(!T.n)return `<div class="card"><div class="card-hd"><div><h2>Detalhe VD</h2><p>${sub}</p></div></div><p class="mf" style="padding:16px 20px">Sem pedidos para este filtro.</p></div>`;
+ const linSeg=(nome,x,tf)=>{const t=tf?'th':'td';return `<tr><${t} class="l">${nome}</${t}><td>${fx(x.n)}</td><td>${pct(x.n/T.n,1)}</td><td>${brl(x.v)}</td><td>${pct(x.v/T.v,1)}</td><td><b>${pm(x)}</b></td><td><b>${ipp(x)}</b></td></tr>`};
+ const t1=`<div class="card"><div class="card-hd"><div><h2>Pedido médio e itens por segmentação</h2><p>${sub}</p></div></div>
+  <div class="tw"><table class="tb mx"><thead><tr><th class="l">Segmentação</th><th>Pedidos</th><th>% pedidos</th><th>Receita</th><th>% receita</th><th>Pedido médio</th><th>Itens/pedido</th></tr></thead>
+  <tbody>${ps.map(p=>linSeg(esc(p),seg[p])).join('')}</tbody><tfoot>${linSeg('Total',T,1)}</tfoot></table></div></div>`;
+ const cols=[...ps.map(p=>({t:esc(p),c:cel[p],s:seg[p]})),{t:'Total',c:fx_,s:T,tot:1}];
+ const maxF=c=>Math.max(...c.c.map(x=>x.n));
+ const t2=`<div class="card"><div class="card-hd"><div><h2>Pedidos por faixa de valor</h2><p>Quantidade de pedidos em cada faixa e % dentro da segmentação · em destaque a faixa com mais pedidos</p></div></div>
+  <div class="tw"><table class="tb mx"><thead><tr><th class="l">Faixa do pedido</th>${cols.map(c=>`<th class="${c.tot?'tt':''}">${c.t}</th>`).join('')}</tr></thead>
+  <tbody>${D.faixas.map((f,k)=>`<tr><td class="l">${esc(f)}</td>${cols.map(c=>{const x=c.c[k];return `<td class="${x.n&&x.n===maxF(c)?'pk':''} ${c.tot?'tt':''}">${x.n?fx(x.n):'<span class="mf">—</span>'}<small>${x.n?pct(x.n/c.s.n,1):''}</small></td>`}).join('')}</tr>`).join('')}</tbody>
+  <tfoot><tr><th class="l">Pedidos</th>${cols.map(c=>`<td>${fx(c.s.n)}</td>`).join('')}</tr>
+  <tr><th class="l">Pedido médio</th>${cols.map(c=>`<td>${pm(c.s)}</td>`).join('')}</tr>
+  <tr><th class="l">Itens/pedido</th>${cols.map(c=>`<td>${ipp(c.s)}</td>`).join('')}</tr></tfoot></table></div>
+  <div class="tleg"><span>Pedido médio = valor do pedido ÷ pedidos</span><span>Itens/pedido = quantidade de itens ÷ pedidos</span><span>Segmentação = coluna Papel do relatório de pedidos</span></div></div>`;
+ return t1+t2;
+}
 // Comunicação: mensagem pronta no WhatsApp para cada regional (dia selecionado, sem os demais filtros)
 const CONTATOS=[
  {reg:'REGIONAL 1',nome:'Clarissa',k:'NDQ4ODM4ODk5NDg1NQ=='},
@@ -503,10 +542,10 @@ function render(){
  const ls=linhas(),a=agg(S.canal==='hub'?ls.filter(l=>l.meta>0):ls);
  $('aviso').innerHTML=!ls.length?'<div class="aviso">Sem meta para este filtro.</div>':'';
  kpis(a,ls);
- $('tabelas').innerHTML=S.canal==='com'?comunicacao():S.canal==='ranking'?tabelaRanking(ls):S.canal==='hub'?tabelaHub(ls):(S.canal!=='vd'?tabelaVarejo(ls):'')+(S.canal!=='varejo'?tabelaVD(ls):'');
- $('cardCurva').hidden=S.canal==='ranking'||S.canal==='com';
+ $('tabelas').innerHTML=S.canal==='vddet'?detalheVD(ls):S.canal==='com'?comunicacao():S.canal==='ranking'?tabelaRanking(ls):S.canal==='hub'?tabelaHub(ls):(S.canal!=='vd'?tabelaVarejo(ls):'')+(S.canal!=='varejo'?tabelaVD(ls):'');
+ $('cardCurva').hidden=S.canal==='ranking'||S.canal==='com'||S.canal==='vddet';
  $('kpis').hidden=S.canal==='com';
- if(S.canal!=='ranking'&&S.canal!=='com')grafico(S.canal==='hub'?ls.filter(l=>l.meta>0):ls);
+ if(S.canal!=='ranking'&&S.canal!=='com'&&S.canal!=='vddet')grafico(S.canal==='hub'?ls.filter(l=>l.meta>0):ls);
  const sem=canaisAtivos().flatMap(c=>B[c].semMeta.filter(x=>x.dia===S.dia).map(x=>({...x,c})));
  $('hData').textContent=`${S.dia.slice(8)}/${S.dia.slice(5,7)} · Varejo até ${B.varejo.ate[S.dia]||'—'} · VD até ${B.vd.ate[S.dia]||'—'}`;
  $('regras').innerHTML=`Varejo: cupons efetivados, receita líquida (−) trocas; boletos sem os brindes (abaixo de R$ 1) e itens sem a sacola. VD: pedidos com NF emitida no dia, sem os cancelados pelo usuário, loja pela estrutura pai, valor do pedido. HUBs: mesma base do VD pelo código do canal de distribuição (fora do Total canais e do Ranking, porque os mesmos pedidos já contam nas ERs). GAP = realizado − meta do dia.`+
