@@ -271,6 +271,10 @@ tfoot td{font-weight:800;background:var(--muted);border-bottom:0}
 .glass.atual svg{color:var(--primary-fg)!important;width:20px;height:20px}
 .glass.atual b{font-family:var(--font-display);font-weight:800;font-size:19px;margin-left:2px}
 @media (max-width:700px){.glass.atual{font-size:15px;padding:9px 14px} .glass.atual b{font-size:17px}}
+.chart .bx-r{fill:var(--primary)} .chart .bx-r.now{opacity:.75}
+.chart .bx-e{fill:var(--muted-fg);opacity:.32}
+.chart .pcl{fill:var(--foreground);font:800 11px var(--font-sans)}
+.legend .l-br{height:10px;width:12px;border-radius:3px;background:var(--primary)} .legend .l-be{height:10px;width:12px;border-radius:3px;background:var(--muted-fg);opacity:.45}
 .msort{display:none}
 @media (max-width:700px){
   .hero .in{padding-block:26px 22px;min-height:0}
@@ -343,10 +347,15 @@ tfoot td{font-weight:800;background:var(--muted);border-bottom:0}
   <nav class="tabs" id="tabs"></nav>
   <div id="aviso"></div>
   <section class="kpis" id="kpis"></section>
+  <div class="card pad" id="cardAcum">
+    <div><h2 style="font-size:18px">Receita acumulada × esperado</h2></div>
+    <div class="tw"><div class="chart" id="chartAcum"></div></div>
+    <div class="legend"><span><i class="l-br"></i>Realizado acumulado</span><span><i class="l-be"></i>Esperado acumulado</span><span><i class="l-mt"></i>Meta do dia</span></div>
+  </div>
   <div class="card pad" id="cardCurva">
-    <div><h2 style="font-size:18px">Vendido × esperado por hora</h2><p class="mf" id="curvaTxt"></p></div>
+    <div><h2 style="font-size:18px">Receita por hora × esperado</h2><p class="mf" id="curvaTxt"></p></div>
     <div class="tw"><div class="chart" id="chart"></div></div>
-    <div class="legend"><span><i class="l-rl"></i>Vendido acumulado</span><span><i class="l-esp"></i>Esperado acumulado</span><span><i class="l-hb"></i>Vendido na hora</span><span><i class="l-mt"></i>Meta do dia</span></div>
+    <div class="legend"><span><i class="l-br"></i>Realizado na hora</span><span><i class="l-be"></i>Esperado na hora</span></div>
   </div>
   <div id="tabelas" style="display:flex;flex-direction:column;gap:20px"></div>
   <p class="nota" id="regras"></p>
@@ -459,17 +468,28 @@ function grafico(ls){
  ls.forEach(l=>{l.h.forEach((v,i)=>H[i]+=v);meta+=l.meta;const curva=curvaDe(l);let acc=0;for(let i=0;i<24;i++){acc+=curva[i]||0;E[i]+=l.meta*acc}});
  const ates=canaisAtivos().map(c=>B[c].ate[S.dia]).filter(Boolean).sort();
  const ateH=S.dia<[ultimoDia('varejo'),ultimoDia('vd')].sort().pop()?23:ates.length?+ates[ates.length-1].slice(0,2):-1;
- const h0=7,h1=22,N=h1-h0+1,W=760,Ht=280,L=60,R=14,T=24,Bt=30,iw=W-L-R,ih=Ht-T-Bt,cw=iw/N;
  const acc=[];let s=0;for(let i=0;i<24;i++){s+=H[i];acc.push(s)}
- const MAX=Math.max(meta,acc[23],1)*1.08,x=i=>L+cw*(i-h0+.5),y=v=>T+(1-v/MAX)*ih;
- let g='';for(let k=0;k<=4;k++){const v=MAX/1.08*k/4;g+=`<line class="grid" x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}"/><text class="ax" x="${L-8}" y="${y(v)+4}" text-anchor="end">${kbrl(v)}</text>`}
- g+=`<line class="mt" x1="${L}" x2="${W-R}" y1="${y(meta)}" y2="${y(meta)}"/><text class="mtl" x="${W-R}" y="${y(meta)-6}" text-anchor="end">meta ${kbrl(meta)}</text>`;
- const hmax=Math.max(...H.slice(h0,h1+1),1);
- for(let i=h0;i<=h1;i++){g+=`<text class="ax" x="${x(i)}" y="${Ht-10}" text-anchor="middle">${i}h</text>`;
-  if(H[i]>0)g+=`<rect class="hb ${i===ateH?'now':''}" x="${x(i)-cw*.3}" y="${T+ih-H[i]/hmax*ih*.35}" width="${cw*.6}" height="${H[i]/hmax*ih*.35}" rx="3"><title>${i}h: ${kbrl(H[i])}</title></rect>`}
- g+=`<polyline class="esp" points="${Array.from({length:N},(_,k)=>`${x(h0+k)+cw/2},${y(E[h0+k])}`).join(' ')}"/>`;
- if(ateH>=h0)g+=`<polyline class="rl" points="${Array.from({length:Math.min(ateH,h1)-h0+1},(_,k)=>`${x(h0+k)+cw/2},${y(acc[h0+k])}`).join(' ')}"/>`;
- $('chart').innerHTML=`<svg viewBox="0 0 ${W} ${Ht}" style="min-width:560px" role="img" aria-label="Vendido acumulado e esperado acumulado por hora">${g}</svg>`;
+ const Eh=E.map((v,i)=>v-(i?E[i-1]:0));
+ // hora em andamento: esperado proporcional aos minutos já passados (até o último cupom/pedido)
+ const Ea=[...E],Eha=[...Eh];
+ if(ateH>=0&&ateH<23&&ates.length){const fr=Math.min(1,(+ates[ates.length-1].slice(3,5)||0)/60);Eha[ateH]=Eh[ateH]*fr;Ea[ateH]=(ateH?E[ateH-1]:0)+Eha[ateH]}
+ // colunas agrupadas por hora: esperado (cinza) e realizado (cor de destaque); realizado só até a hora do último dado
+ const barras=(real,esp,maxRef,linhaMeta)=>{
+  const h0=7,h1=22,N=h1-h0+1,W=760,Ht=270,L=62,R=14,T=24,Bt=30,iw=W-L-R,ih=Ht-T-Bt,cw=iw/N,bw=cw*.34;
+  const MAX=Math.max(maxRef,1)*1.1,x=i=>L+cw*(i-h0+.5),y=v=>T+(1-v/MAX)*ih;
+  let g='';for(let k=0;k<=4;k++){const v=MAX/1.1*k/4;g+=`<line class="grid" x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}"/><text class="ax" x="${L-8}" y="${y(v)+4}" text-anchor="end">${kbrl(v)}</text>`}
+  if(linhaMeta)g+=`<line class="mt" x1="${L}" x2="${W-R}" y1="${y(meta)}" y2="${y(meta)}"/><text class="mtl" x="${W-R}" y="${y(meta)-6}" text-anchor="end">meta ${kbrl(meta)}</text>`;
+  for(let i=h0;i<=h1;i++){
+   g+=`<text class="ax" x="${x(i)}" y="${Ht-10}" text-anchor="middle">${i}h</text>`;
+   if(esp[i]>0)g+=`<rect class="bx-e" x="${x(i)-bw-1}" y="${y(esp[i])}" width="${bw}" height="${T+ih-y(esp[i])}" rx="3"><title>${i}h · esperado ${kbrl(esp[i])}</title></rect>`;
+   if(i<=ateH&&real[i]>0){const pc=esp[i]>0?real[i]/esp[i]:null;
+    g+=`<rect class="bx-r ${i===ateH&&ateH<23?'now':''}" x="${x(i)+1}" y="${y(real[i])}" width="${bw}" height="${T+ih-y(real[i])}" rx="3"><title>${i}h · realizado ${kbrl(real[i])}${pc!=null?` · ${pct(pc)} do esperado`:''}</title></rect>`;
+    if(i===ateH&&pc!=null)g+=`<text class="pcl" x="${x(i)+1+bw/2}" y="${y(real[i])-6}" text-anchor="middle">${pct(pc)}</text>`}
+  }
+  return `<svg viewBox="0 0 ${W} ${Ht}" style="min-width:560px" role="img">${g}</svg>`;
+ };
+ $('chartAcum').innerHTML=barras(acc,Ea,Math.max(meta,acc[23],E[23]),true);
+ $('chart').innerHTML=barras(H,Eha,Math.max(...H.slice(7,23),...Eh.slice(7,23)),false);
  $('curvaTxt').textContent=S.canal==='hub'?'HUBs: das 8h às 19h, pedidos faturados pela hora da autorização (só HUBs com meta)':S.canal==='vd'?'VD (ERs): das 8h às 19h, pedidos faturados pela hora da autorização':S.canal==='varejo'?'Varejo: shopping até 22h; rua, galeria, hipermercado e cash & carry até 19h':'Varejo (shopping até 22h, demais até 19h) + VD (8h às 19h)';
  const bs=[S.canal!=='vd'&&S.canal!=='hub'&&S.canal!=='vddet'&&(B.varejo.base||{})[S.dia]?`Varejo pelo ${B.varejo.base[S.dia]}`:'',S.canal!=='varejo'&&(B.vd.base||{})[S.dia]?`VD pela curva ${B.vd.base[S.dia]}`:''].filter(Boolean);
  if(bs.length)$('curvaTxt').textContent+=` · esperado: ${bs.join('; ')}`;
@@ -630,7 +650,7 @@ function render(){
  $('aviso').innerHTML=!ls.length?'<div class="aviso">Sem meta para este filtro.</div>':'';
  kpis(a,ls);
  $('tabelas').innerHTML=S.canal==='vddet'?detalheVD(ls):S.canal==='com'?comunicacao():S.canal==='ranking'?tabelaRanking(ls):S.canal==='hub'?tabelaHub(ls):(S.canal!=='vd'?tabelaVarejo(ls):'')+(S.canal!=='varejo'?tabelaVD(ls):'');
- $('cardCurva').hidden=S.canal==='ranking'||S.canal==='com'||S.canal==='vddet';
+ $('cardCurva').hidden=$('cardAcum').hidden=S.canal==='ranking'||S.canal==='com'||S.canal==='vddet';
  $('kpis').hidden=S.canal==='com';
  if(S.canal!=='ranking'&&S.canal!=='com'&&S.canal!=='vddet')grafico(S.canal==='hub'?ls.filter(l=>l.meta>0):ls);
  const sem=canaisAtivos().flatMap(c=>B[c].semMeta.filter(x=>x.dia===S.dia).map(x=>({...x,c})));
