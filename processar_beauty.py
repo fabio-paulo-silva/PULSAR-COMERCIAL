@@ -302,9 +302,11 @@ def montar(metas, real, centros, extra):
     ind = real.groupby(["id", "dia"])[["bol", "it", "b1"]].sum() if "bol" in real else None
     hora = real.assign(h=pd.to_numeric(real["hm"].str.slice(0, 2), errors="coerce")).dropna(subset=["h"])
     hora = hora.groupby(["id", "dia", "h"])["valor"].sum()
-    # a aba VD da planilha de metas divide a praça em partes (OCE-1, OCE-2); no painel vale a praça do dCentros (OCE)
-    base = lambda p: p if p in reg else re.sub(r"\s*-\s*\d+$", "", str(p)) if re.sub(r"\s*-\s*\d+$", "", str(p)) in reg else p
-    metas = metas.assign(praca=metas["praca"].map(base))
+    # a planilha de metas divide a praça em partes (OCE-1, OCE-2): mantém a parte no painel e pega a regional da praça do dCentros (OCE)
+    for p_ in metas["praca"].dropna().unique():
+        b_ = re.sub(r"\s*-\s*\d+$", "", str(p_))
+        if p_ not in reg and b_ in reg:
+            reg[p_] = reg[b_]
     lojas = []
     for r in metas.itertuples():
         hs = [0.0] * 24
