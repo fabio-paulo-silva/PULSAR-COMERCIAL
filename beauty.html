@@ -335,8 +335,11 @@ tfoot td{font-weight:800;background:var(--muted);border-bottom:0}
   <p class="nota" id="regras"></p>
 </main>
 
+<script src="config.js"></script>
+<script src="uso.js"></script>
 <script>
 const $=id=>document.getElementById(id);
+const CONF=window.PULSAR_CONFIG||{ambiente:'desenvolvimento',planilha:{url:'',chave:''}};
 const nf=d=>new Intl.NumberFormat('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
 const fx=(v,d=0)=>nf(d).format(v);
 const brl=(v,d=0)=>'R$ '+fx(v,d);
@@ -582,7 +585,16 @@ function tabelaRanking(ls){
  return tabela('rk_'+S.rk,`Ranking por ${nomeV} · Varejo + VD`,`Meta e realizado dos dois canais somados${S.rk==='gvo'?' (gestor que cuida de lojas e de ERs aparece uma vez só)':''}`,cols,rows,seg,LEG);
 }
 
+// Acesso registrado na mesma planilha do PULSAR (aba acessos): página "beauty" e a tela aberta
+const ABAS_BW={total:'Total canais',varejo:'Varejo',vd:'VD',vddet:'Detalhe VD',hub:'HUBs',ranking:'Ranking',com:'Comunicação'};
+function registrarAcesso(){
+ if(!window.PulsarUso||!B)return;
+ const ult=[ultimoDia('varejo'),ultimoDia('vd')].sort().pop();
+ PulsarUso.registrar({pagina:'beauty',aba:`Acompanhamento Beauty Week · ${ABAS_BW[S.canal]||S.canal}`+(S.dia&&S.dia!==ult?` · dia ${S.dia.slice(8)}/${S.dia.slice(5,7)}`:''),
+  regional:S.reg,praca:S.praca,gvo:S.gvo});
+}
 function render(){
+ registrarAcesso();
  $('tabs').innerHTML=CANAIS.map(([k,t,i])=>`<button class="tab ${S.canal===k?'on':''}" data-canal="${k}">${ic(i)}${t}</button>`).join('')+
   `<button class="tab rk ${S.canal==='ranking'?'on':''}" data-canal="ranking">${ic('trophy')}Ranking</button>`+
   `<button class="tab rk ${S.canal==='com'?'on':''}" data-canal="com">${ic('message-circle')}Comunicação</button>`;
@@ -626,6 +638,10 @@ $('fLimpar').addEventListener('click',()=>{S.reg=S.praca=S.gvo='';fillFiltros();
 const carregar=()=>fetch('data/beauty.json?v='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()});
 carregar().then(j=>{
  B=j;normalizar();S.dia=[ultimoDia('varejo'),ultimoDia('vd')].sort().pop()||B.dias[B.dias.length-1];fillFiltros();render();
+ // identificação de quem acessa (mesma lista de pessoas do painel do mês)
+ if(window.PulsarUso)fetch('data/pulsar.json',{cache:'no-store'}).then(r=>r.ok?r.json():{}).catch(()=>({}))
+  .then(P=>PulsarUso.iniciar({pessoas:(P&&P.pessoas)||[],planilha:CONF.planilha||{url:'',chave:''},ambiente:CONF.ambiente,pagina:'beauty'}))
+  .then(()=>registrarAcesso()).catch(()=>{});
  setInterval(()=>carregar().then(k=>{B=k;normalizar();render()}).catch(()=>{}),5*60000);
 }).catch(()=>{$('aviso').innerHTML='<div class="aviso">Ainda não há dados da Beauty Week. Rode o processar_beauty.py.</div>'});
 </script>

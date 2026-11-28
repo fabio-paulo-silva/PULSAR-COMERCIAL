@@ -1256,7 +1256,7 @@ function filtroTxt(a){
 }
 function usoDetalhe(acs){
  const sel=S.usoNome?acs.filter(a=>a.nome===S.usoNome):acs;
- const tela=a=>`${a.pagina==='hoje'?'Acompanhamento do dia':'Painel do mês · '+(ABAS_TXT[a.aba]||a.aba)}`;
+ const tela=a=>a.pagina==='beauty'?(a.aba||'Acompanhamento Beauty Week'):`${a.pagina==='hoje'?'Acompanhamento do dia':'Painel do mês · '+(ABAS_TXT[a.aba]||a.aba)}`;
  const g={};sel.forEach(a=>{const k=tela(a),x=g[k]=g[k]||{n:0,p:new Set()};x.n++;x.p.add(a.nome)});
  const telas=Object.entries(g).sort((a,b)=>b[1].n-a[1].n),max=telas.length?telas[0][1].n:1;
  const hist=[...sel].sort((a,b)=>b.quando.localeCompare(a.quando)).slice(0,200);
