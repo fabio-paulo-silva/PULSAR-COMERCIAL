@@ -23,7 +23,8 @@ from pathlib import Path
 
 BASE = Path(__file__).resolve().parent
 PASTAS = [BASE / "Acompanhamento Beauty Week" / "REALIZADOS" / "VAREJO",
-          BASE / "Acompanhamento Beauty Week" / "REALIZADOS" / "VD"]
+          BASE / "Acompanhamento Beauty Week" / "REALIZADOS" / "VD",
+          BASE / "Acompanhamento Beauty Week" / "REALIZADOS" / "VD CNPJ"]
 METAS = BASE / "Acompanhamento Beauty Week" / "METAS" / "METAS DIA.xlsx"
 ESTADO = BASE / ".cache" / "beauty_auto_estado.json"   # arquivos da última publicação (modo --uma-vez)
 LOG = BASE / "Acompanhamento Beauty Week" / "atualizacao_automatica.log"
