@@ -275,6 +275,18 @@ tfoot td{font-weight:800;background:var(--muted);border-bottom:0}
 .chart .bx-e{fill:var(--muted-fg);opacity:.32}
 .chart .pcl{fill:var(--foreground);font:800 11px var(--font-sans)}
 .legend .l-br{height:10px;width:12px;border-radius:3px;background:var(--primary)} .legend .l-be{height:10px;width:12px;border-radius:3px;background:var(--muted-fg);opacity:.45}
+.pb{display:flex;flex-direction:column;gap:12px;margin:16px 0 4px}
+.pb-r{display:grid;grid-template-columns:minmax(120px,200px) 1fr 70px;gap:14px;align-items:center}
+.pb-n{font-weight:700;font-size:13px;line-height:1.25} .pb-n small{display:block;color:var(--muted-fg);font-weight:500;font-size:11px}
+.pb-t{position:relative;height:24px;background:var(--muted);border-radius:7px}
+.pb-b{position:absolute;left:0;top:0;bottom:0;border-radius:7px;min-width:3px}
+.pb-b.ok{background:var(--success-ink)} .pb-b.warn{background:var(--warning)} .pb-b.bad{background:var(--destructive)}
+.pb-m{position:absolute;top:-4px;bottom:-4px;border-left:1.5px dashed var(--success-ink)}
+.pb-e{position:absolute;top:-5px;bottom:-5px;width:3px;margin-left:-1.5px;background:var(--foreground);border-radius:2px}
+.pb-p{text-align:right;font-weight:800;font-size:15px}
+.legend .l-ok,.legend .l-wn,.legend .l-bd{height:10px;width:12px;border-radius:3px} .legend .l-ok{background:var(--success-ink)} .legend .l-wn{background:var(--warning)} .legend .l-bd{background:var(--destructive)}
+.legend .l-de{height:12px;width:3px;border-radius:2px;background:var(--foreground)}
+@media (max-width:640px){.pb-r{grid-template-columns:1fr 60px;gap:6px 10px}.pb-n{grid-column:1/-1}}
 .msort{display:none}
 @media (max-width:700px){
   .hero .in{padding-block:26px 22px;min-height:0}
@@ -356,6 +368,11 @@ tfoot td{font-weight:800;background:var(--muted);border-bottom:0}
     <div><h2 style="font-size:18px">Receita por hora × esperado</h2><p class="mf" id="curvaTxt"></p></div>
     <div class="tw"><div class="chart" id="chart"></div></div>
     <div class="legend"><span><i class="l-br"></i>Realizado na hora</span><span><i class="l-be"></i>Esperado na hora</span></div>
+  </div>
+  <div class="card pad" id="cardPraca">
+    <div><h2 style="font-size:18px" id="pracaTit">Atingimento por praça</h2></div>
+    <div class="pb" id="chartPraca"></div>
+    <div class="legend"><span><i class="l-ok"></i>100% ou mais</span><span><i class="l-wn"></i>85% a 99%</span><span><i class="l-bd"></i>abaixo de 85%</span><span><i class="l-mt"></i>100% da meta</span><span><i class="l-de"></i>deveria estar agora</span></div>
   </div>
   <div id="tabelas" style="display:flex;flex-direction:column;gap:20px"></div>
   <p class="nota" id="regras"></p>
@@ -493,6 +510,19 @@ function grafico(ls){
  $('curvaTxt').textContent=S.canal==='hub'?'HUBs: das 8h às 19h, pedidos faturados pela hora da autorização (só HUBs com meta)':S.canal==='vd'?'VD (ERs): das 8h às 19h, pedidos faturados pela hora da autorização':S.canal==='varejo'?'Varejo: shopping até 22h; rua, galeria, hipermercado e cash & carry até 19h':'Varejo (shopping até 22h, demais até 19h) + VD (8h às 19h)';
  const bs=[S.canal!=='vd'&&S.canal!=='hub'&&S.canal!=='vddet'&&(B.varejo.base||{})[S.dia]?`Varejo pelo ${B.varejo.base[S.dia]}`:'',S.canal!=='varejo'&&(B.vd.base||{})[S.dia]?`VD pela curva ${B.vd.base[S.dia]}`:''].filter(Boolean);
  if(bs.length)$('curvaTxt').textContent+=` · esperado: ${bs.join('; ')}`;
+}
+
+// Barras horizontais: atingimento de cada praça no canal/filtro da tela; traço = quanto deveria estar agora pela curva
+function graficoPracas(ls){
+ const g={};ls.filter(l=>l.meta>0).forEach(l=>{const x=g[l.praca]=g[l.praca]||{nome:l.praca||'Sem praça',meta:0,real:0,esp:0};x.meta+=l.meta;x.real+=l.real;x.esp+=l.esp});
+ const rows=Object.values(g).map(x=>({...x,at:x.real/x.meta,f:x.esp/x.meta})).sort((a,b)=>b.at-a.at);
+ $('pracaTit').textContent=`Atingimento por praça · ${S.canal==='varejo'?'Varejo':S.canal==='vd'?'VD':'Total canais'}`;
+ if(!rows.length){$('chartPraca').innerHTML='<p class="mf">Sem meta para este filtro.</p>';return}
+ const MAX=Math.max(1.1,...rows.map(r=>r.at),...rows.map(r=>r.f))*1.04,w=v=>(Math.min(v,MAX)/MAX*100).toFixed(2)+'%';
+ $('chartPraca').innerHTML=rows.map(r=>`<div class="pb-r"><div class="pb-n">${esc(r.nome)}<small>${kbrl(r.real)} de ${kbrl(r.meta)}</small></div>
+  <div class="pb-t" title="${esc(r.nome)} · ${pct(r.at,1)} da meta · deveria estar ${pct(r.f)} · GAP ${r.real>=r.meta?'+':'−'}${kbrl(Math.abs(r.real-r.meta))}">
+   <div class="pb-b ${tomAt(r.at)}" style="width:${w(r.at)}"></div><div class="pb-m" style="left:${w(1)}"></div>${r.f>0&&r.f<1?`<div class="pb-e" style="left:${w(r.f)}"></div>`:''}</div>
+  <div class="pb-p c-${tomAt(r.at)}">${pct(r.at,1)}</div></div>`).join('');
 }
 
 // Tabela genérica com ordenação por coluna. cols: [{k,t,r?,v(row)->número p/ ordenar, h(row)->html, tot?->html}]
@@ -653,6 +683,8 @@ function render(){
  $('cardCurva').hidden=$('cardAcum').hidden=S.canal==='ranking'||S.canal==='com'||S.canal==='vddet';
  $('kpis').hidden=S.canal==='com';
  if(S.canal!=='ranking'&&S.canal!=='com'&&S.canal!=='vddet')grafico(S.canal==='hub'?ls.filter(l=>l.meta>0):ls);
+ $('cardPraca').hidden=!['total','varejo','vd'].includes(S.canal);
+ if(!$('cardPraca').hidden)graficoPracas(ls);
  const sem=canaisAtivos().flatMap(c=>B[c].semMeta.filter(x=>x.dia===S.dia).map(x=>({...x,c})));
  // hora em que os dados subiram para o site (data do arquivo publicado); sem ela, a hora do processamento
  const pub=B._pub||new Date(B.geradoEm),d2=n=>String(n).padStart(2,'0');
