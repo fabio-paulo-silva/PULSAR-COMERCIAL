@@ -18,9 +18,16 @@ Regras:
       Linha sem DIA vale para o dia mais recente; linha sem META aparece sem meta. Fica fora do Total canais e do Ranking
       (os mesmos pedidos já estão nas ERs).
   Metas repetidas (mesmo PDV no mesmo dia na mesma aba): vale a primeira linha; as outras são avisadas no rodapé da página.
-  Ritmo ("horaização"): quanto do dia já deveria estar vendido até a hora do último cupom/pedido.
-      Varejo: curva de venda por hora das lojas do mesmo tipo (shopping x demais) nas mesmas semanas do mês, no mesmo
-      dia da semana, cortada no horário de fechamento. VD: distribuição uniforme das 8h às 19h.
+  Ritmo ("horaização"): quanto do dia já deveria estar vendido até a hora do último cupom/pedido, pela curva do dia.
+  Curva de cada dia (quanto se vende em cada hora), na ordem de preferência:
+      1. o dia equivalente de 2025, contado a partir da Black Friday (ex.: 27/11/2026 = 28/11/2025);
+         Varejo: Dados/NOVEMBRO 2025 (shopping x demais); VD: Acompanhamento Beauty Week/BASE 2025/VD;
+      2. VD sem base de 2025: média dos dias da campanha já fechados;
+      3. sem nada disso: Varejo = mesmo dia da semana do mês de referência; VD = uniforme das 8h às 19h.
+  Projeção de fechamento (por canal): F = parte do dia já vendida pela curva; A = atingimento dos dias da campanha
+      já fechados (realizado ÷ meta). Projeção = F × (realizado ÷ F) + (1 − F) × (meta × A): no começo do dia pesa o
+      histórico da campanha; à medida que o dia anda, pesa o ritmo do próprio dia. Sem dia fechado: realizado ÷ F.
+      Faixa provável: a mesma conta com as curvas alternativas (cada dia fechado da campanha e a curva padrão).
 """
 import json
 import re
@@ -44,7 +51,11 @@ AVISOS = []
 # Detalhe VD: faixas de valor do pedido e ordem das segmentações (coluna Papel)
 FAIXAS_VD = [(0, 150, "Até R$ 150"), (150, 300, "R$ 150 a 300"), (300, 500, "R$ 300 a 500"), (500, 1000, "R$ 500 a 1.000"),
              (1000, 2000, "R$ 1.000 a 2.000"), (2000, float("inf"), "Acima de R$ 2.000")]
-ORDEM_PAPEL = ["Consumidor Final", "Revendedor", "Cobre", "Bronze", "Prata", "Ouro", "Platina", "Rubi", "Esmeralda GB", "Diamante GB"]   # metas repetidas (mesmo PDV no mesmo dia): vale a primeira linha da aba
+ORDEM_PAPEL = ["Consumidor Final", "Revendedor", "Cobre", "Bronze", "Prata", "Ouro", "Platina", "Rubi", "Esmeralda GB", "Diamante GB"]
+# Projeção: dia equivalente do ano anterior pela Black Friday e bases históricas
+BLACK_FRIDAY = {2025: pd.Timestamp("2025-11-28"), 2026: pd.Timestamp("2026-11-27")}
+PASTA_HIST_VAREJO = p.PASTA_VENDAS / "NOVEMBRO 2025"
+PASTA_HIST_VD = PASTA / "BASE 2025" / "VD"
 
 cod = lambda v: (re.match(r"\s*(\d+)", str(v)) or [None, None])[1]
 
@@ -149,6 +160,113 @@ def curva_varejo(dia: pd.Timestamp, shopping: set):
     return out
 
 
+def analogo(dia):
+    """Dia equivalente do ano anterior, contado a partir da Black Friday."""
+    d = pd.Timestamp(dia)
+    if d.year in BLACK_FRIDAY and d.year - 1 in BLACK_FRIDAY:
+        return (BLACK_FRIDAY[d.year - 1] + (d - BLACK_FRIDAY[d.year])).strftime("%Y-%m-%d")
+    return None
+
+
+def _hist(nome, pasta, padrao, ler):
+    """Venda histórica por dia, loja e hora. Lê os arquivos uma vez e guarda em .cache (refaz se algum arquivo mudar)."""
+    arqs = sorted(a for a in pasta.glob(padrao) if not a.name.startswith("~$")) if pasta.exists() else []
+    if not arqs:
+        return None
+    chave = "|".join(f"{a.name}:{a.stat().st_size}:{int(a.stat().st_mtime)}" for a in arqs)
+    cache = p.PASTA_CACHE / f"beauty_hist_{nome}.pkl"
+    if cache.exists():
+        try:
+            k, df = pd.read_pickle(cache)
+            if k == chave:
+                return df
+        except Exception:
+            pass
+    df = pd.concat([ler(a) for a in arqs], ignore_index=True).dropna(subset=["id", "d", "h"])
+    df = df.groupby(["d", "id", "h"], as_index=False)["v"].sum()
+    p.PASTA_CACHE.mkdir(exist_ok=True)
+    pd.to_pickle((chave, df), cache)
+    return df
+
+
+def hist_varejo():
+    def ler(a):
+        v = pd.read_excel(a, engine="calamine", usecols=["Loja", "Data", "Hora", "Status cupom", "Receita liquida (-) trocas"])
+        v = v[v["Status cupom"] == "Efetivado"]
+        return pd.DataFrame({"id": v["Loja"].map(cod), "d": pd.to_datetime(v["Data"], format="%d/%m/%Y").dt.strftime("%Y-%m-%d"),
+                             "h": pd.to_numeric(v["Hora"].astype(str).str.slice(0, 2), errors="coerce"),
+                             "v": v["Receita liquida (-) trocas"]})
+    return _hist("varejo", PASTA_HIST_VAREJO, "cupom_venda*.xlsx", ler)
+
+
+def hist_vd():
+    def ler(a):
+        v = p.ler_excel(a)
+        v = v[v["DetalheSituaçãoComercial"].astype(str).str.strip().str.upper() != CANCELADO_VD]
+        aut = pd.to_datetime(v["DataAutorizaçãoFaturamento"], format="%d/%m/%Y %H:%M", errors="coerce")
+        return pd.DataFrame({"id": v["EstruturaPai"].map(cod).fillna(v["CanalDistribuicao"].map(cod)),
+                             "d": pd.to_datetime(v["DataFaturamento"], format="%d/%m/%Y").dt.strftime("%Y-%m-%d"),
+                             "h": aut.dt.hour, "v": v["ValorPedido"]})
+    return _hist("vd", PASTA_HIST_VD, "*.xlsx", ler)
+
+
+def partes(df):
+    """Participação de cada hora (0 a 23) na venda do conjunto."""
+    s = df.groupby("h")["v"].sum().reindex(range(24), fill_value=0)
+    return [round(float(x / s.sum()), 5) for x in s] if s.sum() > 0 else None
+
+
+def por_hora(real):
+    r = real.dropna(subset=["id", "dia"])
+    return pd.DataFrame({"id": r["id"], "d": r["dia"], "h": pd.to_numeric(r["hm"].str.slice(0, 2), errors="coerce"),
+                         "v": r["valor"]}).dropna(subset=["h"])
+
+
+def projecao(dias, rv, rd, lv, ld, shopping, curvas_padrao):
+    """Curva principal, curvas alternativas e atingimento dos dias fechados de cada dia, para Varejo e VD."""
+    hv, hd = hist_varejo(), hist_vd()
+    v26, d26 = por_hora(rv), por_hora(rd)
+    com_dados = sorted(set(v26["d"]) | set(d26["d"]))
+    hoje = com_dados[-1] if com_dados else None
+    tipo = lambda df: {"shopping": partes(df[df["id"].isin(shopping)]), "demais": partes(df[~df["id"].isin(shopping)])}
+    fmt = lambda d: f"{d[8:]}/{d[5:7]}/{d[:4]}"
+    out = {c: {"curvas": {}, "refs": {}, "prior": {}, "base": {}} for c in ("varejo", "vd")}
+    for d in dias:
+        fech = [x for x in com_dados if x < d and x < hoje]
+        an = analogo(d)
+        # Varejo
+        refs = [tipo(v26[v26["d"] == x]) for x in fech]
+        g = hv[hv["d"] == an] if hv is not None and an else None
+        if g is not None and len(g):
+            out["varejo"]["curvas"][d] = tipo(g)
+            out["varejo"]["base"][d] = f"dia equivalente de 2025 ({fmt(an)})"
+            refs.append(curvas_padrao.get(d))
+        else:
+            out["varejo"]["curvas"][d] = curvas_padrao.get(d)
+            out["varejo"]["base"][d] = "mesmo dia da semana do mês"
+        out["varejo"]["refs"][d] = [r for r in refs if r and r["shopping"] and r["demais"]]
+        # VD
+        refs = [partes(d26[d26["d"] == x]) for x in fech]
+        g = hd[hd["d"] == an] if hd is not None and an else None
+        if g is not None and len(g):
+            out["vd"]["curvas"][d] = partes(g)
+            out["vd"]["base"][d] = f"dia equivalente de 2025 ({fmt(an)})"
+        elif fech:
+            ok = [c for c in refs if c]
+            out["vd"]["curvas"][d] = [round(sum(c[i] for c in ok) / len(ok), 5) for i in range(24)]
+            out["vd"]["base"][d] = "média dos dias fechados da campanha (" + ", ".join(fmt(x)[:5] for x in fech) + ")"
+        else:
+            out["vd"]["curvas"][d] = curva_vd()
+            out["vd"]["base"][d] = "uniforme das 8h às 19h"
+        out["vd"]["refs"][d] = [r for r in refs + [curva_vd()] if r]
+        # atingimento dos dias fechados (só lojas/ERs com meta)
+        for c, ls in (("varejo", lv), ("vd", ld)):
+            m = sum(x["meta"] for x in ls if x["dia"] in fech)
+            r = sum(x["real"] for x in ls if x["dia"] in fech)
+            out[c]["prior"][d] = round(r / m, 4) if m else None
+    return out
+
+
 def curva_vd():
     s = [1.0 if VD_ABRE <= hh < VD_FECHA else 0.0 for hh in range(24)]
     return [round(x / sum(s), 5) for x in s]
@@ -202,10 +320,11 @@ def main():
             curvas[d] = curva_varejo(pd.Timestamp(d), shopping)
         except ValueError:
             curvas[d] = None
+    pj = projecao(dias, rv, rd, lv, ld, shopping, curvas)
     saida = {"geradoEm": datetime.now().isoformat(timespec="minutes"), "dias": dias,
-             "varejo": {"ate": av, "lojas": lv, "semMeta": sv, "curvas": curvas},
+             "varejo": {"ate": av, "lojas": lv, "semMeta": sv, **pj["varejo"]},
              "vd": {"ate": ad, "lojas": ld, "semMeta": sd, "curva": curva_vd(), "abre": VD_ABRE, "fecha": VD_FECHA,
-                    "det": detalhe_vd(rd)},
+                    "det": detalhe_vd(rd), **pj["vd"]},
              "hub": {"ate": ah, "lojas": lh, "semMeta": [], "curva": curva_vd()}, "avisos": AVISOS}
     ARQ_SAIDA.write_text(json.dumps(saida, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     for canal, ls, sm, ate in (("Varejo", lv, sv, av), ("VD", ld, sd, ad)):
@@ -214,6 +333,9 @@ def main():
             s = sum(x["real"] for x in sm if x["dia"] == d)
             print(f"{canal} {d}: meta R$ {m:,.0f} | realizado R$ {r:,.0f} ({r / m if m else 0:.1%}) até {ate.get(d, '—')}"
                   + (f" | sem meta: R$ {s:,.0f} ({', '.join(x['id'] for x in sm if x['dia'] == d)})" if s else ""))
+    for d in dias:
+        print(f"Projeção {d}: Varejo pela curva do {pj['varejo']['base'][d]}; VD pela curva {pj['vd']['base'][d]}; "
+              f"atingimento dos dias fechados: Varejo {pj['varejo']['prior'][d]}, VD {pj['vd']['prior'][d]}")
     for x in lh:
         print(f"HUB {x['dia']} {x['nome']}: meta {'R$ {:,.0f}'.format(x['meta']) if x['temMeta'] else 'sem meta'} | realizado R$ {x['real']:,.0f}")
     for a in AVISOS:
