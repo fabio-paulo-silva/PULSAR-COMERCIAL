@@ -346,7 +346,7 @@ const atCel=(real,meta)=>{const a=meta?real/meta:0;return `<span class="cv">${pc
 // Parte do dia que já deveria estar vendida até hh:mm, pela curva (participação de cada hora)
 function fracao(curva,hm){if(!curva||!hm)return 0;const[h,m]=hm.split(':').map(Number);let f=0;for(let i=0;i<h&&i<24;i++)f+=curva[i];if(h<24)f+=curva[h]*(m/60);return Math.min(1,f)}
 const ultimoDia=c=>Object.keys(B[c].ate||{}).sort().pop()||'';
-const curvaDe=l=>l.canal==='vd'||l.canal==='hub'?B.vd.curva:((B.varejo.curvas[l.dia]||{})[l.shopping?'shopping':'demais'])||[];
+const curvaDe=l=>l.canal==='vd'||l.canal==='hub'?((B.vd.curvas||{})[l.dia]||B.vd.curva):((B.varejo.curvas[l.dia]||{})[l.shopping?'shopping':'demais'])||[];
 function fracLoja(c,l){const ate=B[c].ate[l.dia];if(!ate)return 0;if(l.dia<ultimoDia(c))return 1;return fracao(curvaDe({...l,canal:c}),ate)}
 const canaisAtivos=()=>S.canal==='total'||S.canal==='ranking'||S.canal==='com'?['varejo','vd']:S.canal==='vddet'?['vd']:[S.canal];
 function linhas(canais=canaisAtivos()){
@@ -356,7 +356,25 @@ function linhas(canais=canaisAtivos()){
  return out;
 }
 const agg=ls=>{const meta=sum(ls.map(l=>l.meta)),real=sum(ls.map(l=>l.real)),esp=sum(ls.map(l=>l.esp));
- return{meta,real,esp,at:meta?real/meta:0,ritmo:esp>0?real/esp:null,proj:esp>0?real/esp*meta:null,f:meta?esp/meta:0}};
+ const pj=projetar(ls);
+ return{meta,real,esp,at:meta?real/meta:0,ritmo:esp>0?real/esp:null,proj:pj.proj,lo:pj.lo,hi:pj.hi,f:meta?esp/meta:0}};
+
+// Projeção de fechamento, por canal. F = parte do dia já vendida pela curva do dia; A = atingimento dos dias fechados da campanha.
+// Projeção = F × (realizado ÷ F) + (1 − F) × (meta × A). Sem dia fechado: realizado ÷ F. Faixa: mesma conta com as curvas alternativas.
+function fracCurva(c,l,curva){const ate=B[c].ate[l.dia];if(!ate)return 0;if(l.dia<ultimoDia(c))return 1;return fracao(curva,ate)}
+function projetar(ls){
+ let P=0,LO=0,HI=0,n=0;
+ for(const c of ['varejo','vd','hub']){
+  const g=ls.filter(l=>l.canal===c&&l.meta>0);if(!g.length)continue;
+  const meta=sum(g.map(l=>l.meta)),real=sum(g.map(l=>l.real)),src=c==='hub'?'vd':c;
+  const A=c==='hub'?null:((B[src].prior||{})[S.dia]??null);
+  const est=F=>{F=Math.min(1,F);if(F>=1)return real;const pr=A!=null?meta*A:null;if(F<=0)return pr;return pr==null?real/F:F*(real/F)+(1-F)*pr};
+  const p=est(sum(g.map(l=>l.esp))/meta);if(p==null)continue;
+  const alt=((B[src].refs||{})[S.dia]||[]).map(r=>est(sum(g.map(l=>l.meta*fracCurva(c,l,c==='varejo'?r[l.shopping?'shopping':'demais']:r)))/meta)).filter(x=>x!=null);
+  P+=p;LO+=Math.min(p,...alt);HI+=Math.max(p,...alt);n++;
+ }
+ return n?{proj:P,lo:LO,hi:HI}:{proj:null,lo:null,hi:null};
+}
 
 // Média de cada cluster no dia (todas as lojas de varejo com meta, sem filtro): BM, IPB e % B1
 function mediasCluster(){
@@ -386,7 +404,7 @@ function kpis(a,ls){
   <div class="card kpi"><p class="lbl">Meta do dia</p><p class="val">${kbrl(a.meta)}</p><p class="kl">GAP <b class="gap ${g>=0?'up':'dn'}">${g>=0?'+':'−'}${kbrl(Math.abs(g))}</b></p></div>
   <div class="card kpi"><p class="lbl">Ritmo agora</p><p class="val ${a.ritmo==null?'':'c-'+tom(a.ritmo)}">${a.ritmo==null?'—':pct(a.ritmo)}</p>
    <p class="kl">${a.ritmo==null?'sem venda registrada ainda':`esperado até agora <b>${kbrl(a.esp)}</b> (${pct(a.f)} do dia)`}</p></div>
-  <div class="card kpi"><p class="lbl">Projeção do dia</p><p class="val ${a.proj==null?'':'c-'+tom(a.proj/a.meta)}">${a.proj==null?'—':kbrl(a.proj)}</p><p class="kl">${a.proj==null?'':`${pct(a.proj/a.meta)} da meta no ritmo atual`}</p></div>`;
+  <div class="card kpi"><p class="lbl">Projeção do dia</p><p class="val ${a.proj==null?'':'c-'+tom(a.proj/a.meta)}">${a.proj==null?'—':kbrl(a.proj)}</p><p class="kl">${a.proj==null?'':`${pct(a.proj/a.meta)} da meta`+(a.f<1&&a.hi-a.lo>1?` · faixa provável <b>${kbrl(a.lo)}</b> a <b>${kbrl(a.hi)}</b>`:a.f>=1?' · dia fechado':'')}</p></div>`;
 }
 
 function grafico(ls){
@@ -406,6 +424,8 @@ function grafico(ls){
  if(ateH>=h0)g+=`<polyline class="rl" points="${Array.from({length:Math.min(ateH,h1)-h0+1},(_,k)=>`${x(h0+k)+cw/2},${y(acc[h0+k])}`).join(' ')}"/>`;
  $('chart').innerHTML=`<svg viewBox="0 0 ${W} ${Ht}" style="min-width:560px" role="img" aria-label="Vendido acumulado e esperado acumulado por hora">${g}</svg>`;
  $('curvaTxt').textContent=S.canal==='hub'?'HUBs: das 8h às 19h, pedidos faturados pela hora da autorização (só HUBs com meta)':S.canal==='vd'?'VD (ERs): das 8h às 19h, pedidos faturados pela hora da autorização':S.canal==='varejo'?'Varejo: shopping até 22h; rua, galeria, hipermercado e cash & carry até 19h':'Varejo (shopping até 22h, demais até 19h) + VD (8h às 19h)';
+ const bs=[S.canal!=='vd'&&S.canal!=='hub'&&S.canal!=='vddet'&&(B.varejo.base||{})[S.dia]?`Varejo pelo ${B.varejo.base[S.dia]}`:'',S.canal!=='varejo'&&(B.vd.base||{})[S.dia]?`VD pela curva ${B.vd.base[S.dia]}`:''].filter(Boolean);
+ if(bs.length)$('curvaTxt').textContent+=` · esperado: ${bs.join('; ')}`;
 }
 
 // Tabela genérica com ordenação por coluna. cols: [{k,t,r?,v(row)->número p/ ordenar, h(row)->html, tot?->html}]
@@ -548,7 +568,7 @@ function render(){
  if(S.canal!=='ranking'&&S.canal!=='com'&&S.canal!=='vddet')grafico(S.canal==='hub'?ls.filter(l=>l.meta>0):ls);
  const sem=canaisAtivos().flatMap(c=>B[c].semMeta.filter(x=>x.dia===S.dia).map(x=>({...x,c})));
  $('hData').textContent=`${S.dia.slice(8)}/${S.dia.slice(5,7)} · Varejo até ${B.varejo.ate[S.dia]||'—'} · VD até ${B.vd.ate[S.dia]||'—'}`;
- $('regras').innerHTML=`Varejo: cupons efetivados, receita líquida (−) trocas; boletos sem os brindes (abaixo de R$ 1) e itens sem a sacola. VD: pedidos com NF emitida no dia, sem os cancelados pelo usuário, loja pela estrutura pai, valor do pedido. HUBs: mesma base do VD pelo código do canal de distribuição (fora do Total canais e do Ranking, porque os mesmos pedidos já contam nas ERs). GAP = realizado − meta do dia.`+
+ $('regras').innerHTML=`Varejo: cupons efetivados, receita líquida (−) trocas; boletos sem os brindes (abaixo de R$ 1) e itens sem a sacola. VD: pedidos com NF emitida no dia, sem os cancelados pelo usuário, loja pela estrutura pai, valor do pedido. HUBs: mesma base do VD pelo código do canal de distribuição (fora do Total canais e do Ranking, porque os mesmos pedidos já contam nas ERs). GAP = realizado − meta do dia. Projeção do dia: no começo do dia pesa o atingimento dos dias já fechados da campanha; conforme o dia anda, pesa o ritmo do próprio dia, medido pela curva de venda por hora do dia equivalente da Black Friday de 2025 (VD: dos dias fechados da campanha). Faixa provável: a mesma conta com as outras curvas.`+
   (sem.length?` Fora das tabelas (venda sem meta da Beauty Week): ${kbrl(sum(sem.map(x=>x.real)))} em ${sem.length} loja(s)/ER(s): ${sem.map(x=>esc(x.id)+(canaisAtivos().length>1?` (${x.c==='vd'?'VD':'Varejo'})`:'')).join(', ')}.`:'')+
   ((B.avisos||[]).filter(a=>a.dia===S.dia).length?` <b class="c-warn">Metas repetidas na planilha (vale a primeira linha):</b> ${(B.avisos||[]).filter(a=>a.dia===S.dia).map(a=>`aba ${esc(a.aba)}, PDV ${esc(a.id)}: usei a linha ${a.usada} (${brl(a.meta)}) e ignorei ${a.ignoradas.map(x=>`a linha ${x.linha} ${esc(x.nome)} (${brl(x.meta)})`).join(', ')}`).join('; ')}.`:'')+
   ` Atualizado em ${B.geradoEm.slice(8,10)}/${B.geradoEm.slice(5,7)} às ${B.geradoEm.slice(11,16)}.`;
