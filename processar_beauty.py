@@ -21,10 +21,12 @@ Regras:
   Metas repetidas (mesmo PDV no mesmo dia na mesma aba): vale a primeira linha; as outras são avisadas no rodapé da página.
   Ritmo ("horaização"): quanto do dia já deveria estar vendido até a hora do último cupom/pedido, pela curva do dia.
   Curva de cada dia (quanto se vende em cada hora), na ordem de preferência:
-      1. o dia equivalente de 2025, contado a partir da Black Friday (ex.: 27/11/2026 = 28/11/2025);
-         Varejo: Dados/NOVEMBRO 2025 (shopping x demais); VD: Acompanhamento Beauty Week/BASE 2025/VD;
-      2. VD sem base de 2025: média dos dias da campanha já fechados;
-      3. sem nada disso: Varejo = mesmo dia da semana do mês de referência; VD = uniforme das 8h às 19h.
+      Cada canal tem a sua curva (Varejo ainda separa shopping x demais).
+      1. média dos dias já fechados da campanha do mesmo tipo (dia útil, sábado ou domingo), pelo realizado de cada hora;
+      2. o dia equivalente de 2025, contado a partir da Black Friday (ex.: 29/11/2026 = 30/11/2025);
+         Varejo: Dados/NOVEMBRO 2025; VD: Acompanhamento Beauty Week/BASE 2025/VD;
+      3. VD: média de todos os dias fechados da campanha;
+      4. sem nada disso: Varejo = mesmo dia da semana do mês de referência; VD = uniforme das 8h às 19h.
   Projeção de fechamento (por canal): F = parte do dia já vendida pela curva; A = atingimento dos dias da campanha
       já fechados (realizado ÷ meta). Projeção = F × (realizado ÷ F) + (1 − F) × (meta × A): no começo do dia pesa o
       histórico da campanha; à medida que o dia anda, pesa o ritmo do próprio dia. Sem dia fechado: realizado ÷ F.
@@ -237,34 +239,48 @@ def projecao(dias, rv, rd, lv, ld, shopping, curvas_padrao):
     tipo = lambda df: {"shopping": partes(df[df["id"].isin(shopping)]), "demais": partes(df[~df["id"].isin(shopping)])}
     fmt = lambda d: f"{d[8:]}/{d[5:7]}/{d[:4]}"
     out = {c: {"curvas": {}, "refs": {}, "prior": {}, "base": {}} for c in ("varejo", "vd")}
+    TIPO = ["dias úteis"] * 5 + ["sábados", "domingos"]
+    tipo_dia = lambda x: TIPO[pd.Timestamp(x).dayofweek]
+    media = lambda cs: [round(sum(c[i] for c in cs) / len(cs), 5) for i in range(24)] if cs else None
+    lista = lambda xs: ", ".join(fmt(x)[:5] for x in xs)
     for d in dias:
         fech = [x for x in com_dados if x < d and x < hoje]
+        mesmo = [x for x in fech if tipo_dia(x) == tipo_dia(d)]   # dias fechados da campanha do mesmo tipo (útil/sábado/domingo)
         an = analogo(d)
-        # Varejo
-        refs = [tipo(v26[v26["d"] == x]) for x in fech]
+        # Varejo: 1) média dos dias fechados do mesmo tipo; 2) dia equivalente de 2025; 3) mesmo dia da semana do mês
+        dia_v = {x: tipo(v26[v26["d"] == x]) for x in fech}
         g = hv[hv["d"] == an] if hv is not None and an else None
-        if g is not None and len(g):
-            out["varejo"]["curvas"][d] = tipo(g)
+        c25 = tipo(g) if g is not None and len(g) else None
+        if mesmo:
+            out["varejo"]["curvas"][d] = {k: media([dia_v[x][k] for x in mesmo if dia_v[x][k]]) for k in ("shopping", "demais")}
+            out["varejo"]["base"][d] = f"média dos {tipo_dia(d)} fechados da campanha ({lista(mesmo)})"
+        elif c25:
+            out["varejo"]["curvas"][d] = c25
             out["varejo"]["base"][d] = f"dia equivalente de 2025 ({fmt(an)})"
-            refs.append(curvas_padrao.get(d))
         else:
             out["varejo"]["curvas"][d] = curvas_padrao.get(d)
             out["varejo"]["base"][d] = "mesmo dia da semana do mês"
+        refs = list(dia_v.values()) + [c25, curvas_padrao.get(d)]
         out["varejo"]["refs"][d] = [r for r in refs if r and r["shopping"] and r["demais"]]
-        # VD
-        refs = [partes(d26[d26["d"] == x]) for x in fech]
+        # VD: 1) média dos dias fechados do mesmo tipo; 2) dia equivalente de 2025; 3) média de todos os dias fechados; 4) uniforme
+        dia_d = {x: partes(d26[d26["d"] == x]) for x in fech}
         g = hd[hd["d"] == an] if hd is not None and an else None
-        if g is not None and len(g):
-            out["vd"]["curvas"][d] = partes(g)
+        c25 = partes(g) if g is not None and len(g) else None
+        ok_mesmo = [dia_d[x] for x in mesmo if dia_d[x]]
+        ok_todos = [c for c in dia_d.values() if c]
+        if ok_mesmo:
+            out["vd"]["curvas"][d] = media(ok_mesmo)
+            out["vd"]["base"][d] = f"média dos {tipo_dia(d)} fechados da campanha ({lista(mesmo)})"
+        elif c25:
+            out["vd"]["curvas"][d] = c25
             out["vd"]["base"][d] = f"dia equivalente de 2025 ({fmt(an)})"
-        elif fech:
-            ok = [c for c in refs if c]
-            out["vd"]["curvas"][d] = [round(sum(c[i] for c in ok) / len(ok), 5) for i in range(24)]
-            out["vd"]["base"][d] = "média dos dias fechados da campanha (" + ", ".join(fmt(x)[:5] for x in fech) + ")"
+        elif ok_todos:
+            out["vd"]["curvas"][d] = media(ok_todos)
+            out["vd"]["base"][d] = f"média dos dias fechados da campanha ({lista(fech)})"
         else:
             out["vd"]["curvas"][d] = curva_vd()
             out["vd"]["base"][d] = "uniforme das 8h às 19h"
-        out["vd"]["refs"][d] = [r for r in refs + [curva_vd()] if r]
+        out["vd"]["refs"][d] = [r for r in ok_todos + [c25, curva_vd()] if r]
         # atingimento dos dias fechados (só lojas/ERs com meta)
         for c, ls in (("varejo", lv), ("vd", ld)):
             m = sum(x["meta"] for x in ls if x["dia"] in fech)
