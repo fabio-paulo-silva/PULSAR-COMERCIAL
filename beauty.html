@@ -267,6 +267,10 @@ tfoot td{font-weight:800;background:var(--muted);border-bottom:0}
 @media (max-width:860px){.kpis{grid-template-columns:1fr}}
 @media (max-width:700px){.gauge svg{max-width:220px} .gauge .gtx{margin-top:-46px} .gauge .gpc{font-size:30px} .bns{gap:10px} .kpi.bn{padding:14px 16px} .kpi.bn .val{font-size:22px}}
 #curvaTxt{display:none}
+.glass.atual{background:var(--primary)!important;color:var(--primary-fg);border:0!important;font-size:17px;font-weight:600;padding:10px 18px;border-radius:14px;box-shadow:0 6px 18px rgb(0 0 0 / .35)}
+.glass.atual svg{color:var(--primary-fg)!important;width:20px;height:20px}
+.glass.atual b{font-family:var(--font-display);font-weight:800;font-size:19px;margin-left:2px}
+@media (max-width:700px){.glass.atual{font-size:15px;padding:9px 14px} .glass.atual b{font-size:17px}}
 .msort{display:none}
 @media (max-width:700px){
   .hero .in{padding-block:26px 22px;min-height:0}
@@ -320,7 +324,7 @@ tfoot td{font-weight:800;background:var(--muted);border-bottom:0}
     <div><h1 class="bwlogo" aria-label="Beauty Week"><span class="b1">Beauty</span><span class="b2">WEEK</span><span class="b3"></span></h1>
       <p class="bwsub">Acompanhamento comercial</p></div>
     <div class="chips">
-      <div class="glass"><i data-lucide="clock"></i><span id="hData">Carregando…</span></div>
+      <div class="glass atual"><i data-lucide="refresh-cw"></i><span id="hData">Carregando…</span></div>
       <a class="glass" href="hoje.html"><i data-lucide="activity"></i><span>Acompanhar o dia</span></a>
       <a class="glass" href="index.html"><i data-lucide="calendar-days"></i><span>Painel do mês</span></a>
       <button class="glass tema" type="button" id="bTema" aria-label="Alternar modo claro ou escuro"></button>
@@ -619,7 +623,9 @@ function render(){
  $('kpis').hidden=S.canal==='com';
  if(S.canal!=='ranking'&&S.canal!=='com'&&S.canal!=='vddet')grafico(S.canal==='hub'?ls.filter(l=>l.meta>0):ls);
  const sem=canaisAtivos().flatMap(c=>B[c].semMeta.filter(x=>x.dia===S.dia).map(x=>({...x,c})));
- $('hData').textContent=`${S.dia.slice(8)}/${S.dia.slice(5,7)} · Varejo até ${B.varejo.ate[S.dia]||'—'} · VD até ${B.vd.ate[S.dia]||'—'}`;
+ // hora em que os dados subiram para o site (data do arquivo publicado); sem ela, a hora do processamento
+ const pub=B._pub||new Date(B.geradoEm),d2=n=>String(n).padStart(2,'0');
+ $('hData').innerHTML=`Atualizado em: <b>${d2(pub.getDate())}/${d2(pub.getMonth()+1)} às ${d2(pub.getHours())}:${d2(pub.getMinutes())}</b>`;
  $('regras').innerHTML=`Varejo: cupons efetivados, receita líquida (−) trocas; boletos sem os brindes (abaixo de R$ 1) e itens sem a sacola. VD: pedidos com NF emitida no dia, sem os cancelados pelo usuário, loja pela estrutura pai, valor do pedido. HUBs: mesma base do VD pelo código do canal de distribuição (fora do Total canais e do Ranking, porque os mesmos pedidos já contam nas ERs). GAP = realizado − meta do dia. Projeção do dia: no começo do dia pesa o atingimento dos dias já fechados da campanha; conforme o dia anda, pesa o ritmo do próprio dia, medido pela curva de venda por hora do dia equivalente da Black Friday de 2025 (VD: dos dias fechados da campanha). Faixa provável: a mesma conta com as outras curvas.`+
   (sem.length?` Fora das tabelas (venda sem meta da Beauty Week): ${kbrl(sum(sem.map(x=>x.real)))} em ${sem.length} loja(s)/ER(s): ${sem.map(x=>esc(x.id)+(canaisAtivos().length>1?` (${x.c==='vd'?'VD':'Varejo'})`:'')).join(', ')}.`:'')+
   ((B.avisos||[]).filter(a=>a.dia===S.dia).length?` <b class="c-warn">Metas repetidas na planilha (vale a primeira linha):</b> ${(B.avisos||[]).filter(a=>a.dia===S.dia).map(a=>`aba ${esc(a.aba)}, PDV ${esc(a.id)}: usei a linha ${a.usada} (${brl(a.meta)}) e ignorei ${a.ignoradas.map(x=>`a linha ${x.linha} ${esc(x.nome)} (${brl(x.meta)})`).join(', ')}`).join('; ')}.`:'')+
@@ -648,7 +654,8 @@ $('fPraca').addEventListener('change',e=>{S.praca=e.target.value;S.gvo='';fillFi
 $('fGvo').addEventListener('change',e=>{S.gvo=e.target.value;render()});
 $('fLimpar').addEventListener('click',()=>{S.reg=S.praca=S.gvo='';fillFiltros();render()});
 
-const carregar=()=>fetch('data/beauty.json?v='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()});
+const carregar=()=>fetch('data/beauty.json?v='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);
+ const lm=Date.parse(r.headers.get('Last-Modified')||'');return r.json().then(j=>{j._pub=isNaN(lm)?null:new Date(lm);return j})});
 carregar().then(j=>{
  B=j;normalizar();S.dia=[ultimoDia('varejo'),ultimoDia('vd')].sort().pop()||B.dias[B.dias.length-1];fillFiltros();render();
  // identificação de quem acessa (mesma lista de pessoas do painel do mês)
