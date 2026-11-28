@@ -266,6 +266,7 @@ tfoot td{font-weight:800;background:var(--muted);border-bottom:0}
 .kpi.bn .val.gap.up{color:var(--success-ink)} .kpi.bn .val.gap.dn{color:var(--destructive)}
 @media (max-width:860px){.kpis{grid-template-columns:1fr}}
 @media (max-width:700px){.gauge svg{max-width:220px} .gauge .gtx{margin-top:-46px} .gauge .gpc{font-size:30px} .bns{gap:10px} .kpi.bn{padding:14px 16px} .kpi.bn .val{font-size:22px}}
+#curvaTxt{display:none}
 .msort{display:none}
 @media (max-width:700px){
   .hero .in{padding-block:26px 22px;min-height:0}
@@ -280,6 +281,18 @@ tfoot td{font-weight:800;background:var(--muted);border-bottom:0}
   .msort select{flex:1;min-width:0;height:34px}
   .tall{max-height:none;overflow:visible}
   .tb,.tb tbody,.tb tfoot{display:block;width:100%}
+  /* cada linha vira um cartão: nome em cima, números em 3 colunas (rótulo acima do valor), GAP no rodapé */
+  .tw.tall{padding:6px 10px 10px}
+  .tb:not(.mx) tr{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px 10px!important;margin:8px 0;padding:14px!important;border:1px solid var(--border)!important;border-radius:14px;background:var(--card)}
+  .tb:not(.mx) tfoot tr{background:var(--muted)}
+  .tb:not(.mx) td{flex-direction:column!important;align-items:flex-start!important;justify-content:flex-start!important;gap:3px!important;font-size:15px;font-weight:700}
+  .tb:not(.mx) td::before{font-size:10px!important;letter-spacing:.05em!important}
+  .tb:not(.mx) td.c-nome{flex-direction:row!important;align-items:center!important;gap:10px!important;padding-bottom:10px!important;border-bottom:1px solid var(--border)!important}
+  .tb:not(.mx) td.c-nome .nm{font-size:16px;font-weight:800;min-width:0}
+  .tb:not(.mx) td.c-nome .sub{font-size:12px;font-weight:600}
+  .tb:not(.mx) td.c-nome::before{font-size:15px!important;letter-spacing:0!important}
+  .tb:not(.mx) td.c-gap{flex-direction:row!important;justify-content:space-between!important;align-items:center!important;padding-top:10px!important;border-top:1px solid var(--border)!important}
+  .tb:not(.mx) td .cv{justify-content:flex-start}
   .tb thead{display:none}
   .tb tbody tr{counter-increment:pos}
   .tb tr{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;padding:12px 16px;border-bottom:1px solid var(--border)}
@@ -462,7 +475,7 @@ function grafico(ls){
 function tabela(id,titulo,sub,cols,rows,extra='',rodape=''){
  const o=S.ord[id]||{k:'at',d:-1};const col=cols.find(c=>c.k===o.k)||cols.find(c=>c.k==='at');
  rows=[...rows].sort((a,b)=>{const x=col.v(a),y=col.v(b);return (x==null)-(y==null)||(x<y?-1:x>y?1:0)*o.d});
- return `<div class="card"><div class="card-hd"><div><h2>${titulo}</h2><p>${sub}</p></div></div>${extra}
+ return `<div class="card"><div class="card-hd"><div><h2>${titulo}</h2></div></div>${extra}
   <div class="msort"><label for="ms_${id}">Ordenar por</label><select id="ms_${id}" data-ms="${id}">${cols.map(c=>`<option value="${c.k}" ${c.k===o.k?'selected':''}>${c.t}${c.k==='nome'?' (A–Z)':' (maior primeiro)'}</option>`).join('')}</select></div>
   <div class="tw tall"><table class="tb"><thead><tr><th>#</th>${cols.map(c=>`<th class="s ${c.r?'r':''} ${c.k===o.k?'on':''}" data-tb="${id}" data-k="${c.k}">${c.t}${c.k===o.k?` <span class="ar">${o.d<0?'↓':'↑'}</span>`:''}</th>`).join('')}</tr></thead>
   <tbody>${rows.map((r,i)=>`<tr><td class="mf tnum c-pos">${i+1}</td>${cols.map(c=>`<td class="${c.r?'r':''} c-${c.k}" data-l="${c.t}">${c.h(r)}</td>`).join('')}</tr>`).join('')||`<tr><td colspan="${cols.length+1}" class="mf">Sem dados.</td></tr>`}</tbody>
@@ -505,7 +518,7 @@ function tabelaHub(ls){
 }
 // Detalhe VD: pedido médio e itens/pedido por segmentação (Papel) e distribuição dos pedidos por faixa de valor
 function detalheVD(ls){
- const D=B.vd.det;if(!D)return '<div class="card"><div class="card-hd"><div><h2>Detalhe VD</h2><p>Sem dados de pedidos.</p></div></div></div>';
+ const D=B.vd.det;if(!D)return '<div class="card"><div class="card-hd"><div><h2>Detalhe VD</h2></div></div><p class="mf" style="padding:16px 20px">Sem dados de pedidos.</p></div>';
  const ids=new Set(ls.filter(l=>l.canal==='vd').map(l=>l.id));
  const L=D.linhas.filter(x=>x[0]===S.dia&&ids.has(x[1]));
  const z=()=>({n:0,v:0,i:0}),add=(o,n,v,i)=>{o.n+=n;o.v+=v;o.i+=i};
@@ -514,20 +527,20 @@ function detalheVD(ls){
  const ps=D.papeis.filter(p=>seg[p]&&seg[p].n);
  const pm=x=>x.n?brl(x.v/x.n,2):'—',ipp=x=>x.n?fx(x.i/x.n,1):'—';
  const sub=`VD até ${B.vd.ate[S.dia]||'—'} · ${fx(T.n)} pedidos com NF emitida no dia, sem os cancelados · ERs do filtro`;
- if(!T.n)return `<div class="card"><div class="card-hd"><div><h2>Detalhe VD</h2><p>${sub}</p></div></div><p class="mf" style="padding:16px 20px">Sem pedidos para este filtro.</p></div>`;
+ if(!T.n)return `<div class="card"><div class="card-hd"><div><h2>Detalhe VD</h2></div></div><p class="mf" style="padding:16px 20px">Sem pedidos para este filtro.</p></div>`;
  const linSeg=(nome,x,tf)=>{const t=tf?'th':'td';return `<tr><${t} class="l">${nome}</${t}><td>${fx(x.n)}</td><td>${pct(x.n/T.n,1)}</td><td>${brl(x.v)}</td><td>${pct(x.v/T.v,1)}</td><td><b>${pm(x)}</b></td><td><b>${ipp(x)}</b></td></tr>`};
- const t1=`<div class="card"><div class="card-hd"><div><h2>Pedido médio e itens por segmentação</h2><p>${sub}</p></div></div>
+ const t1=`<div class="card"><div class="card-hd"><div><h2>Pedido médio e itens por segmentação</h2></div></div>
   <div class="tw"><table class="tb mx"><thead><tr><th class="l">Segmentação</th><th>Pedidos</th><th>% pedidos</th><th>Receita</th><th>% receita</th><th>Pedido médio</th><th>Itens/pedido</th></tr></thead>
   <tbody>${ps.map(p=>linSeg(esc(p),seg[p])).join('')}</tbody><tfoot>${linSeg('Total',T,1)}</tfoot></table></div></div>`;
  const cols=[...ps.map(p=>({t:esc(p),c:cel[p],s:seg[p]})),{t:'Total',c:fx_,s:T,tot:1}];
  const maxF=c=>Math.max(...c.c.map(x=>x.n));
- const t2=`<div class="card"><div class="card-hd"><div><h2>Pedidos por faixa de valor</h2><p>Quantidade de pedidos em cada faixa e % dentro da segmentação · em destaque a faixa com mais pedidos</p></div></div>
+ const t2=`<div class="card"><div class="card-hd"><div><h2>Pedidos por faixa de valor</h2></div></div>
   <div class="tw"><table class="tb mx"><thead><tr><th class="l">Faixa do pedido</th>${cols.map(c=>`<th class="${c.tot?'tt':''}">${c.t}</th>`).join('')}</tr></thead>
   <tbody>${D.faixas.map((f,k)=>`<tr><td class="l">${esc(f)}</td>${cols.map(c=>{const x=c.c[k];return `<td class="${x.n&&x.n===maxF(c)?'pk':''} ${c.tot?'tt':''}">${x.n?fx(x.n):'<span class="mf">—</span>'}<small>${x.n?pct(x.n/c.s.n,1):''}</small></td>`}).join('')}</tr>`).join('')}</tbody>
   <tfoot><tr><th class="l">Pedidos</th>${cols.map(c=>`<td>${fx(c.s.n)}</td>`).join('')}</tr>
   <tr><th class="l">Pedido médio</th>${cols.map(c=>`<td>${pm(c.s)}</td>`).join('')}</tr>
   <tr><th class="l">Itens/pedido</th>${cols.map(c=>`<td>${ipp(c.s)}</td>`).join('')}</tr></tfoot></table></div>
-  <div class="tleg"><span>Pedido médio = valor do pedido ÷ pedidos</span><span>Itens/pedido = quantidade de itens ÷ pedidos</span><span>Segmentação = coluna Papel do relatório de pedidos</span></div></div>`;
+  </div>`;
  return t1+t2;
 }
 // Comunicação: mensagem pronta no WhatsApp para cada regional (dia selecionado, sem os demais filtros)
@@ -571,7 +584,7 @@ function abrirWa(i,modo){const c=CONTATOS[i],q=`phone=${destino(c)}&text=${encod
  if(modo==='app')location.href=`whatsapp://send?${q}`;else window.open(`https://${modo==='web'?'web':'api'}.whatsapp.com/send?${q}`,'_blank','noopener')}
 function comunicacao(){
  return `<div class="aviso" style="background:var(--muted);color:var(--muted-fg)">${ic('info')}<span>As mensagens usam o dia selecionado (${S.dia.slice(8)}/${S.dia.slice(5,7)}) e os dados da última atualização, com Varejo + VD de todas as praças da regional. Os outros filtros não entram. Confira a prévia antes de enviar.</span></div>
- <div class="com">${CONTATOS.map((c,i)=>{const t=mensagem(c);return `<div class="card"><div class="card-hd"><div class="who"><span class="av">${esc(c.nome[0])}</span><div><h2 style="text-transform:none">${esc(c.nome)}</h2><p>${esc(c.reg.replace('REGIONAL','Regional'))} · abre direto na conversa do WhatsApp</p></div></div>${c.diretoria?'<span class="tag">Diretoria comercial</span>':''}</div>
+ <div class="com">${CONTATOS.map((c,i)=>{const t=mensagem(c);return `<div class="card"><div class="card-hd"><div class="who"><span class="av">${esc(c.nome[0])}</span><div><h2 style="text-transform:none">${esc(c.nome)}</h2><p>${esc(c.reg.replace('REGIONAL','Regional'))}</p></div></div>${c.diretoria?'<span class="tag">Diretoria comercial</span>':''}</div>
   <pre id="msg${i}">${esc(t)}</pre>
   <div class="acts">${botoesWa(i)}<button class="cp" type="button" data-cp="${i}">${ic('copy')}Copiar</button></div></div>`}).join('')}</div>`;
 }
