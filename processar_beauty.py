@@ -3,7 +3,8 @@
 Lê a pasta "Acompanhamento Beauty Week" e grava data/beauty.json:
   METAS/METAS DIA.xlsx            abas VAREJO e VD: PDV, loja/ER, praça, GVO, META e DIA
   REALIZADOS/VAREJO/*.xlsx        export de cupons do Retaguarda (cupom_venda_...)
-  REALIZADOS/VD/*.xlsx            export de pedidos com NF emitida (pedidos_nf_emitida_...)
+  REALIZADOS/VD/*.xlsx            export de pedidos com NF emitida de CPF (pedidos_nf_emitida_...)
+  REALIZADOS/VD CNPJ/*.xlsx       export de pedidos com NF emitida de CNPJ (pedidos_nf_emitida_cnpj_...), somado ao VD
 
 Regras:
   Varejo: só cupons "Efetivado"; realizado = soma de "Receita liquida (-) trocas"; loja = código no início de "Loja".
@@ -48,6 +49,7 @@ CANCELADO_VD = "CANCELADO PELO USUÁRIO"
 # Códigos cujo realizado soma em outro PDV (estrutura sem meta própria que pertence a outra loja/ER)
 SOMAR_EM = {"25047": "20933"}   # 25047 -> Santa Luzia (20933)
 AVISOS = []
+VISTOS = set()   # códigos de pedido do VD já lidos (CPF + CNPJ)
 # Detalhe VD: faixas de valor do pedido e ordem das segmentações (coluna Papel)
 FAIXAS_VD = [(0, 150, "Até R$ 150"), (150, 300, "R$ 150 a 300"), (300, 500, "R$ 300 a 500"), (500, 1000, "R$ 500 a 1.000"),
              (1000, 2000, "R$ 1.000 a 2.000"), (2000, float("inf"), "Acima de R$ 2.000")]
@@ -119,9 +121,12 @@ def realizado_varejo():
 
 
 def realizado_vd():
+    """Pedidos de CPF (REALIZADOS/VD) e de CNPJ (REALIZADOS/VD CNPJ); pedido repetido conta uma vez (vale o arquivo mais novo)."""
     fr = []
-    for a in arquivos("VD"):
+    for a in sorted(arquivos("VD") + arquivos("VD CNPJ"), key=lambda a: a.stat().st_mtime, reverse=True):
         v = p.ler_excel(a)
+        v = v[~v["CodigoPedido"].astype(str).isin(VISTOS)]
+        VISTOS.update(v["CodigoPedido"].astype(str))
         v = v[v["DetalheSituaçãoComercial"].astype(str).str.strip().str.upper() != CANCELADO_VD]
         loja = v["EstruturaPai"].map(cod).fillna(v["CanalDistribuicao"].map(cod)).replace(SOMAR_EM)
         aut = pd.to_datetime(v["DataAutorizaçãoFaturamento"], format="%d/%m/%Y %H:%M", errors="coerce")
