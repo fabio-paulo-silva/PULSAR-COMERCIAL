@@ -282,10 +282,8 @@ tfoot td{font-weight:800;background:var(--muted);border-bottom:0}
 .pb-b{position:absolute;left:0;top:0;bottom:0;border-radius:7px;min-width:3px}
 .pb-b.ok{background:var(--success-ink)} .pb-b.warn{background:var(--warning)} .pb-b.bad{background:var(--destructive)}
 .pb-m{position:absolute;top:-4px;bottom:-4px;border-left:1.5px dashed var(--success-ink)}
-.pb-e{position:absolute;top:-5px;bottom:-5px;width:3px;margin-left:-1.5px;background:var(--foreground);border-radius:2px}
 .pb-p{text-align:right;font-weight:800;font-size:15px}
 .legend .l-ok,.legend .l-wn,.legend .l-bd{height:10px;width:12px;border-radius:3px} .legend .l-ok{background:var(--success-ink)} .legend .l-wn{background:var(--warning)} .legend .l-bd{background:var(--destructive)}
-.legend .l-de{height:12px;width:3px;border-radius:2px;background:var(--foreground)}
 @media (max-width:640px){.pb-r{grid-template-columns:1fr 60px;gap:6px 10px}.pb-n{grid-column:1/-1}}
 .msort{display:none}
 @media (max-width:700px){
@@ -372,7 +370,7 @@ tfoot td{font-weight:800;background:var(--muted);border-bottom:0}
   <div class="card pad" id="cardPraca">
     <div><h2 style="font-size:18px" id="pracaTit">Atingimento por praça</h2></div>
     <div class="pb" id="chartPraca"></div>
-    <div class="legend"><span><i class="l-ok"></i>100% ou mais</span><span><i class="l-wn"></i>85% a 99%</span><span><i class="l-bd"></i>abaixo de 85%</span><span><i class="l-mt"></i>100% da meta</span><span><i class="l-de"></i>deveria estar agora</span></div>
+    <div class="legend"><span><i class="l-ok"></i>100% ou mais</span><span><i class="l-wn"></i>85% a 99%</span><span><i class="l-bd"></i>abaixo de 85%</span><span><i class="l-mt"></i>100% da meta</span></div>
   </div>
   <div id="tabelas" style="display:flex;flex-direction:column;gap:20px"></div>
   <p class="nota" id="regras"></p>
@@ -512,16 +510,16 @@ function grafico(ls){
  if(bs.length)$('curvaTxt').textContent+=` · esperado: ${bs.join('; ')}`;
 }
 
-// Barras horizontais: atingimento de cada praça no canal/filtro da tela; traço = quanto deveria estar agora pela curva
+// Barras horizontais: atingimento de cada praça no canal/filtro da tela
 function graficoPracas(ls){
  const g={};ls.filter(l=>l.meta>0).forEach(l=>{const x=g[l.praca]=g[l.praca]||{nome:l.praca||'Sem praça',meta:0,real:0,esp:0};x.meta+=l.meta;x.real+=l.real;x.esp+=l.esp});
  const rows=Object.values(g).map(x=>({...x,at:x.real/x.meta,f:x.esp/x.meta})).sort((a,b)=>b.at-a.at);
  $('pracaTit').textContent=`Atingimento por praça · ${S.canal==='varejo'?'Varejo':S.canal==='vd'?'VD':'Total canais'}`;
  if(!rows.length){$('chartPraca').innerHTML='<p class="mf">Sem meta para este filtro.</p>';return}
- const MAX=Math.max(1.1,...rows.map(r=>r.at),...rows.map(r=>r.f))*1.04,w=v=>(Math.min(v,MAX)/MAX*100).toFixed(2)+'%';
+ const MAX=Math.max(1.1,...rows.map(r=>r.at))*1.04,w=v=>(Math.min(v,MAX)/MAX*100).toFixed(2)+'%';
  $('chartPraca').innerHTML=rows.map(r=>`<div class="pb-r"><div class="pb-n">${esc(r.nome)}<small>${kbrl(r.real)} de ${kbrl(r.meta)}</small></div>
-  <div class="pb-t" title="${esc(r.nome)} · ${pct(r.at,1)} da meta · deveria estar ${pct(r.f)} · GAP ${r.real>=r.meta?'+':'−'}${kbrl(Math.abs(r.real-r.meta))}">
-   <div class="pb-b ${tomAt(r.at)}" style="width:${w(r.at)}"></div><div class="pb-m" style="left:${w(1)}"></div>${r.f>0&&r.f<1?`<div class="pb-e" style="left:${w(r.f)}"></div>`:''}</div>
+  <div class="pb-t" title="${esc(r.nome)} · ${pct(r.at,1)} da meta · GAP ${r.real>=r.meta?'+':'−'}${kbrl(Math.abs(r.real-r.meta))}">
+   <div class="pb-b ${tomAt(r.at)}" style="width:${w(r.at)}"></div><div class="pb-m" style="left:${w(1)}"></div></div>
   <div class="pb-p c-${tomAt(r.at)}">${pct(r.at,1)}</div></div>`).join('');
 }
 
