@@ -135,6 +135,7 @@ def realizado_vd():
                                 "hm": aut.dt.strftime("%H:%M"), "valor": v["ValorPedido"],
                                 "papel": v["Papel"].fillna("Sem segmentação").astype(str).str.strip(),
                                 "itens": pd.to_numeric(v["QtdeItens"], errors="coerce").fillna(0)}))
+        fr[-1]["bol"], fr[-1]["it"], fr[-1]["b1"] = 1, fr[-1]["itens"], 0   # pedidos e itens por ER (pedido médio e itens/pedido)
     return pd.concat(fr, ignore_index=True) if fr else pd.DataFrame(columns=["id", "hub", "dia", "hm", "valor", "papel", "itens"])
 
 

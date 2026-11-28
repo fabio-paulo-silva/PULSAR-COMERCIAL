@@ -510,10 +510,21 @@ function tabelaVarejo(ls){
  const chips=`<div class="cl">${Object.entries(M).filter(([,m])=>m).sort().map(([k,m])=>`<span>${esc(k)} · BM <b>${brl(m.bm,2)}</b> · IPB <b>${fx(m.ipb,2)}</b> · B1 <b>${pct(m.b1,1)}</b></span>`).join('')}</div>`;
  return tabela('varejo',`Lojas · Varejo (${rows.length})`,`Varejo até ${B.varejo.ate[S.dia]||'—'} · médias do cluster no dia:`,cols,rows,chips,LEG+LEGV);
 }
+// Pedido médio e itens/pedido de cada ER comparados ao total do VD no dia (todas as ERs com meta, sem filtro)
+function mediaVD(){const ls=B.vd.lojas.filter(l=>l.dia===S.dia),bol=sum(ls.map(l=>l.bol||0));
+ return bol?{pm:sum(ls.map(l=>l.real))/bol,ipp:sum(ls.map(l=>l.it||0))/bol}:null}
 function tabelaVD(ls){
- const rows=ls.filter(l=>l.canal==='vd');
- const cols=[{k:'nome',t:'ER',v:r=>r.nome,h:r=>`<p class="nm">${esc(r.nome)}</p><p class="sub">${esc(r.id)} · ${esc(r.praca)} · ${esc(r.gvo)}</p>`},...colsBase(),colGap];
- return tabela('vd',`ERs · VD (${rows.length})`,`VD até ${B.vd.ate[S.dia]||'—'} · pedidos com NF emitida no dia`,cols,rows,'',LEG);
+ const M=mediaVD();
+ const rows=ls.filter(l=>l.canal==='vd').map(l=>({...l,pm:l.bol?l.real/l.bol:null,ipp:l.bol?l.it/l.bol:null}));
+ const ind=(r,k,fmt)=>r[k]==null?'<span class="mf">—</span>':`<span class="cv">${fmt(r[k])}${sinal(tomCl(r[k],M&&M[k]),M?`Total VD: ${fmt(M[k])}`:'')}</span>`;
+ const totInd=(rs,k)=>{const bol=tot(rs,'bol');if(!bol)return'—';return k==='pm'?brl(tot(rs,'real')/bol,2):fx(tot(rs,'it')/bol,1)};
+ const cols=[{k:'nome',t:'ER',v:r=>r.nome,h:r=>`<p class="nm">${esc(r.nome)}</p><p class="sub">${esc(r.id)} · ${esc(r.praca)} · ${esc(r.gvo)}</p>`},...colsBase(),
+  {k:'pm',t:'Pedido Médio',r:1,v:r=>r.pm,h:r=>ind(r,'pm',v=>brl(v,2)),tot:rs=>totInd(rs,'pm')},
+  {k:'ipp',t:'Itens/Pedido',r:1,v:r=>r.ipp,h:r=>ind(r,'ipp',v=>fx(v,1)),tot:rs=>totInd(rs,'ipp')},
+  colGap];
+ const chips=M?`<div class="cl"><span>Total VD no dia · Pedido médio <b>${brl(M.pm,2)}</b> · Itens/pedido <b>${fx(M.ipp,1)}</b></span></div>`:'';
+ const legVD=`<div class="tleg" style="border-top:0;padding-top:0"><span>Pedido médio e itens/pedido comparados ao total do VD no dia:</span><span>${sinal('ok')}no total ou melhor</span><span>${sinal('warn')}até 5% abaixo</span><span>${sinal('bad')}mais de 5% abaixo</span></div>`;
+ return tabela('vd',`ERs · VD (${rows.length})`,'',cols,rows,chips,LEG+legVD);
 }
 function tabelaHub(ls){
  const rows=ls.filter(l=>l.canal==='hub');const sem=rows.filter(r=>!(r.meta>0));
