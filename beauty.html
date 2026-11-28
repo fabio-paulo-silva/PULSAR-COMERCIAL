@@ -249,6 +249,23 @@ tfoot td{font-weight:800;background:var(--muted);border-bottom:0}
   .tb.mx td::before{content:none} .tb.mx .l{background:var(--card)!important} .tb.mx tfoot td,.tb.mx tfoot .l{background:var(--muted)!important}
   .tb.mx td.pk{background:color-mix(in oklab,var(--primary) 16%,var(--card))!important}
 }
+.kpis{display:grid;grid-template-columns:minmax(260px,1fr) 2fr;gap:16px}
+.gauge{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px 20px 16px;position:relative}
+.gauge svg{width:100%;max-width:300px;height:auto;display:block}
+.gauge .gtrk{fill:none;stroke:var(--muted);stroke-width:22;stroke-linecap:round}
+.gauge .gval{fill:none;stroke:var(--primary);stroke-width:22;stroke-linecap:round;transition:stroke-dasharray .4s}
+.gauge .gmk{stroke:var(--foreground);stroke-width:3;stroke-linecap:round}
+.gauge .gtx{margin-top:-58px;text-align:center}
+.gauge .gpc{font:800 clamp(30px,3.4vw,42px)/1 var(--font-display);color:var(--primary);font-variant-numeric:tabular-nums}
+.gauge .glb{font-size:12px;font-weight:700;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.04em;margin-top:4px}
+.gauge .gde{margin-top:14px;font-size:13px;color:var(--muted-fg);font-weight:600}
+.gauge .gde b{color:var(--foreground)}
+.bns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.kpi.bn{justify-content:center;gap:10px;padding:22px 24px}
+.kpi.bn .val{font-size:clamp(24px,2.8vw,36px)}
+.kpi.bn .val.gap.up{color:var(--success-ink)} .kpi.bn .val.gap.dn{color:var(--destructive)}
+@media (max-width:860px){.kpis{grid-template-columns:1fr}}
+@media (max-width:700px){.gauge svg{max-width:220px} .gauge .gtx{margin-top:-46px} .gauge .gpc{font-size:30px} .bns{gap:10px} .kpi.bn{padding:14px 16px} .kpi.bn .val{font-size:22px}}
 .msort{display:none}
 @media (max-width:700px){
   .hero .in{padding-block:26px 22px;min-height:0}
@@ -309,12 +326,12 @@ tfoot td{font-weight:800;background:var(--muted);border-bottom:0}
   <nav class="tabs" id="tabs"></nav>
   <div id="aviso"></div>
   <section class="kpis" id="kpis"></section>
-  <div id="tabelas" style="display:flex;flex-direction:column;gap:20px"></div>
   <div class="card pad" id="cardCurva">
     <div><h2 style="font-size:18px">Vendido × esperado por hora</h2><p class="mf" id="curvaTxt"></p></div>
     <div class="tw"><div class="chart" id="chart"></div></div>
     <div class="legend"><span><i class="l-rl"></i>Vendido acumulado</span><span><i class="l-esp"></i>Esperado acumulado</span><span><i class="l-hb"></i>Vendido na hora</span><span><i class="l-mt"></i>Meta do dia</span></div>
   </div>
+  <div id="tabelas" style="display:flex;flex-direction:column;gap:20px"></div>
   <p class="nota" id="regras"></p>
 </main>
 
@@ -398,13 +415,23 @@ function kpis(a,ls){
   S.canal==='hub'&&semM.length?`<p class="kl">HUBs com meta. Sem meta: ${semM.map(l=>`${esc(l.nome)} ${kbrl(l.real)}`).join(' · ')}</p>`:'';
  const g=a.real-a.meta;
  document.documentElement.dataset.tom=a.meta>0?tomAt(a.at):'bad';
+ // velocímetro: arco de 180°, ponteiro de "deveria estar" (parte do dia esperada pela curva)
+ const R=88,cx=110,cy=108,pt=(t,r)=>{const th=Math.PI*(1-Math.min(1,Math.max(0,t)));return[cx+r*Math.cos(th),cy-r*Math.sin(th)]};
+ const [m1x,m1y]=pt(a.f,R-16),[m2x,m2y]=pt(a.f,R+16);
+ const gauge=`<svg viewBox="0 0 220 124" role="img" aria-label="Atingimento ${pct(a.at,1)} da meta; deveria estar ${pct(a.f)}">
+   <path class="gtrk" d="M${cx-R} ${cy} A${R} ${R} 0 0 1 ${cx+R} ${cy}" pathLength="100"/>
+   <path class="gval" d="M${cx-R} ${cy} A${R} ${R} 0 0 1 ${cx+R} ${cy}" pathLength="100" stroke-dasharray="${Math.min(100,a.at*100)} 100"/>
+   ${a.meta>0?`<line class="gmk" x1="${m1x}" y1="${m1y}" x2="${m2x}" y2="${m2y}"/>`:''}</svg>`;
+ const big=(t,v,cl='')=>`<div class="card kpi bn"><p class="lbl">${t}</p><p class="val ${cl}">${v}</p></div>`;
  $('kpis').innerHTML=`
-  <div class="card kpi hero2"><p class="lbl">Realizado</p><p class="val">${kbrl(a.real)} <small>${pct(a.at,1)} da meta</small></p>
-   <div class="prog"><i style="width:${Math.min(100,a.at*100)}%;background:var(--primary)"></i><b style="left:${Math.min(100,a.f*100)}%"></b></div>${parte}</div>
-  <div class="card kpi"><p class="lbl">Meta do dia</p><p class="val">${kbrl(a.meta)}</p><p class="kl">GAP <b class="gap ${g>=0?'up':'dn'}">${g>=0?'+':'−'}${kbrl(Math.abs(g))}</b></p></div>
-  <div class="card kpi"><p class="lbl">Ritmo agora</p><p class="val ${a.ritmo==null?'':'c-'+tom(a.ritmo)}">${a.ritmo==null?'—':pct(a.ritmo)}</p>
-   <p class="kl">${a.ritmo==null?'sem venda registrada ainda':`esperado até agora <b>${kbrl(a.esp)}</b> (${pct(a.f)} do dia)`}</p></div>
-  <div class="card kpi"><p class="lbl">Projeção do dia</p><p class="val ${a.proj==null?'':'c-'+tom(a.proj/a.meta)}">${a.proj==null?'—':kbrl(a.proj)}</p><p class="kl">${a.proj==null?'':`${pct(a.proj/a.meta)} da meta`+(a.f<1&&a.hi-a.lo>1?` · faixa provável <b>${kbrl(a.lo)}</b> a <b>${kbrl(a.hi)}</b>`:a.f>=1?' · dia fechado':'')}</p></div>`;
+  <div class="card gauge">${gauge}<div class="gtx"><p class="gpc">${a.meta>0?pct(a.at,1):'—'}</p><p class="glb">da meta</p></div>
+   <p class="gde">deveria estar <b>${a.meta>0?pct(a.f):'—'}</b></p></div>
+  <div class="bns">
+   ${big('Realizado',kbrl(a.real))}
+   ${big('Meta do dia',kbrl(a.meta))}
+   ${big('GAP',`${g>=0?'+':'−'}${kbrl(Math.abs(g))}`,`gap ${g>=0?'up':'dn'}`)}
+   ${big('Projeção de fechamento',a.proj==null?'—':kbrl(a.proj),a.proj==null?'':'c-'+tom(a.proj/a.meta))}
+  </div>`;
 }
 
 function grafico(ls){
