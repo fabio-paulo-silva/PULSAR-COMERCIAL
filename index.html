@@ -114,23 +114,6 @@ select:focus-visible,input:focus-visible,textarea:focus-visible,button:focus-vis
 .dia.on{opacity:1;background:var(--card);border-color:var(--foreground);color:var(--foreground);box-shadow:var(--shadow-card)}
 .dia.on b{color:var(--foreground)}
 .dia.fds{border-style:dashed}
-.rk3{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;align-items:start}
-.rkl{max-height:36rem;overflow-y:auto}
-.rkr{display:grid;grid-template-columns:28px 28px minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 16px;border-top:1px solid var(--border)}
-.rkr .pos{font-family:var(--font-display);font-weight:800;color:var(--muted-fg);text-align:right;font-variant-numeric:tabular-nums}
-.rkr .nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .rkr .sub{font-size:12px;color:var(--muted-fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rkr .v{text-align:right;font-family:var(--font-display);font-weight:800;font-variant-numeric:tabular-nums} .rkr .v small{display:block;font-family:inherit;font-size:11px;font-weight:600;color:var(--muted-fg)}
-.md{width:26px;height:26px;border-radius:999px;display:flex;align-items:center;justify-content:center} .md svg{width:16px;height:16px}
-.md.dia_{background:oklch(0.75 0.12 220 / .18);color:oklch(0.62 0.14 220)} .md.ouro{background:oklch(0.85 0.15 90 / .22);color:oklch(0.68 0.14 80)}
-.md.prata{background:oklch(0.8 0.01 250 / .3);color:oklch(0.55 0.01 250)} .md.bronze{background:oklch(0.7 0.1 50 / .2);color:oklch(0.55 0.11 50)}
-.rkleg{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted-fg);align-items:center} .rkleg span{display:flex;align-items:center;gap:6px}
-.dia.fut{opacity:.4;background:transparent} .dia.fut.on{opacity:1}
-.dia.hj small{color:var(--primary);font-weight:800}
-.dia.mes{width:auto;padding:4px 10px}
-.dleg i.dl-fut{border-top:2px dashed var(--muted-fg)}
-.hreal{margin:4px 0 0;font-size:13px;color:var(--muted-fg)} .hreal b{font-size:14px}
-.dec .real{margin:-4px 0 8px;font-size:13px;color:var(--muted-fg)}
-.chart .mb.fut{opacity:.14}
 .dica{font-size:11px;color:var(--muted-fg)}
 .kpi{padding:20px;transition:box-shadow .2s;min-width:0}
 .kpi:hover{box-shadow:var(--shadow-elevated)}
@@ -562,7 +545,6 @@ tr.click[data-gvo]{cursor:pointer}
 .exemplo svg{width:14px;height:14px;color:var(--warning-ink);flex:none;margin-top:1px}
 .exemplo b{color:var(--foreground)}
 
-.glass.desafio{background:var(--accent);color:oklch(0.15 0.05 240);font-weight:800} .glass.desafio svg{color:oklch(0.15 0.05 240)}
 .glass.amb{background:var(--warning);color:oklch(0.25 0.06 70);font-weight:800}
 .glass.amb svg{color:oklch(0.25 0.06 70)}
 
@@ -661,7 +643,6 @@ dialog .hd h3{font-size:18px}
     <div class="chips">
       <div class="glass"><i data-lucide="calendar-days"></i><span id="hData">Carregando dados…</span></div>
       <div class="glass"><i data-lucide="database"></i><span id="hBase"></span></div>
-      <div class="glass desafio" id="hDesafio" hidden><i data-lucide="flame"></i><span>Meta Desafio · +5%</span></div>
       <div class="glass amb" id="hAmb" hidden><i data-lucide="flask-conical"></i><span>Desenvolvimento</span></div>
       <a class="glass" href="hoje.html" style="text-decoration:none"><i data-lucide="activity"></i><span>Acompanhar o dia</span></a>
       <div class="glass" id="hPlan" title="Onde as ações registradas ficam salvas"><i data-lucide="sheet"></i><span id="hPlanTxt">Ações: neste navegador</span></div>
@@ -674,8 +655,6 @@ dialog .hd h3{font-size:18px}
   <section class="card filter">
     <button type="button" class="ttl" id="fToggle" aria-expanded="false"><i data-lucide="sliders-horizontal"></i>Filtros<span class="fres" id="fRes"></span><i data-lucide="chevron-down" class="fchev"></i></button>
     <div class="row">
-      <div class="fld"><label for="fMeta">Meta</label><select id="fMeta"><option value="0">Oficial</option><option value="1">Desafio (+5%)</option></select></div>
-      <div class="fld" id="fMesBox" hidden><label for="fMes">Mês</label><select id="fMes"></select></div>
       <div class="fld"><label for="fReg">Regional</label><select id="fReg"></select></div>
       <div class="fld"><label for="fPraca">Praça</label><select id="fPraca"></select></div>
       <div class="fld"><label for="fGvo">GVO</label><select id="fGvo"></select></div>
@@ -684,9 +663,10 @@ dialog .hd h3{font-size:18px}
       <button class="btn ghost sm" type="button" id="fLimpar" style="align-self:flex-end"><i data-lucide="rotate-ccw"></i>Limpar</button>
     </div>
     <div class="datas">
-      <div class="dh"><span class="dl"><i data-lucide="calendar-days"></i>Dia</span><span class="per" id="perTxt"></span></div>
-      <div class="dias" id="fDias" role="group" aria-label="Dia" title="Escolha o dia: o painel mostra os objetivos desse dia, com o resultado até a véspera"></div>
-      <div class="legend dleg"><span><i class="dl-ok"></i>Bateu a meta do dia</span><span><i class="dl-mid"></i>90 a 99%</span><span><i class="dl-no"></i>Abaixo de 90%</span><span><i class="dl-fut"></i>Futuro</span></div>
+      <div class="dh"><span class="dl"><i data-lucide="calendar-range"></i>Datas</span><span class="per" id="perTxt"></span>
+        <span class="pres"><button type="button" data-pre="ontem">Ontem</button><button type="button" data-pre="7">Últimos 7 dias</button><button type="button" data-pre="mes">Mês até ontem</button></span></div>
+      <div class="dias" id="fDias" role="group" aria-label="Datas selecionadas" title="Clique para marcar ou desmarcar. Shift + clique marca um intervalo."></div>
+      <div class="legend dleg"><span><i class="dl-ok"></i>Bateu a meta do dia</span><span><i class="dl-mid"></i>90 a 99%</span><span><i class="dl-no"></i>Abaixo de 90%</span></div>
     </div>
   </section>
 
@@ -747,7 +727,7 @@ const MESES=['janeiro','fevereiro','março','abril','maio','junho','julho','agos
 const SEMANA=['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
 
 /* ================= Dados (dados/pulsar.json, gerado por processar_dados.py) ================= */
-let D,ANO,MES,DAYS,LAST,TODAY,LASTR,REF,REF_MES='',REFTXT,lojas=[],cons=[],M={},TEAM={};
+let D,ANO,MES,DAYS,LAST,TODAY,REFTXT,lojas=[],cons=[],M={},TEAM={};
 let PB=null;                                        // faixas da rede (meta de %B1)
 let CICLO=null;                                     // Ciclo/ciclo_atual.json: alavancas comerciais do ciclo vigente
 // Liga cada detrator (gatilho ou perfil) à alavanca do ciclo que ataca ele
@@ -770,53 +750,16 @@ const selArr=()=>[...SEL].sort((a,b)=>a-b);
 const sum=a=>a.reduce((s,x)=>s+x,0);
 const avg=a=>a.length?sum(a)/a.length:null;
 
-// Acompanhamento Meta Desafio: todas as metas (lojas e consultores) × 1,05. Gap, meta de hoje, deveria estar, boletos,
-// "Garantir" e consultores passam a ser calculados sobre a meta desafio. Escolha lembrada no navegador; ?meta=desafio abre direto.
-const FATOR_DESAFIO=1.05,KEY_DESAFIO='pulsar-meta-desafio';
-let DESAFIO=(()=>{const q=new URLSearchParams(location.search).get('meta');if(q)return q==='desafio';try{return localStorage.getItem(KEY_DESAFIO)==='1'}catch(e){return false}})();
-const fatorMeta=()=>DESAFIO?FATOR_DESAFIO:1;
-// aplica o fator sobre a meta original (guardada em _m0), sem acumular ao trocar de visão
-function aplicarDesafio(dados){
- const f=fatorMeta();
- dados.lojas.forEach(l=>{l._m0=l._m0||l.meta.slice();l.meta=l._m0.map(v=>v*f)});
- dados.consultores.forEach(c=>{if(!c.meta)return;c._m0=c._m0||c.meta.slice();c.meta=c._m0.map(v=>v*f)});
-}
-function seloDesafio(){$('hDesafio').hidden=!DESAFIO;$('fMeta').value=DESAFIO?'1':'0'}
 function init(json){
- D=json;restaurar(D.lojas);restaurar(D.consultores);aplicarDesafio(D);seloDesafio();
- const[y,mo,d]=D.ontem.split('-').map(Number);ANO=y;MES=mo-1;LAST=d;LASTR=d;TODAY=d+1;DAYS=D.diasMes;
+ D=json;
+ const[y,mo,d]=D.ontem.split('-').map(Number);ANO=y;MES=mo-1;LAST=d;TODAY=d+1;DAYS=D.diasMes;
  const ri=+D.referencia.inicio.slice(5,7)-1,rf=+D.referencia.fim.slice(5,7)-1;
  REFTXT=`${MESES[ri].slice(0,3)}–${MESES[rf].slice(0,3)}`;
  lojas=D.lojas.filter(l=>sum(l.meta)>0);
  cons=juntaDigitais(D.consultores);
  PB=D.planoBM||null;if(PB&&PB.b1Meta)F.b1=PB.b1Meta;
- guardar(lojas);guardar(cons);
- // mantém o dia escolhido ao trocar a meta (oficial/desafio); ao trocar de mês, volta para hoje
- const mesAtual=D.ontem.slice(0,7);aplicarRef(REF_MES===mesAtual&&REF?REF:LASTR+1);REF_MES=mesAtual;
- recalc();calcBmMax();
-}
-/* ---------- Dia escolhido no filtro de data ----------
-   O painel trata o dia escolhido como "hoje": resultado até a véspera, meta do dia + gap ÷ dias que faltam.
-   Dia anterior: os objetivos que o dia tinha naquela manhã (e o que foi feito, para comparar).
-   Dia futuro: a meta do dia + a parte do gap de hoje (o gap até ontem dividido pelos dias que faltam a partir de hoje).
-   As séries completas ficam em _f; as séries de trabalho são cortadas até a véspera do dia escolhido. */
-function restaurar(lst){lst.forEach(x=>{if(!x._f)return;for(const k in x._f)x[k]=x._f[k]})}
-function guardar(lst){lst.forEach(x=>{if(x._f)return;x._f={};SERIES.forEach(k=>{if(x[k])x._f[k]=x[k]});if(x.alav)x._f.alav=x.alav})}
-function aplicarRef(r){
- REF=Math.max(1,Math.min(r,DAYS+1));TODAY=REF;LAST=Math.max(0,Math.min(REF-1,LASTR));
- const corta=x=>{SERIES.forEach(k=>{if(x._f[k])x[k]=x._f[k].slice(0,LAST)});
-  if(x._f.alav){const o={};for(const k in x._f.alav)o[k]=x._f.alav[k].slice(0,LAST);x.alav=o}};
- lojas.forEach(corta);cons.forEach(corta);
  SEL=new Set(Array.from({length:LAST},(_,i)=>i+1));
-}
-// primeiro dia que ainda divide o gap: hoje de verdade (para dia futuro) ou o dia escolhido
-const R0=()=>Math.min(TODAY,LAST+1);
-const ehFuturo=()=>REF>LASTR+1&&REF<=DAYS,ehPassado=()=>REF<=LASTR;
-const realDia=ls=>sum(ls.map(l=>(l._f&&l._f.rec?l._f.rec[REF-1]:0)||0));
-function diaTxt(){
- if(TODAY>DAYS)return `${MESES[MES]} fechado · resultado até ${dd(LAST)}`;
- const w=['dom','seg','ter','qua','qui','sex','sáb'][new Date(ANO,MES,REF).getDay()];
- return `Objetivos de ${w} ${dd(REF)}${ehFuturo()?' (futuro)':ehPassado()?' (dia anterior)':''} · ${LAST?`resultado até ${dd(LAST)}`:'início do mês'}`;
+ recalc();calcBmMax();
 }
 // Consultores digitais (WhatsApp, várias lojas; lista em processar_dados.py): as entradas de cada loja viram uma pessoa só.
 // A "loja" dela é a de maior receita; "lojas" guarda todas. Fica fora do time das lojas e é comparada com o grupo digital.
@@ -826,9 +769,7 @@ function juntaDigitais(lst){
  lst.forEach(c=>{if(!c.digital){out.push(c);return}
   const cod=c.id.split('@')[0],g=dg[cod]=dg[cod]||{id:'dig:'+cod,nome:c.nome,digital:true,lojas:[],_rec:{}};
   if(lojaById(c.loja)){g.lojas.push(c.loja);g._rec[c.loja]=sum(c.rec)}
-  SERIES.forEach(k=>{g[k]=g[k]||[];(c[k]||[]).forEach((v,i)=>g[k][i]=(g[k][i]||0)+v)});
-  if(c.meta){g.meta=g.meta||[];c.meta.forEach((v,i)=>g.meta[i]=(g.meta[i]||0)+v)}
-  if(c.ant){g.ant=g.ant||{rec:[],bol:[],it:[]};for(const k in g.ant)(c.ant[k]||[]).forEach((v,i)=>g.ant[k][i]=(g.ant[k][i]||0)+v)}});
+  SERIES.forEach(k=>{g[k]=g[k]||[];(c[k]||[]).forEach((v,i)=>g[k][i]=(g[k][i]||0)+v)})});
  Object.values(dg).forEach(g=>{if(!g.lojas.length)return;g.loja=[...g.lojas].sort((a,b)=>g._rec[b]-g._rec[a])[0];
   SERIES.forEach(k=>{for(let i=0;i<LAST;i++)g[k][i]=g[k][i]||0});out.push(g)});
  return out;
@@ -837,7 +778,7 @@ const naEscopo=(c,ids)=>ids.has(c.loja)||(c.digital&&c.lojas.some(x=>ids.has(x))
 let DIGTEAM=null;
 // Recalcula lojas, consultores e médias de time para as datas selecionadas.
 function recalc(){
- M={};TEAM={};CST=null;
+ M={};TEAM={};
  lojas.forEach(l=>M[l.id]=aggL([l]));
  praticasCluster();
  cons.forEach(c=>{c.m=aggC(c);delete c._p;delete c._q});
@@ -977,7 +918,7 @@ function aggL(list){
    ds.forEach(d=>{y.rec+=x.rec[d-1];y.bol+=x.bol[d-1];y.it+=x.it[d-1];y.b1+=x.b1[d-1];y.recC+=l.rec[d-1];y.bolC+=l.bol[d-1];y.itC+=l.it[d-1];y.b1C+=l.b1[d-1]});
    for(let i=0;i<DAYS;i++){a.aaDays[i]+=x.rec[i]||0;a.aaBolDays[i]+=x.bol[i]||0}
    y.ate+=sum(x.rec.slice(0,LAST));y.ateC+=rec;y.mes+=sum(x.rec)}
-  const mh=TODAY<=DAYS?mt[TODAY-1]:0,rest=mt.slice(R0()-1).filter(v=>v>0).length,gap=Math.max(0,ate-rec);
+  const mh=TODAY<=DAYS?mt[TODAY-1]:0,rest=mt.slice(TODAY-1).filter(v=>v>0).length,gap=Math.max(0,ate-rec);
   const rc=mh>0&&rest?gap/rest:0;
   a.metaHoje+=mh;a.recupLojas+=rc;if(rc>0)a.nAtras++;
  });
@@ -1008,14 +949,14 @@ function aggL(list){
  // Meta de hoje no nível que está sendo visto (loja, GVO, praça, regional ou rede):
  // meta do dia da planilha + gap acumulado ÷ dias restantes com meta, contando hoje. Se o conjunto está
  // acima do "deveria estar", fica só a meta do dia. A recuperação das lojas atrasadas segue na meta de cada loja.
- {const rest=a.metaDays.slice(R0()-1).filter(v=>v>0).length,gap=Math.max(0,a.metaAte-a.rec);
+ {const rest=a.metaDays.slice(TODAY-1).filter(v=>v>0).length,gap=Math.max(0,a.metaAte-a.rec);
   a.recup=a.metaHoje>0&&rest?gap/rest:0;a.hoje=a.metaHoje+a.recup;}
  a.ritmo=a.days.map((v,i)=>a.metaDays[i]>0?v/a.metaDays[i]:null);
  a.nd=ds.filter(d=>a.metaDays[d-1]>0).length||1;
  a.cupons=a.bol+a.br;a.bmPlano=a.cupons?a.recP/a.cupons:0;a.pBr=a.cupons?a.br/a.cupons:0;
  a.potBM=a.bmAlvoV&&a.bm<a.bmAlvoV?(a.bmAlvoV-a.bm)*a.bol:0;         // R$ se o BM de venda chegasse ao alvo
  a.potB1=F.b1&&a.pb1>F.b1?(a.pb1-F.b1)*a.bol*a.pm:0;                   // R$ se o excesso de B1 virasse 2º item
- a.diasRest=a.metaDays.slice(R0()-1).filter(v=>v>0).length;
+ a.diasRest=a.metaDays.slice(TODAY-1).filter(v=>v>0).length;
  a.valorPP=.01*(a.bol/a.nd)*a.diasRest*a.pm;                           // 1 p.p. a menos de %B1 até o fim do mês
  btbpCalc(a);
  yoyCalc(a.aa,list.length);a.yoy=a.aa.ok?a.aa.d.rec:-9;   // -9: sem ano anterior (vai para o fim na ordenação)
@@ -1079,7 +1020,7 @@ const ic=(n,cls='')=>`<i data-lucide="${n}" class="${cls}"></i>`;
 const lojaById=id=>lojas.find(l=>l.id===id);
 const consById=id=>cons.find(c=>c.id===id);
 function perTxt(){
- const a=selArr();if(!a.length)return 'sem dias fechados no mês';
+ const a=selArr();if(!a.length)return '';
  if(a.length===LAST&&a[0]===1)return `mês até ${dd(LAST)}`;
  if(a.length===1)return dd(a[0]);
  if(a[a.length-1]-a[0]===a.length-1)return `${dd(a[0])} a ${dd(a[a.length-1])}`;
@@ -1113,7 +1054,7 @@ const paraPlanilha=a=>{const l=lojaById(a.loja),c=a.cons?consById(a.cons):null;
  return{id:a.id,autor:a.autor||'',mes:a.mes,dia:a.dia,loja_id:a.loja,loja:l?l.nome:'',consultor_id:a.cons||'',consultor:c?c.nome:'',tipo:a.tipo,gatilho:a.gat||'',descricao:a.desc||''}};
 // O Sheets pode devolver o mês como data ("Thu Oct 01 2026 ...") em vez de "2026-10": normaliza aqui
 const mesTxt=v=>{v=String(v||'').replace(/^'/,'');if(/^\d{4}-\d{2}$/.test(v))return v;const d=new Date(v);return isNaN(d)?v:`${d.getFullYear()}-${pad(d.getMonth()+1)}`};
-const daPlanilha=r=>({id:Number(r.id),autor:r.autor,mes:mesTxt(r.mes),dia:Number(String(r.dia).replace(/^'/,'')),loja:String(r.loja_id),cons:r.consultor_id||'',tipo:r.tipo,gat:r.gatilho||'',desc:r.descricao||'',criado:String(r.criado_em||'').replace(/^'/,'')});
+const daPlanilha=r=>({id:Number(r.id),autor:r.autor,mes:mesTxt(r.mes),dia:Number(String(r.dia).replace(/^'/,'')),loja:String(r.loja_id),cons:r.consultor_id||'',tipo:r.tipo,gat:r.gatilho||'',desc:r.descricao||''});
 // POST sem cabeçalho de conteúdo (text/plain) para o navegador não exigir pré-verificação de CORS
 // recusa da planilha (ação incompleta etc.) vira erro com .recusa: a fila descarta o item em vez de travar as próximas
 const enviar=corpo=>fetch(PLANILHA.url,{method:'POST',body:JSON.stringify({chave:PLANILHA.chave,...corpo})}).then(r=>r.json()).then(j=>{if(!j.ok){const e=new Error(j.erro||'erro');e.recusa=j.erro!=='chave inválida';throw e}return j});
@@ -1199,8 +1140,8 @@ function escopo(){return filtra(4)}
 function render(){
  const ls=escopo(),ids=new Set(ls.map(l=>l.id)),a=aggL(ls);
  const cs=S.cons?cons.filter(c=>c.id===S.cons):cons.filter(c=>naEscopo(c,ids)&&c.m.dias>=Math.min(2,SEL.size));
- $('perTxt').textContent=diaTxt();
- const lj=S.loja&&lojaById(S.loja);$('fRes').textContent=`${lj?lj.nome:S.gvo||S.praca||S.reg||'Rede'} · ${diaTxt()}`;
+ $('perTxt').textContent=perTxt();
+ const lj=S.loja&&lojaById(S.loja);$('fRes').textContent=`${lj?lj.nome:S.gvo||S.praca||S.reg||'Rede'} · ${perTxt()}`;
  FIRED=avaliar(ls);
  if(!S.foco||!ids.has(S.foco))S.foco=[...ls].sort((x,y)=>M[x.id].gapR-M[y.id].gapR)[0].id;
  // Status do conjunto contra o "deveria estar" (meta diarizada acumulada)
@@ -1209,7 +1150,7 @@ function render(){
  // Boletos, BM, IPB e PM necessários hoje: mesma regra do "Garantir" de cada loja
  // (boletos até +30% sobre o mesmo dia da semana do ano passado; o resto no boleto médio)
  const nec=necessarioHoje(ls,a);
- fillDias(ls);a.realRef=ehPassado()?realDia(ls):null;
+ fillDias(a);
  const nAA=a.aa.ok?a.aa.dAte:null;
  $('kpis').innerHTML=`
   <div class="card kpi st-${stA} fade"><p class="lbl">% da meta <span class="d1">D-1 · até ${dd(LAST)}</span></p><p class="val ${acima?'c-ok':'c-bad'}">${pct(a.at,1)}</p>
@@ -1219,9 +1160,8 @@ function render(){
    ${nAA!=null?`<p class="kl ky"><b class="${nAA>=0?'c-ok':'c-bad'}">${nAA>=0?'+':'−'}${fx(Math.abs(nAA)*100,1)}%</b> vs ${ANO-1}</p>`:''}</div>
   <div class="card kpi st-${stP} fade"><p class="lbl">Projeção</p><p class="val ${tone(a.proj>=1,a.proj>=.96)}">${pct(a.proj)}</p>
    ${chip(stP,stP==='ok'?'Fecha acima':stP==='warn'?'No limite':'Fecha abaixo',stP==='ok'?'circle-check':'triangle-alert')}</div>
-  <div class="card kpi hero fade"><div class="top"><p class="lbl">${ehPassado()?'Meta do dia':ehFuturo()?'Meta prevista':'Meta de hoje'} · ${dd(Math.min(TODAY,DAYS))}</p>${chip(a.recup>0?'bad':'ok',a.recup>0?'Recuperar':'No ritmo',a.recup>0?'alarm-clock':'circle-check')}</div>
+  <div class="card kpi hero fade"><div class="top"><p class="lbl">Meta de hoje · ${dd(Math.min(TODAY,DAYS))}</p>${chip(a.recup>0?'bad':'ok',a.recup>0?'Recuperar':'No ritmo',a.recup>0?'alarm-clock':'circle-check')}</div>
    <p class="val">${kbrl(a.hoje)} <small class="hsub">${fx(nec.bol)} boletos</small></p>
-   ${a.realRef!=null?`<p class="hreal">Realizado no dia: <b class="${a.realRef>=a.hoje?'c-ok':'c-bad'}">${kbrl(a.realRef)}</b> · ${pct(a.hoje?a.realRef/a.hoje:0)} do objetivo</p>`:''}
    <p class="hnota hf"><span>Meta de hoje = meta diarizada + gap ÷ ${a.diasRest} dias que faltam</span><b>${brl(a.hoje)} = ${brl(a.metaHoje)} + ${brl(a.recup)}</b>
     <small>${a.gapR<0?`Gap até ontem: ${brl(-a.gapR)} ÷ ${a.diasRest} dias = ${brl(a.recup)}`:`Sem gap: ${brl(a.gapR)} acima do deveria estar até ontem`}</small></p>
    <div class="hgrid">
@@ -1230,12 +1170,12 @@ function render(){
     <div><span>BT necessário</span><b>${pct(F.bt)}</b><small>hoje ${pct(a.pBT)}</small></div>
     <div><span>BP necessário</span><b>${pct(F.bp)}</b><small>hoje ${pct(a.pBP)} · boletos ≥ R$ 120</small></div>
    </div></div>`;
- const TABS=[['hoje','Hoje · Lojas','zap'],['hojecons','Hoje · Consultor','user-check'],['consultores','Consultores','users'],['lojas','Lojas','store'],['entender','Entender','search'],['ranking','Ranking','trophy'],['uso','Uso','activity']];
+ const TABS=[['hoje','Hoje','zap'],['consultores','Consultores','users'],['lojas','Lojas','store'],['entender','Entender','search'],['uso','Uso','activity']];
  $('tabs').innerHTML=TABS.map(([id,l,i])=>`<button class="tab ${S.tab===id?'on':''}" data-tab="${id}">${ic(i)}<span>${l}</span></button>`).join('');
- ({hoje:vHoje,hojecons:vHojeCons,ranking:vRanking,entender:vEntender,lojas:vLojas,consultores:vCons,uso:vUso})[S.tab](ls,cs,a);
+ ({hoje:vHoje,entender:vEntender,lojas:vLojas,consultores:vCons,uso:vUso})[S.tab](ls,cs,a);
  icons();
  // registra o acesso (página do mês, aba e filtro); o uso.js não repete a mesma tela antes de 30 minutos
- if(window.PulsarUso)PulsarUso.registrar({pagina:'mes',aba:S.tab+(DESAFIO?' · desafio':'')+(REF!==LASTR+1?` · dia ${dd(Math.min(REF,DAYS))}`:''),regional:S.reg,praca:S.praca,gvo:S.gvo,loja_id:S.loja||(S.tab==='lojas'&&S.foco?S.foco:'')});
+ if(window.PulsarUso)PulsarUso.registrar({pagina:'mes',aba:S.tab,regional:S.reg,praca:S.praca,gvo:S.gvo,loja_id:S.loja||(S.tab==='lojas'&&S.foco?S.foco:'')});
 }
 /* ================= Uso: quem está acessando o PULSAR ================= */
 // Lê a aba "acessos" da planilha (gravada pelo uso.js) e cruza com as pessoas do cadastro (GVO, GCVO/GPVO, GRVO).
@@ -1268,28 +1208,6 @@ function usoDetalhe(acs){
    <div class="tw tall"><table><thead><tr><th>Quando</th><th>Quem</th><th>Tela</th><th>Filtro</th></tr></thead><tbody>
    ${hist.map(a=>`<tr><td class="tnum">${a.quando.slice(8,10)}/${a.quando.slice(5,7)} ${a.quando.slice(11,16)}</td><td>${esc(a.nome)}</td><td>${esc(tela(a))}</td><td>${esc(filtroTxt(a))}</td></tr>`).join('')||'<tr><td colspan="4" class="mf">Sem acessos.</td></tr>'}
    </tbody></table></div></div></div>`;
-}
-/* ================= Ranking de atingimento: GR, GVO e loja =================
-   Atingimento diarizado = realizado até a véspera do dia escolhido ÷ meta diarizada até a véspera.
-   Diamante ≥ 100% · Ouro ≥ 99% · Prata ≥ 98% · Bronze ≥ 97% · abaixo disso, sem medalha. */
-// arredonda para 1 casa (o mesmo % que aparece na tela) antes de dar a medalha
-const MEDALHA=v=>(v=Math.round(v*1000)/1000)>=1?['dia_','gem','Diamante']:v>=.99?['ouro','medal','Ouro']:v>=.98?['prata','medal','Prata']:v>=.97?['bronze','medal','Bronze']:null;
-const medHTML=v=>{const m=MEDALHA(v);return m?`<span class="md ${m[0]}" title="${m[2]}">${ic(m[1])}</span>`:'<span></span>'};
-function vRanking(ls){
- if(!LAST){$('view').innerHTML=`<section class="sec"><div class="card pad"><p class="mf">Sem dias fechados no mês até o dia escolhido.</p></div></section>`;return}
- const grupo=(f)=>{const g={};ls.forEach(l=>{const k=f(l)||'—';(g[k]=g[k]||[]).push(l)});
-  return Object.entries(g).map(([k,v])=>{const a=aggL(v);return{nome:k,sub:`${v.length} loja${v.length>1?'s':''}`,at:a.metaAte?a.rec/a.metaAte:0,rec:a.rec,meta:a.metaAte}})};
- const lojasR=ls.map(l=>{const m=M[l.id];return{nome:l.nome,sub:l.gestor,at:m.metaAte?m.rec/m.metaAte:0,rec:m.rec,meta:m.metaAte}});
- const lista=(t,ic_,rows)=>{rows=rows.filter(r=>r.meta>0).sort((a,b)=>b.at-a.at);
-  const cnt=k=>rows.filter(r=>{const m=MEDALHA(r.at);return m&&m[2]===k}).length;
-  return `<div class="card"><div class="card-hd"><div><h2>${t}</h2><p>${rows.length} · ${cnt('Diamante')} diamante · ${cnt('Ouro')} ouro · ${cnt('Prata')} prata · ${cnt('Bronze')} bronze</p></div><span class="icchip t-accent">${ic(ic_)}</span></div>
-   <div class="rkl">${rows.map((r,i)=>`<div class="rkr"><span class="pos">${i+1}º</span>${medHTML(r.at)}<div style="min-width:0"><p class="nm" title="${esc(r.nome)}">${esc(r.nome)}</p><p class="sub">${esc(r.sub)}</p></div>
-    <div class="v ${r.at>=1?'c-ok':r.at>=.97?'':'c-bad'}">${pct(r.at,1)}<small>${kbrl(r.rec)} de ${kbrl(r.meta)}</small></div></div>`).join('')}</div></div>`};
- $('view').innerHTML=`<section class="sec">
-  <div class="plan-hd"><div><h2>Ranking de atingimento do mês</h2><p>Realizado até ${dd(LAST)} ÷ meta diarizada até ${dd(LAST)}</p></div>
-   <div class="rkleg"><span>${medHTML(1)}Diamante ≥ 100%</span><span>${medHTML(.99)}Ouro ≥ 99%</span><span>${medHTML(.98)}Prata ≥ 98%</span><span>${medHTML(.97)}Bronze ≥ 97%</span></div></div>
-  <div class="rk3">${lista('GR','map',grupo(l=>l.grvo))}${lista('GVO','user-round',grupo(l=>l.gestor))}${lista('Lojas','store',lojasR)}</div>
- </section>`;
 }
 function vUso(ls){
  if(!USO.dados&&!USO.erro){$('view').innerHTML='<section class="sec"><p class="mf">Carregando os acessos…</p></section>';carregarUso().then(()=>{if(S.tab==='uso')render()});return}
@@ -1394,7 +1312,7 @@ function acaoFluxoLoja(t){
 // Barras = meta do dia; linha = realizado do dia; rótulo = atingimento (verde se bateu).
 function drawMetaDia(a,el){
  const N=Math.min(TODAY,DAYS),cw=Math.max(34,672/N),L=58,Rr=14,T=30,B=40,W=L+Rr+cw*N,H=300,ih=H-T-B,bw=cw*.62;
- const vals=[...a.metaDays.slice(0,N),...a.days,a.hoje,a.realRef||0];
+ const vals=[...a.metaDays.slice(0,N),...a.days,a.hoje];
  const MAX=Math.max(...vals)*1.18||1;
  const xc=d=>L+cw*(d-.5),y=v=>T+(1-v/MAX)*ih;
  const DS=['dom','seg','ter','qua','qui','sex','sáb'];
@@ -1403,14 +1321,11 @@ function drawMetaDia(a,el){
  const pts=[];
  for(let d=1;d<=N;d++){
   const mt=a.metaDays[d-1],dow=DS[new Date(ANO,MES,d).getDay()],on=SEL.has(d);
-  g+=`<text class="ax" x="${xc(d)}" y="${H-22}" text-anchor="middle">${pad(d)}</text><text class="ax s" x="${xc(d)}" y="${H-8}" text-anchor="middle">${d===TODAY&&REF===LASTR+1?'hoje':dow}</text>`;
+  g+=`<text class="ax" x="${xc(d)}" y="${H-22}" text-anchor="middle">${pad(d)}</text><text class="ax s" x="${xc(d)}" y="${H-8}" text-anchor="middle">${d===TODAY?'hoje':dow}</text>`;
   if(d===TODAY){
-   if(a.realRef!=null&&a.hoje>0){const yy=y(a.realRef),ok=a.realRef>=a.hoje;
-    g+=`<circle class="rd ${ok?'ok':'no'}" cx="${xc(d)}" cy="${yy}" r="5.5"><title>Realizado no dia: ${kbrl(a.realRef)}</title></circle><text class="pl ${ok?'ok':'no'}" x="${xc(d)}" y="${yy+18>y(0)-4?yy-10:yy+18}" text-anchor="middle">${pct(a.realRef/a.hoje)}</text>`}
    if(a.hoje>0)g+=`<rect class="bo" x="${xc(d)-bw/2}" y="${y(a.hoje)}" width="${bw}" height="${y(0)-y(a.hoje)}" rx="4"><title>Hoje: meta do dia ${kbrl(a.metaHoje)} + ${kbrl(a.recup)} de recuperação${a.aa.ok?` · ${AAtxt()} neste dia: ${kbrl(a.aaDays[d-1])}`:''}</title></rect><text class="bl o" x="${xc(d)}" y="${y(a.hoje)-8}" text-anchor="middle">${kbrl(a.hoje)}</text>`;
    continue;
   }
-  if(d>LAST){if(mt>0)g+=`<rect class="mb fut" x="${xc(d)-bw/2}" y="${y(mt)}" width="${bw}" height="${y(0)-y(mt)}" rx="4"><title>${dd(d)} · meta ${kbrl(mt)}</title></rect>`;continue}
   const rv=a.days[d-1];pts.push([xc(d),y(rv),d]);
   if(mt>0)g+=`<rect class="mb ${on?'on':''}" x="${xc(d)-bw/2}" y="${y(mt)}" width="${bw}" height="${y(0)-y(mt)}" rx="4"/>`;
   const at=mt>0?rv/mt:null,top=Math.min(mt>0?y(mt):y(0),y(rv))-10;
@@ -1453,7 +1368,7 @@ function cicloCard(ls){
 const numMeta=t=>{const x=(t||'').match(/Meta:\D*?(\d[\d.]*(?:,\d+)?)/);return x?parseFloat(x[1].replace(/\./g,'').replace(',','.')):null};
 const KDOGAT={fluxo:'bol',ritmo:'bol',ipb:'ipb',b1:'ipb',btbp:'ipb',pm:'pm',bmsaud:'bm'};
 function placarHTML(ls){
- const d=LAST,ids=new Set(ls.map(l=>l.id));if(!d)return '';
+ const d=LAST,ids=new Set(ls.map(l=>l.id));
  const comMeta=ls.filter(l=>l.meta[d-1]>0),bat=comMeta.filter(l=>l.rec[d-1]>=l.meta[d-1]);
  const ac=acoesMes().filter(x=>x.dia===d&&ids.has(x.loja));
  const linhas=ac.slice(0,6).map(x=>{
@@ -1477,9 +1392,9 @@ function acoesRegHTML(ids){
  const fonte=!PLANILHA.url?'só neste navegador':planOk===false?'planilha fora do ar: mostrando o que está neste navegador':'da planilha compartilhada';
  return `<div class="card"><div class="card-hd"><div><h2>Ações registradas no mês (${ac.length})</h2><p>${S.loja?esc(lojaById(S.loja).nome):'Lojas do filtro'} · ${fonte}</p></div>
   <button class="btn sm" data-novo="${S.loja||S.foco||''}">${ic('plus')}Registrar ação</button></div>
-  ${ac.length?`<div class="ontem" style="padding:0 20px 20px">${ac.slice(0,lim).map(x=>{const l=lojaById(x.loja),c=x.cons?consById(x.cons):null,av=avaliarAcao(x);
+  ${ac.length?`<div class="ontem" style="padding:0 20px 20px">${ac.slice(0,lim).map(x=>{const l=lojaById(x.loja),c=x.cons?consById(x.cons):null,m=l?M[l.id]:null,e=m?efeito(m,x.dia):null;
    return `<div class="it">${ic(TIPOS[x.tipo]||'circle-dot')}<div><b>${esc(x.tipo)}</b> · ${esc(l?l.nome:x.loja)}${c?' · '+esc(c.nome):''}<small>${dd(x.dia)}${x.autor?' · por '+esc(x.autor):''}${x.desc?' · '+esc(x.desc.slice(0,120)):''}</small></div>
-    <div class="r">${avalPill(av)}</div></div>`}).join('')}
+    <div class="r">${e?`<span class="${e.d>=0?'c-ok':'c-bad'}">${pct(e.a)} → ${pct(e.b)}</span><small>ritmo antes → depois</small>`:`<small>${x.dia>LAST?'resultado amanhã':''}</small>`}</div></div>`}).join('')}
    ${ac.length>lim?`<p class="mf">+${ac.length-lim} ações: filtre uma loja para ver todas.</p>`:''}</div>`
   :`<p class="empty" style="padding:0 20px 20px">Nenhuma ação registrada neste mês para este filtro.</p>`}</div>`;
 }
@@ -1508,28 +1423,9 @@ function timeDaLoja(lid){
  return{time:at.filter(c=>sum(c.rec)>=MIN_TIME*med),fora:at.filter(c=>sum(c.rec)<MIN_TIME*med)};
 }
 // Meta de hoje da loja dividida em partes iguais entre os consultores do time
-// Meta de hoje do consultor com meta própria (Metas/Consultores, diarizada como a loja):
-// meta diarizada de hoje + gap do consultor até ontem ÷ dias que faltam com meta (mesma regra da loja)
-function metaHojeCons(c){
- const mt=c.meta;if(!mt)return null;
- const mh=TODAY<=DAYS?mt[TODAY-1]||0:0,ate=sum(mt.slice(0,LAST)),rec=sum(c.rec),rest=mt.slice(R0()-1).filter(v=>v>0).length,gap=Math.max(0,ate-rec);
- return{mh,gap,rec,ate,mes:sum(mt),recup:mh>0&&rest?gap/rest:0,hoje:mh+(mh>0&&rest?gap/rest:0),rest};
-}
 function metaConsHTML(l){
- const m=M[l.id],bm=m.bmAlvoV||m.bm;
- // com metas por consultor: cada um com a sua meta de hoje
- const comMeta=cons.filter(c=>c.loja===l.id&&c.meta);
- if(comMeta.length){
-  const rows=comMeta.map(c=>({c,x:metaHojeCons(c)})).sort((a,b)=>b.x.hoje-a.x.hoje),tot=sum(rows.map(r=>r.x.hoje));
-  return `<div class="card"><div class="card-hd"><div><h2>Meta de hoje por consultor</h2><p>${esc(l.nome)} · meta de cada consultor diarizada como a loja + o gap dele ÷ dias que faltam · total ${kbrl(tot)}</p></div><span class="icchip t-accent">${ic('users')}</span></div>
-  <div class="tw"><table class="mc"><thead><tr><th>Consultor</th><th class="r">% da meta do mês</th><th class="r">Meta do dia</th><th class="r">+ Gap</th><th class="r">Meta hoje</th><th class="r">Boletos</th></tr></thead><tbody>
-  ${rows.map(({c,x})=>`<tr><td><p class="nm">${esc(c.nome)}</p></td>
-   <td class="r tnum"><b class="${x.rec>=x.ate?'c-ok':'c-bad'}">${pct(x.mes?x.rec/x.mes:0)}</b><p class="sub">deveria ${pct(x.mes?x.ate/x.mes:0)}</p></td>
-   <td class="r tnum">${kbrl(x.mh)}</td><td class="r tnum">${x.recup>0?kbrl(x.recup):'—'}</td><td class="r tnum"><b>${kbrl(x.hoje)}</b></td><td class="r tnum">${fx(bm?x.hoje/bm:0)}</td></tr>`).join('')}
-  </tbody></table></div></div>`;
- }
- const {time,fora}=timeDaLoja(l.id);if(!time.length)return '';
- const mh=m.hoje/time.length;
+ const m=M[l.id],{time,fora}=timeDaLoja(l.id);if(!time.length)return '';
+ const bm=m.bmAlvoV||m.bm,mh=m.hoje/time.length;
  const rows=[...time].sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
  return `<div class="card"><div class="card-hd"><div><h2>Meta de hoje por consultor</h2><p>${esc(l.nome)} · ${kbrl(m.hoje)} ÷ ${time.length} consultores = <b>${kbrl(mh)}</b> e ${fx(bm?mh/bm:0)} boletos para cada um</p></div><span class="icchip t-accent">${ic('users')}</span></div>
   <div class="tw"><table class="mc"><thead><tr><th>Consultor</th><th class="r">Meta hoje</th><th class="r">Boletos</th><th class="r">Média atual/dia</th></tr></thead><tbody>
@@ -1547,13 +1443,12 @@ const IND={bol:{n:'Boletos',g:'fluxo'},ipb:{n:'IPB',g:'ipb'},pm:{n:'Preço médi
 const FMT={bol:v=>`${fx(v)} boletos`,ipb:v=>`IPB ${fx(v,2)}`,pm:v=>`PM ${brl(v,2)}`,bm:v=>`BM ${brl(v)}`};
 // Crescimento máximo de boletos contra o mesmo dia da semana do ano passado. Acima disso, o que falta vem do boleto médio.
 const CRESC_MAX_BOL=.30;
-// Boleto médio máximo que se pede no dia: o maior BM de venda entre as lojas do mesmo cluster, no mês somado aos
-// 3 meses de referência (base estável no começo do mês); QDB fora e só lojas com pelo menos 200 boletos.
-// Acima dele, a meta é distribuída em mais boletos (além dos +30%).
+// Boleto médio máximo que se pede no dia: o maior BM (de venda, no mês) entre as lojas do mesmo cluster
+// (QDB fora; só lojas com pelo menos 200 boletos). Acima dele, a meta é distribuída em mais boletos (além dos +30%).
 let BMMAX={};
 function calcBmMax(){
  BMMAX={};
- lojas.forEach(l=>{if(/^qdb/i.test(l.nome))return;const rf=l.ref||{},b=sum(l.bol)+(rf.bol||0);if(b<200)return;const v=(sum(l.rec)+(rf.rec||0))/b,c=l.cluster||'—';
+ lojas.forEach(l=>{if(/^qdb/i.test(l.nome))return;const b=sum(l.bol);if(b<200)return;const v=sum(l.rec)/b,c=l.cluster||'—';
   if(!BMMAX[c]||v>BMMAX[c].v)BMMAX[c]={v,loja:l}});
 }
 const bmMax=l=>{const x=BMMAX[l.cluster||'—'];return x?x:{v:Infinity,loja:null}};
@@ -1624,8 +1519,7 @@ function decCard(d,n){
   <div class="hd"><div class="l"><span class="num">${n}</span><span class="tag">${esc(l.gestor)}</span>${ok?`<span class="status-do ok">${ic('circle-check')}Ação registrada hoje</span>`:''}</div>
    <div class="imp"><b>${kbrl(d.valor)}</b><small>em risco hoje</small></div></div>
   <h3>${ic('store')}${esc(l.nome)}</h3>
-  <p class="head">Vender ${kbrl(m.hoje)} ${ehPassado()||ehFuturo()?'em '+dd(REF):'hoje'}</p>
-  ${ehPassado()?(r=>`<p class="real">Fez <b class="${r>=m.hoje?'c-ok':'c-bad'}">${kbrl(r)}</b> no dia · ${pct(m.hoje?r/m.hoje:0)} do objetivo</p>`)(realDia([l])):''}
+  <p class="head">Vender ${kbrl(m.hoje)} hoje</p>
   ${garantirHTML(d)}
   ${cm.html}
   <p class="resp">${ic('user-check')}<span>Responsável: gerente da loja · conferir às 14h e às 18h${d.ref==='aa'?` · <b class="c-bad">abaixo de ${AAtxt()}</b>`:''}</span></p>
@@ -1665,11 +1559,7 @@ function gvoHTML(ls){
   </tbody></table></div>${rows.length>8?`<p style="padding:0 20px 16px"><button class="lk" onclick="this.closest('.card').classList.toggle('todos');this.textContent=this.closest('.card').classList.contains('todos')?'Mostrar só os 8 primeiros':'Ver os ${rows.length} GVOs'">Ver os ${rows.length} GVOs</button></p>`:''}</div>`;
 }
 const NIVEL=()=>S.loja?'loja':S.gvo?'gvo':'rede';
-// Mês já encerrado (consulta pelo filtro de mês): não há "hoje" nesse mês
-const mesFechado=()=>TODAY>DAYS;
-const avisoMesFechado=()=>`<section class="sec"><div class="card pad"><h2 style="font-size:18px">${MESES[MES][0].toUpperCase()+MESES[MES].slice(1)} de ${ANO} já fechou</h2><p class="mf">Escolha um dia de ${MESES[MES]} no filtro <b>Dia</b> para ver os objetivos daquele dia e o que foi feito. Com o mês inteiro, use Consultores, Lojas e Entender.</p></div></section>`;
 function vHoje(ls,cs,a){
- if(mesFechado()){$('view').innerHTML=avisoMesFechado();return}
  DEC=ls.map(decisao).filter(Boolean).sort((x,y)=>y.valor-x.valor);
  const nv=NIVEL(),ids=new Set(ls.map(l=>l.id)),top=DEC.slice(0,3),resto=DEC.slice(3);
  const titulo={loja:'O que fazer hoje',gvo:'Suas 3 lojas de hoje',rede:'As 3 lojas de hoje'}[nv];
@@ -1682,90 +1572,17 @@ function vHoje(ls,cs,a){
   <div class="plan-hd"><div><h2>${titulo}</h2><p>${sub}</p></div></div>
   <div class="acts3">${lj?(DEC[0]?decCard(DEC[0],1):okCard(lj)):top.map((d,n)=>decCard(d,n+1)).join('')||'<p class="empty">Nenhuma loja com venda em risco hoje. Reconheça o time.</p>'}</div>
   ${!lj&&resto.length?`<details class="card" ${nv==='gvo'?'open':''}><summary class="card-hd" style="cursor:pointer"><div><h2>Demais lojas em risco (${resto.length})</h2></div></summary><div class="next">${resto.slice(0,nv==='gvo'?40:15).map(decLinha).join('')}</div></details>`:''}
-  ${metaDiaHTML(a)}
-  ${constHTML(ls)}
   ${nv==='rede'?gvoHTML(ls):''}
   ${lj?metaConsHTML(lj):''}
   ${lj?acoesRegHTML(ids):''}
   <p class="mf" style="text-align:center">Diagnóstico completo (onde está a perda, ${a.aa.ok?`comparação com ${AAtxt()}, `:''}ciclo e histórico) na aba <button class="lk" data-tab="entender">Entender</button>.</p>
  </section>`;
- drawMetaDia(a,'chartMeta');
-}
-/* ================= Constância: bate a meta todo dia ou só no dia de sorte? =================
-   Calculada no painel (cst): últimos 30 dias com meta até a véspera do dia escolhido, atravessando o mês anterior (l.pm).
-   Constante = bate em 50% dos dias ou mais e tem até 20% de dias ruins (abaixo de 70% da meta).
-   Inconstante = bate em menos de 25% dos dias ou tem 40% ou mais de dias ruins. Oscila = o resto.
-   bom/mau = [boletos/dia, IPB, BM] no dia em que bate × no dia em que não bate. */
-let CST=null;
-// janela: últimos 30 dias com meta até a véspera do dia escolhido (mês anterior vem em l.pm, gerado no processamento)
-function cst(l){
- CST=CST||{};if(l.id in CST)return CST[l.id];
- const f=fatorMeta(),P=l.pm,H=[];
- if(P)P.meta.forEach((m,i)=>H.push({meta:m*f,rec:P.rec[i],bol:P.bol[i],it:P.it[i],b1:P.b1[i],aab:P.aab[i]}));
- for(let i=0;i<LAST;i++)if(l.meta[i]>0)H.push({meta:l.meta[i],rec:l.rec[i],bol:l.bol[i],it:l.it[i],b1:l.b1[i],aab:l.aa?l.aa.bol[i]||0:0});
- const d=H.slice(-30);if(d.length<10)return CST[l.id]=null;
- const bate=d.filter(x=>x.rec>=x.meta),nao=d.filter(x=>x.rec<x.meta),ruim=d.filter(x=>x.rec<.7*x.meta).length;
- const S_=(g,k)=>sum(g.map(x=>x[k])),B=S_(d,'bol')||1,comp=d.filter(x=>x.aab>0);
- const grupo=g=>{const b=S_(g,'bol');return g.length&&b?[b/g.length,S_(g,'it')/b,S_(g,'rec')/b]:null};
- const bat=bate.length/d.length,rr=ruim/d.length;
- return CST[l.id]={n:d.length,bate:bate.length,ruim,selo:bat>=.5&&rr<=.2?'constante':bat<.25||rr>=.4?'inconstante':'oscila',
-  ipb:S_(d,'it')/B,b1:S_(d,'b1')/B,bm:S_(d,'rec')/B,yoyb:comp.length?S_(comp,'bol')/S_(comp,'aab')-1:null,bom:grupo(bate),mau:grupo(nao)};
-}
-const SELO={constante:['p-ok','Constante'],oscila:['p-warn','Oscila'],inconstante:['p-bad','Inconstante']};
-const seloC=c=>`<span class="pill ${SELO[c.selo][0]}">${SELO[c.selo][1]}</span>`;
-const medC=a=>{const s=a.filter(v=>v!=null).sort((x,y)=>x-y),n=s.length;return n?(n%2?s[(n-1)/2]:(s[n/2-1]+s[n/2])/2):null};
-// loja constante para copiar: mesmo cluster (QDB com QDB), de preferência da mesma praça; a que mais bate
-function refConst(l){
- const c=lojas.filter(x=>x.id!==l.id&&cst(x)&&cst(x).selo==='constante'&&x.cluster===l.cluster);
- const ord=(a,b)=>(cst(b).bate/cst(b).n-cst(a).bate/cst(a).n)||(cst(a).ruim-cst(b).ruim);
- return c.filter(x=>x.praca===l.praca).sort(ord)[0]||c.sort(ord)[0]||null;
-}
-const yoyTxt=v=>v==null?'—':pct(v,0,true);
-function constHTML(ls){
- const v=ls.filter(l=>cst(l));if(!v.length)return '';
- const hd=(t,sub)=>`<div class="card-hd"><div><h2>${t}</h2><p>${sub}</p></div><span class="icchip t-accent">${ic('repeat')}</span></div>`;
- if(S.loja){
-  const l=v[0],c=cst(l),r=refConst(l),rc=r&&cst(r);
-  const dif=c.bom&&c.mau?c.bom[0]/c.mau[0]-1:null;
-  const lin=(nm,a,b,f,menor)=>{const ok=b==null?'':(menor?a<=b:a>=b)?'c-ok':'c-bad';return `<span><small>${nm}</small><b class="${ok}">${f(a)}</b><em class="mf">${r?esc(r.nome)+': '+f(b):''}</em></span>`};
-  return `<div class="card pad">${hd('Constância',`Últimos ${c.n} dias com meta até ${LAST?dd(LAST):'o fim do mês anterior'} · o que faz a loja bater todo dia, não só no dia de sorte`)}
-   <p style="font-size:15px;margin:4px 0 10px">${seloC(c)} Bateu a meta em <b>${c.bate} de ${c.n} dias</b> · <b class="${c.ruim/c.n>.2?'c-bad':''}">${c.ruim} ${c.ruim===1?'dia ruim':'dias ruins'}</b> (abaixo de 70% da meta)</p>
-   ${c.bom&&c.mau?`<p class="mf" style="margin:0 0 6px"><b>No dia em que bate × no dia em que não bate</b>${dif!=null?` · o que decide é ${dif>.15?'<b>a quantidade de boletos</b>':'o boleto'}`:''}</p>
-   <div class="avg">${[['Boletos/dia',0,x=>fx(x,1)],['IPB',1,x=>fx(x,2)],['Boleto médio',2,x=>brl(x)]].map(([n,i,f])=>{const d=c.bom[i]/c.mau[i]-1;
-    return `<span><small>${n}</small><b>${f(c.mau[i])} → ${f(c.bom[i])}</b><em class="${d>=0?'c-ok':'c-bad'}">${d>=0?'▲':'▼'} ${pct(Math.abs(d))}</em></span>`}).join('')}</div>`:''}
-   <p class="mf" style="margin:14px 0 6px"><b>${r?`Para copiar: ${esc(r.nome)}`:'Sem loja constante no cluster para comparar'}</b>${r?` · ${esc(r.praca)} · bate em ${rc.bate} de ${rc.n} dias, ${rc.ruim} ${rc.ruim===1?'dia ruim':'dias ruins'}`:''}</p>
-   ${r?`<div class="avg" style="grid-template-columns:repeat(4,minmax(0,1fr))">${lin('Boletos vs ano passado',c.yoyb,rc.yoyb,yoyTxt)}${lin('IPB',c.ipb,rc.ipb,x=>fx(x,2))}${lin('%B1',c.b1,rc.b1,x=>pct(x),true)}${lin('Boleto médio',c.bm,rc.bm,x=>brl(x))}</div>`:''}
-  </div>`;
- }
- const cnt=k=>v.filter(l=>cst(l).selo===k).length;
- const rows=[...v].sort((a,b)=>(cst(b).bate/cst(b).n-cst(a).bate/cst(a).n)||(cst(a).ruim/cst(a).n-cst(b).ruim/cst(b).n));
- // o que as constantes fazem diferente (rede inteira, para ter base mesmo com filtro pequeno)
- const g=k=>lojas.filter(l=>cst(l)&&cst(l).selo===k).map(cst),G=[g('constante'),g('inconstante')];
- const cmp=[['Boletos vs ano passado','yoyb',yoyTxt],['IPB','ipb',x=>fx(x,2)],['%B1','b1',x=>pct(x)],['Boleto médio','bm',x=>brl(x)],['Dias ruins','r',x=>pct(x)]].map(([n,k,f])=>{
-  const m=G.map(a=>medC(a.map(c=>k==='r'?c.ruim/c.n:c[k])));return `<span><small>${n}</small><b>${f(m[0])}</b><em class="mf">inconstantes ${f(m[1])}</em></span>`}).join('');
- return `<div class="card">${hd('Constância das lojas',`Últimos 30 dias com meta até ${LAST?dd(LAST):'o fim do mês anterior'} · <b class="c-ok">${cnt('constante')} constantes</b> · ${cnt('oscila')} oscilam · <b class="c-bad">${cnt('inconstante')} inconstantes</b>`)}
-  <div class="pad" style="padding-top:0"><p class="mf" style="margin:0 0 6px"><b>O que as lojas constantes da rede têm</b> (mediana)</p>
-  <div class="avg" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">${cmp}</div></div>
-  <div class="tw tall"><table><thead><tr><th>Loja</th><th></th><th class="r">Bateu a meta</th><th class="r">Dias ruins</th><th class="r">Boletos vs ano passado</th><th class="r">IPB</th><th class="r">%B1</th><th class="r">Boleto médio</th><th>Para copiar</th></tr></thead><tbody>
-  ${rows.map(l=>{const c=cst(l),r=c.selo==='constante'?null:refConst(l);return `<tr><td><p class="nm">${esc(l.nome)}</p><p class="sub">${esc(l.gestor||'')}</p></td><td>${seloC(c)}</td>
-   <td class="r tnum"><b>${c.bate} de ${c.n}</b></td><td class="r tnum ${c.ruim/c.n>.2?'c-bad':''}">${c.ruim}</td><td class="r tnum ${c.yoyb==null?'':c.yoyb>=0?'c-ok':'c-bad'}">${yoyTxt(c.yoyb)}</td>
-   <td class="r tnum">${fx(c.ipb,2)}</td><td class="r tnum">${pct(c.b1)}</td><td class="r tnum">${brl(c.bm)}</td>
-   <td>${r?`<button class="lk" data-constl="${r.id}" title="abrir esta loja">${esc(r.nome)}</button>`:'<span class="mf">—</span>'}</td></tr>`}).join('')}
-  </tbody></table></div></div>`;
-}
-// Atingimento da meta por dia até o dia escolhido (barras = meta, linha = realizado; o dia escolhido tracejado)
-function metaDiaHTML(a){
- const ab=[];for(let d=1;d<=LAST;d++)if(a.metaDays[d-1]>0)ab.push(a.days[d-1]>=a.metaDays[d-1]);
- return `<div class="card pad">
-   <div class="crumb" style="justify-content:space-between"><div><h2 style="font-size:18px">Atingimento da meta por dia</h2><p class="mf">${ab.length?`Bateu a meta em <b>${ab.filter(Boolean).length} de ${ab.length} dias</b> até ${dd(LAST)}`:'Sem dias fechados no mês'}</p></div></div>
-   <div class="tw"><div class="chart" id="chartMeta"></div></div>
-   <div class="legend"><span><i class="bx mb"></i>Meta</span><span><i class="ln"></i>Realizado</span><span><i class="bx o"></i>${ehPassado()?'Objetivo do dia escolhido':ehFuturo()?'Dia escolhido':'Hoje'}</span></div>
-  </div>`;
 }
 // Entender: o porquê (árvore da perda, ano passado, ciclo, histórico e ações do mês)
 function vEntender(ls,cs,a){
  const ids=new Set(ls.map(l=>l.id));
  const ritmoRest=(a.metaMes-a.metaAte)*a.proj,k=ritmoRest>0?(a.metaMes-a.rec)/ritmoRest:0;
+ const ab=[];for(let d=1;d<=LAST;d++)if(a.metaDays[d-1]>0)ab.push(a.days[d-1]>=a.metaDays[d-1]);
  $('view').innerHTML=`<section class="sec">
   <div class="card pad">
    <div class="crumb" style="justify-content:space-between"><div><h2 style="font-size:18px">Onde está a perda</h2><p class="mf">${perTxt()} · cada variação é contra o alvo (receita contra a meta do período)</p></div></div>
@@ -1776,54 +1593,15 @@ function vEntender(ls,cs,a){
     :`${ic('target')}<b>Acumulado do mês (${a.diasRest} dias que faltam), para fechar 100%:</b><span class="lv">+${pct(k-1,1)} boletos</span><span class="ou">ou</span><span class="lv">IPB ${fx(a.ipb*k,2)}</span><span class="ou">ou</span><span class="lv">PM ${brl(a.pm*k,2)}</span>`}</div>
   </div>
   ${anoAntHTML(ls,a)}
+  <div class="card pad">
+   <div class="crumb" style="justify-content:space-between"><div><h2 style="font-size:18px">Meta × realizado por dia</h2><p class="mf">Bateu a meta em <b>${ab.filter(Boolean).length} de ${ab.length} dias</b></p></div></div>
+   <div class="tw"><div class="chart" id="chartMeta"></div></div>
+   <div class="legend"><span><i class="bx mb"></i>Meta</span><span><i class="ln"></i>Realizado</span><span><i class="bx o"></i>Hoje</span></div>
+  </div>
   ${cicloCard(ls)}
   ${acoesRegHTML(ids)}
  </section>`;
-}
-
-
-/* ================= Hoje · Consultor: o desafio de cada consultor hoje ================= */
-// Meta de hoje do consultor (meta própria diarizada como a loja + o gap dele ÷ dias que faltam).
-// Boletos necessários = meta de hoje ÷ BM alvo da loja, limitado ao maior BM do cluster; IPB alvo da loja; BT e BP nas metas.
-// Em risco hoje = meta de hoje − venda média por dia nos últimos 7 dias com venda (ordem dos cards).
-function desafioCons(c){
- const x=metaHojeCons(c);if(!x||!(x.hoje>0))return null;
- const l=lojaById(c.loja),m=M[c.loja]||{};
- const bmMx=l?bmMax(l).v:Infinity,bmA=Math.min(m.bmAlvoV||m.bm||0,bmMx)||m.bm||0,bol=bmA?x.hoje/bmA:0;
- let r=0,b=0,it=0,bt=0,bp=0,bpe=0,b1=0,n=0;
- for(let d=LAST;d>=1&&n<7;d--)if(c.bol[d-1]>0){r+=c.rec[d-1];b+=c.bol[d-1];it+=c.it[d-1];bt+=c.bt[d-1]||0;bp+=c.bp[d-1]||0;bpe+=c.bpe?c.bpe[d-1]||0:0;b1+=c.b1[d-1]||0;n++}
- const med={rec:n?r/n:0,bol:n?b/n:0,ipb:b?it/b:0,pm:it?r/it:0,bm:b?r/b:0,pBT:b?bt/b:0,pBP:bpe?bp/bpe:0,pb1:b?b1/b:0,n};
- return{c,l,x,bm:bmA,bol,ipb:m.ipbAlvo||m.ipb||0,med,risco:Math.max(0,x.hoje-med.rec)};
-}
-function consHojeCard(d,n){
- const {c,l,x,med}=d,ok=(v,alvo,maior=true)=>!med.n?'mf':(maior?v>=alvo:v<=alvo)?'c-ok':'c-bad';
- const sev=d.risco>=x.hoje*.4?'crit':d.risco>=x.hoje*.15?'alto':d.risco>0?'medio':'pos';
- const q=(lb,v,alvo,cl)=>`<div class="mx ${cl==='c-ok'?'ok':cl==='c-bad'?'no':''}"><span class="l">${lb}</span><b>${alvo}</b><small>hoje faz ${v}</small></div>`;
- return `<article class="card act ${sev} fade">
-  <div class="hd"><div class="l"><span class="num">${n}</span>${c.digital?`<span class="tag">${ic('smartphone')} Digital</span>`:`<span class="tag">${esc(l?l.nome:'')}</span>`}</div>
-   <div class="imp"><b>${d.risco>0?kbrl(d.risco):'—'}</b><small>${d.risco>0?'em risco hoje':'no ritmo'}</small></div></div>
-  <h3>${ic('user-round')}${esc(c.nome)}</h3>
-  <p class="head">Vender ${kbrl(x.hoje)} hoje<small>meta do dia ${kbrl(x.mh)}${x.recup>0?` + ${kbrl(x.recup)} do gap`:''} · ${pct(x.mes?x.rec/x.mes:0)} da meta do mês (deveria ${pct(x.mes?x.ate/x.mes:0)})</small></p>
-  <div class="mover"><span>Garantir</span><b>${fx(d.bol)} boletos · BM ${brl(d.bm)}</b><small>${med.n?`média dos últimos ${med.n} dias com venda: ${fx(med.bol,1)} boletos e ${kbrl(med.rec)} por dia`:'sem venda no mês ainda'}</small></div>
-  <div class="mix">${q('IPB',fx(med.ipb,2),fx(d.ipb,2),ok(med.ipb,d.ipb))}${q('BT',pct(med.pBT),pct(F.bt),ok(med.pBT,F.bt))}${q('BP',pct(med.pBP),pct(F.bp),ok(med.pBP,F.bp))}</div>
-  <div class="ft"><span></span><button class="btn" data-creg="${c.id}">${ic('plus')}Registrar ação</button></div></article>`;
-}
-function vHojeCons(ls){
- if(mesFechado()){$('view').innerHTML=avisoMesFechado();return}
- const ids=new Set(ls.map(l=>l.id));
- const lst=cons.filter(c=>c.meta&&naEscopo(c,ids)).map(desafioCons).filter(Boolean).sort((a,b)=>b.risco-a.risco||b.x.hoje-a.x.hoje);
- if(!lst.length){$('view').innerHTML=`<section class="sec"><div class="card pad"><h2 style="font-size:18px">Sem metas por consultor neste mês</h2><p class="mf">Salve a planilha de metas por consultor do mês em <b>Metas/Consultores</b> (ex.: METAS ${MESES[MES].toUpperCase()} CONSULTORES.xlsx) e rode o processamento.</p></div></section>`;return}
- const lim=S.consTodos||S.loja||S.gvo?lst.length:30,emRisco=lst.filter(d=>d.risco>0).length;
- $('view').innerHTML=`<section class="sec">
-  <div class="kpis" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
-   <div class="card kpi"><p class="lbl">Meta de hoje dos consultores</p><p class="val">${kbrl(sum(lst.map(d=>d.x.hoje)))}</p><p class="kl">${lst.length} consultores com meta · ${fx(sum(lst.map(d=>d.bol)))} boletos</p></div>
-   <div class="card kpi"><p class="lbl">Em risco hoje</p><p class="val c-bad">${emRisco}</p><p class="kl">${kbrl(sum(lst.map(d=>d.risco)))} se repetirem a média recente</p></div>
-   <div class="card kpi"><p class="lbl">% da meta do mês</p><p class="val">${pct(sum(lst.map(d=>d.x.rec))/(sum(lst.map(d=>d.x.mes))||1))}</p><p class="kl">deveria estar em ${pct(sum(lst.map(d=>d.x.ate))/(sum(lst.map(d=>d.x.mes))||1))}</p></div>
-  </div>
-  <div class="plan-hd"><div><h2>O desafio de cada consultor hoje</h2><p>Meta própria diarizada como a loja + o gap dele · boletos pelo BM alvo da loja (até o maior BM do cluster) · IPB alvo da loja · BT e BP nas metas</p></div></div>
-  <div class="acts3">${lst.slice(0,lim).map((d,i)=>consHojeCard(d,i+1)).join('')}</div>
-  ${lst.length>lim?`<p class="mf" style="text-align:center"><button class="lk" data-constodos="1">Ver os ${lst.length} consultores</button> · ou filtre um GVO ou uma loja</p>`:''}
- </section>`;
+ drawMetaDia(a,'chartMeta');
 }
 
 /* ================= Lojas ================= */
@@ -1856,7 +1634,7 @@ function focoHTML(){
    <div class="seg" role="tablist"><button class="${S.chart==='dia'?'on':''}" data-chart="dia">${ic('bar-chart-3')}Dia a dia: impacto das ações</button><button class="${S.chart==='acum'?'on':''}" data-chart="acum">${ic('line-chart')}Acumulado do mês</button></div>
    <div class="chart" id="chartFoco"></div>
    ${S.chart==='acum'?`<div class="legend"><span><i></i>Realizado acumulado</span><span><i class="e"></i>Onde deveria estar (meta diarizada)</span><span><i class="p"></i>Projeção</span><span><i class="a"></i>Ação registrada</span></div>`
-    :`<div class="legend"><span><i class="bx"></i>Venda do dia ÷ meta do dia</span><span><i class="bx d"></i>Dias avaliados</span><span><i class="a"></i>Ação registrada</span><span><i class="bx o"></i>Quanto precisa hoje</span></div>${impactoHTML(l,m)}`}
+    :`<div class="legend"><span><i class="bx"></i>Venda do dia ÷ meta do dia</span><span><i class="bx d"></i>Dias depois da ação</span><span><i class="e"></i>Média antes e depois</span><span><i class="a"></i>Ação registrada</span><span><i class="bx o"></i>Quanto precisa hoje</span></div>${impactoHTML(l,m)}`}
   </div>
   <div class="card pad"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3 style="font-size:15px">Ações da loja</h3><button class="btn sm" data-novo="${l.id}">${ic('plus')}Nova ação</button></div>
    <div class="list">${la.length?la.map(x=>`<div class="it hist ${sel&&sel.id===x.id&&S.chart==='dia'?'on':''}" data-acsel="${x.id}" title="Ver o antes e depois desta ação no gráfico"><span class="dchip">${dd(x.dia)}</span><div><p style="font-weight:700">${esc(x.tipo)}${x.cons?' · '+esc(consById(x.cons)?.nome):''}</p><p class="mf" style="font-size:13px">${esc(x.desc||'Sem descrição')}</p>${avalHTML(x)}</div><button class="btn ghost sm" data-del="${x.id}" aria-label="Remover ação">${ic('trash-2')}</button></div>`).join(''):'<p class="empty">Nenhuma ação registrada nesta loja no mês.</p>'}</div>
@@ -1888,103 +1666,78 @@ function clusterHTML(l,m){
 }
 function acaoSel(lid){
  const la=acoesMes().filter(x=>x.loja===lid).sort((a,b)=>b.dia-a.dia);
- return la.find(x=>x.id===S.acSel)||la.find(x=>{const a=avaliarAcao(x);return a&&a.ver})||la[0]||null;
+ return la.find(x=>x.id===S.acSel)||la.find(x=>efeito(M[lid],x.dia))||la[0]||null;
 }
 const DRVG={fluxo:'bol',ritmo:'bol',tendencia:'bol',ipb:'ipb',b1:'ipb',pm:'pm'};
 function impactoHTML(l,m){
  const x=acaoSel(l.id);
- if(!x)return `<div class="impact empty-i">${ic('mouse-pointer-click')}<span>Nenhuma ação registrada nesta loja no mês.</span></div>`;
- const la=acoesMes().filter(a=>a.loja===l.id).sort((a,b)=>a.dia-b.dia),a=avaliarAcao(x);
- const chips=la.length>1?`<div class="achips">${la.map(y=>`<button class="${y.id===x.id?'on':''}" data-acsel="${y.id}">${dd(y.dia)} · ${esc(y.tipo)}</button>`).join('')}</div>`:'';
- const hd=`<div class="ih"><div><p class="eyebrow2">Ação em análise</p><p class="it-t">${ic(TIPOS[x.tipo]||'circle-dot')}${esc(x.tipo)} em ${dd(x.dia)}${x.cons?' · '+esc(consById(x.cons)?.nome):''}</p></div>`;
- if(!a||a.wait||a.semBase||a.semVenda){
-  const msg=!a?'':a.wait?`Avalia ${pad(a.dias[0])} e ${dd(a.dias[1])}${a.tarde?' (cadastro após as 14h)':''}. O resultado aparece quando ${dd(a.dias[1])} fechar.`:'Sem venda para comparar nesses dias.';
-  return `<div class="impact">${chips}${hd}<span class="verd v-wait">${ic('hourglass')}${a&&a.wait?'Aguardando':'Sem dado'}</span></div><p class="mf">${msg}</p></div>`;
- }
- const [vc,vt,vi]=a.ver==='melhorou'?['v-ok','Deu certo','circle-check']:a.ver==='piorou'?['v-bad','Não deu certo','circle-x']:['v-flat','Neutro','minus-circle'];
- const sobe=['ipb','pm','bm'].filter(k=>a.v[k]>.005).length;
- const f={ipb:v=>fx(v,2),pm:v=>brl(v,2),bm:v=>brl(v)},nm={ipb:'IPB',pm:'Preço médio',bm:'Boleto médio'};
+ if(!x)return `<div class="impact empty-i">${ic('mouse-pointer-click')}<span>Nenhuma ação registrada nesta loja. Registre uma ação e, a partir do dia seguinte, o gráfico mostra o antes e o depois.</span></div>`;
+ const e=efeito(m,x.dia),la=acoesMes().filter(a=>a.loja===l.id).sort((a,b)=>a.dia-b.dia);
+ const chips=la.length>1?`<div class="achips">${la.map(a=>`<button class="${a.id===x.id?'on':''}" data-acsel="${a.id}">${dd(a.dia)} · ${esc(a.tipo)}</button>`).join('')}</div>`:'';
+ const hd=`<div class="ih"><div><p class="eyebrow2">Ação em análise</p><p class="it-t">${ic(TIPOS[x.tipo]||'circle-dot')}${esc(x.tipo)} em ${dd(x.dia)}${x.cons?' · '+esc(consById(x.cons)?.nome):''}</p><p class="mf" style="font-size:13px">${esc(x.desc||'Sem descrição')}</p></div>`;
+ if(!e)return `<div class="impact">${chips}${hd}<span class="verd v-wait">${ic('hourglass')}Aguardando</span></div><p class="mf">${x.dia>LAST?'A ação é de hoje. O efeito aparece a partir de amanhã, quando o dia fechar.':'Sem dias anteriores no mês para comparar.'}</p></div>`;
+ const [vc,vt,vi]=e.d>=.05?['v-ok','Funcionou','circle-check']:e.d<=-.05?['v-bad','Piorou','circle-x']:['v-flat','Sem efeito claro','minus-circle'];
+ const foco=DRVG[x.gat];
+ const row=(k,lb,f)=>{const a=e.antes[k],b=e.depois[k],d=a?b/a-1:0;return `<div class="${foco===k||(k==='bm'&&!foco)?'fz':''}"><span class="l">${lb}${foco===k?' · alvo da ação':''}</span><span class="v">${f(a)} → ${f(b)}</span><span class="delta ${d>=.02?'up':d<=-.02?'down':'flat'}">${pct(d,1,true)}</span></div>`};
+ const nA=e.dia-e.ini,nD=LAST-e.dia+1;
  return `<div class="impact">${chips}${hd}<span class="verd ${vc}">${ic(vi)}${vt}</span></div>
-  <p class="mf" style="font-size:13px">${sobe} de 3 indicadores subiram · ${periodoTxt(a)}${a.tarde?' · cadastro após as 14h':''}</p>
-  <div class="avg">${['ipb','pm','bm'].map(k=>`<span class="${a.v[k]>.005?'c-ok':a.v[k]<-.005?'c-bad':'mf'}"><small>${nm[k]}</small><b>${f[k](a.antes[k])} → ${f[k](a.dep[k])}</b><em>${a.v[k]>=0?'▲':'▼'} ${pct(Math.abs(a.v[k]),1)}</em></span>`).join('')}</div></div>`;
+  <div class="ibig"><div><span class="l">Ritmo antes</span><span class="v">${pct(e.a)}</span><span class="s">até ${nA} dia${nA>1?'s':''}</span></div>${ic('arrow-right','arr')}<div><span class="l">Ritmo depois</span><span class="v ${vc}">${pct(e.b)}</span><span class="s">${nD} dia${nD>1?'s':''}</span></div>
+   <div><span class="l">Diferença</span><span class="v ${vc}">${pp(e.d)}</span><span class="s">venda ÷ meta do dia</span></div><div><span class="l">Receita a mais</span><span class="v ${e.inc>=0?'c-ok':'c-bad'}">${e.inc>=0?'+':''}${kbrl(e.inc)}</span><span class="s">vs. manter o ritmo de antes</span></div></div>
+  <div class="idrv">${row('bol','Boletos por dia aberto',v=>fx(v))}${row('ipb','IPB',v=>fx(v,2))}${row('pm','Preço médio',v=>brl(v,2))}${row('bm','Boleto médio',v=>brl(v,2))}</div>
+  <p class="mf" style="font-size:12px">Estimativa: compara o ritmo (venda ÷ meta do dia) antes e depois da ação. Campanhas e outras ações no mesmo período também influenciam.</p></div>`;
 }
 function drawDaily(m,la,sel,el){
  const N=Math.min(TODAY,DAYS),W=720,H=290,L=46,Rr=12,T=40,B=40,iw=W-L-Rr,ih=H-T-B,cw=iw/N,bw=cw*.58;
  const mh=m.metaDays[TODAY-1]||0,need=mh>0?m.hoje/mh:null;
- const av=sel?avaliarAcao(sel):null,aval=av&&av.dias?av.dias:null;
+ const e=sel?efeito(m,sel.dia):null;
  const MAX=Math.max(1.3,...m.ritmo.filter(v=>v!=null).map(v=>v*1.12),(need||0)*1.12);
  const xc=d=>L+cw*(d-.5),y=v=>T+(1-Math.min(v,MAX)/MAX)*ih;
  const DS=['dom','seg','ter','qua','qui','sex','sáb'],curto=N>16;
  let g='';
- if(aval&&aval[0]<=N){g+=`<rect class="win-d" x="${xc(aval[0])-cw/2}" y="${T}" width="${cw*Math.min(2,N-aval[0]+1)}" height="${ih}"/><text class="wl d" x="${xc(aval[0])-cw/2+6}" y="${T+14}">AVALIADOS</text>`}
+ if(e){g+=`<rect class="win-a" x="${xc(e.ini)-cw/2}" y="${T}" width="${cw*(e.dia-e.ini)}" height="${ih}"/><rect class="win-d" x="${xc(e.dia)-cw/2}" y="${T}" width="${cw*(LAST-e.dia+1)}" height="${ih}"/>
+  <text class="wl" x="${xc(e.ini)-cw/2+6}" y="${T+14}">ANTES</text><text class="wl d" x="${xc(e.dia)-cw/2+6}" y="${T+14}">DEPOIS</text>`}
  [0,.5,1,1.5,2,2.5].filter(v=>v<=MAX).forEach(v=>{g+=`<line class="${v===1?'meta1':'grid'}" x1="${L}" x2="${W-Rr}" y1="${y(v)}" y2="${y(v)}"/><text class="ax" x="${L-8}" y="${y(v)+4}" text-anchor="end">${v*100}%</text>`});
  g+=`<text class="mt1" x="${W-Rr-4}" y="${y(1)-6}" text-anchor="end">meta do dia</text>`;
  for(let d=1;d<=N;d++){
   const dow=DS[new Date(ANO,MES,d).getDay()];
   g+=`<text class="ax" x="${xc(d)}" y="${H-22}" text-anchor="middle">${curto?pad(d):dd(d)}</text><text class="ax s" x="${xc(d)}" y="${H-8}" text-anchor="middle">${d===TODAY?'hoje':curto?dow[0]:dow}</text>`;
-  if(d<=LAST){const v=m.ritmo[d-1],dep=aval&&aval.includes(d);
+  if(d<=LAST){const v=m.ritmo[d-1],dep=e&&d>=e.dia;
    if(v==null){g+=`<text class="ax s" x="${xc(d)}" y="${y(0)-6}" text-anchor="middle">fechada</text>`;continue}
    g+=`<rect class="${dep?'bd':'bb'}" x="${xc(d)-bw/2}" y="${y(v)}" width="${bw}" height="${Math.max(1,y(0)-y(v))}" rx="4"><title>${dd(d)}: ${kbrl(m.days[d-1])} vendidos, meta do dia ${kbrl(m.metaDays[d-1])}</title></rect>`;
    g+=`<text class="bl" x="${xc(d)}" y="${y(v)-6}" text-anchor="middle">${pct(v)}</text>`}
   else if(need!=null){g+=`<rect class="bo" x="${xc(d)-bw/2}" y="${y(need)}" width="${bw}" height="${y(0)-y(need)}" rx="4"/><text class="bl o" x="${xc(d)}" y="${y(need)-6}" text-anchor="middle">${pct(need)}</text><text class="ax s" x="${xc(d)}" y="${y(need)+16}" text-anchor="middle">${kbrl(m.hoje)}</text>`}
  }
+ if(e){g+=`<line class="avg" x1="${xc(e.ini)-cw/2}" x2="${xc(e.dia)-cw/2}" y1="${y(e.a)}" y2="${y(e.a)}"/><line class="avg d" x1="${xc(e.dia)-cw/2}" x2="${xc(LAST)+cw/2}" y1="${y(e.b)}" y2="${y(e.b)}"/>`;
+  if(e.b!==e.a){const xa=xc(e.dia)-cw/2;g+=`<line class="jump" x1="${xa}" x2="${xa}" y1="${y(e.a)}" y2="${y(e.b)}" marker-end="url(#ah)"/>`}}
  const by={};la.forEach(a=>(by[a.dia]=by[a.dia]||[]).push(a));
  Object.entries(by).forEach(([d,arr])=>{d=+d;if(d>N)return;const on=sel&&arr.some(a=>a.id===sel.id),xa=xc(d)-cw/2;
   g+=`<g class="mk ${on?'on':''}" data-acsel="${arr[0].id}" style="cursor:pointer"><title>${esc(arr.map(a=>`${dd(d)} · ${a.tipo}${a.desc?': '+a.desc:''}`).join('\n'))}</title><line x1="${xa}" x2="${xa}" y1="${T-14}" y2="${T+ih}"/><circle cx="${xa}" cy="${T-16}" r="${on?11:9}"/><text x="${xa}" y="${T-12.5}" text-anchor="middle">${arr.length}</text></g>`});
  $(el).innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Venda diária da loja em % da meta do dia, com o antes e o depois da ação selecionada"><defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ahp"/></marker></defs>${g}</svg>`;
 }
-// Avaliação da ação em 2 dias: cadastrada antes das 14h -> o próprio dia e o seguinte; a partir das 14h -> os 2 dias
-// seguintes. Cada dia avaliado é comparado com o mesmo dia da semana das 3 semanas anteriores (ex.: sex 06 e sáb 07
-// contra as 3 sextas e os 3 sábados antes). Da loja, ou do consultor quando a ação é para ele.
-// Indicadores: IPB, preço médio e BM dos 2 dias contra a base. Deu certo = 2 dos 3 subiram; não deu = 2 dos 3 caíram.
-function horaCadastro(x){
- const t=x.criado&&/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}/.test(x.criado)?new Date(x.criado.replace(' ','T')):x.id>1e12?new Date(x.id):null;
- return t&&!isNaN(t)?t:null;
-}
-function diasAvaliados(x){
- const t=horaCadastro(x),noDia=t&&t.getFullYear()===ANO&&t.getMonth()===MES&&t.getDate()===x.dia;
- const ini=noDia&&t.getHours()>=14?x.dia+1:x.dia;
- return{ini,dias:[ini,ini+1],tarde:noDia&&t.getHours()>=14,hora:t};
-}
-// venda do dia d do consultor/loja (d < 1 = fim do mês anterior, até 21 dias antes)
-function valDia(src,d){
- if(d>=1)return{rec:src.rec[d-1]||0,bol:src.bol[d-1]||0,it:src.it[d-1]||0};
- const a=src.ant,i=20+d;if(!a||i<0)return null;return{rec:a.rec[i]||0,bol:a.bol[i]||0,it:a.it[i]||0};
-}
+// Avaliação direta da ação: IPB, preço médio e BM no DIA SEGUINTE ao dia da ação contra a média dos 3 últimos dias
+// iguais da semana (ex.: quinta contra as 3 quintas anteriores; no começo do mês, os que houver), da loja ou do consultor
+// quando a ação é para ele. Veredito: 2 de 3 subiram = melhorou; 2 de 3 caíram = piorou; senão, misto.
 function avaliarAcao(x){
  const l=lojaById(x.loja),c=x.cons?consById(x.cons):null,src=c||l;if(!src)return null;
- let {dias,tarde,hora}=diasAvaliados(x);const ind=(r,b,i)=>({ipb:b?i/b:0,pm:i?r/i:0,bm:b?r/b:0});
- // fim de mês já fechado: o 2º dia cai no mês seguinte, então vale só o dia que existe neste mês
- if(dias[1]>DAYS&&LAST>=DAYS&&dias[0]<=DAYS)dias=[dias[0]];
- if(dias[dias.length-1]>LAST)return{wait:true,d1:Math.min(dias[dias.length-1],DAYS),dias:dias.length>1?dias:[dias[0],dias[0]+1],tarde,hora};
- const A={r:0,b:0,i:0,n:0},B={r:0,b:0,i:0,n:0},base=[];
- dias.forEach(d=>{if(src.bol[d-1]>0){A.r+=src.rec[d-1];A.b+=src.bol[d-1];A.i+=src.it[d-1];A.n++}
-  // dias antes do dia 1 vêm do fim do mês anterior ("ant": últimos 21 dias)
-  for(let k=1;k<=3;k++){const db=d-7*k,v=valDia(src,db);if(!v)break;if(v.bol>0){B.r+=v.rec;B.b+=v.bol;B.i+=v.it;B.n++;base.push(db)}}});
- if(!B.b)return{semBase:true,d1:dias[dias.length-1],dias,tarde,hora};
- if(!A.b)return{semVenda:true,d1:dias[dias.length-1],dias,tarde,hora};
- const antes=ind(B.r,B.b,B.i),dep=ind(A.r,A.b,A.i),v={};
+ const d1=x.dia+1,ind=(r,b,i)=>({ipb:b?i/b:0,pm:i?r/i:0,bm:b?r/b:0});
+ if(d1>LAST)return{wait:true,d1};
+ let r=0,b=0,i=0,n=0;for(let d=d1-7;d>=1&&n<3;d-=7)if(src.bol[d-1]>0){r+=src.rec[d-1];b+=src.bol[d-1];i+=src.it[d-1];n++}
+ if(!b)return{semBase:true,d1};
+ if(!(src.bol[d1-1]>0))return{semVenda:true,d1};
+ const antes=ind(r,b,i),dep=ind(src.rec[d1-1],src.bol[d1-1],src.it[d1-1]),v={};
  for(const k in antes)v[k]=antes[k]?dep[k]/antes[k]-1:0;
  const sobe=Object.values(v).filter(z=>z>.005).length,cai=Object.values(v).filter(z=>z<-.005).length;
- return{d1:dias[dias.length-1],dias,base,n:B.n,tarde,hora,antes,dep,v,quem:c?c.nome:'loja',ver:sobe>=2?'melhorou':cai>=2?'piorou':'misto'};
-}
-// texto do período: "sex 06 e sáb 07/11 × 3 sextas e 3 sábados anteriores"
-const DS3=['dom','seg','ter','qua','qui','sex','sáb'],DSP=['domingos','segundas','terças','quartas','quintas','sextas','sábados'];
-function periodoTxt(a){
- const w=d=>new Date(ANO,MES,d).getDay(),[d1,d2]=a.dias;
- const nb=d=>a.base?a.base.filter(x=>w(x)===w(d)).length:0;
- if(d2==null)return `${DS3[w(d1)]} ${dd(d1)} × ${nb(d1)} ${DSP[w(d1)]} anteriores (o 2º dia é do mês seguinte)`;
- return `${DS3[w(d1)]} ${pad(d1)} e ${DS3[w(d2)]} ${dd(d2)} × ${nb(d1)} ${DSP[w(d1)]} e ${nb(d2)} ${DSP[w(d2)]} anteriores`;
+ return{d1,n,antes,dep,v,quem:c?c.nome:'loja',ver:sobe>=2?'melhorou':cai>=2?'piorou':'misto'};
 }
 const DSEM=['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
-const VER={melhorou:['p-ok','Deu certo','circle-check'],piorou:['p-bad','Não deu certo','circle-x'],misto:['p-warn','Neutro','minus-circle']};
+const VER={melhorou:['p-ok','Melhorou','trending-up'],piorou:['p-bad','Piorou','trending-down'],misto:['p-warn','Misto','minus']};
 const avalPill=a=>!a?'':a.wait?`<span class="pill">Aguardando ${dd(a.d1)}</span>`:a.semBase||a.semVenda?`<span class="pill">Sem venda para medir</span>`:`<span class="pill ${VER[a.ver][0]}">${ic(VER[a.ver][2])}${VER[a.ver][1]}</span>`;
 function avalHTML(x){
  const a=avaliarAcao(x);if(!a)return '';
- if(a.wait)return `<p class="aval mf">${ic('hourglass')}Resultado depois de ${dd(a.d1)} (avalia ${pad(a.dias[0])} e ${dd(a.dias[1])}${a.tarde?', cadastro após as 14h':''})</p>`;
- if(a.semBase||a.semVenda)return `<p class="aval mf">${ic('circle-slash')}${a.semVenda?`Sem venda em ${a.dias.map(d=>pad(d)).join(' e ')}/${pad(MES+1)}`:'Sem venda nos mesmos dias das semanas anteriores'} para medir</p>`;
+ if(a.wait)return `<p class="aval mf">${ic('hourglass')}Resultado em ${dd(a.d1)}, com o fechamento do dia seguinte</p>`;
+ if(a.semBase||a.semVenda)return `<p class="aval mf">${ic('circle-slash')}${a.semVenda?`Sem venda em ${dd(a.d1)}`:`Sem venda nas ${DSEM[new Date(ANO,MES,a.d1).getDay()]}s anteriores`} para medir</p>`;
  const f={ipb:v=>fx(v,2),pm:v=>brl(v,2),bm:v=>brl(v)},nm={ipb:'IPB',pm:'Preço médio',bm:'BM'};
- return `<div class="aval">${avalPill(a)}<span class="mf">${periodoTxt(a)}${a.quem!=='loja'?' · '+esc(a.quem):''}</span>
+ return `<div class="aval">${avalPill(a)}<span class="mf">${DSEM[new Date(ANO,MES,a.d1).getDay()]} ${dd(a.d1)} × média de ${a.n===1?'1':a.n} ${DSEM[new Date(ANO,MES,a.d1).getDay()]}${a.n===1?'':'s'} anterior${a.n===1?'':'es'}${a.quem!=='loja'?' · '+esc(a.quem):''}</span>
   <div class="avg">${['ipb','pm','bm'].map(k=>`<span class="${a.v[k]>.005?'c-ok':a.v[k]<-.005?'c-bad':'mf'}" title="antes ${f[k](a.antes[k])}"><small>${nm[k]}</small><b>${f[k](a.dep[k])}</b><em>${a.v[k]>=0?'▲':'▼'} ${pct(Math.abs(a.v[k]),0)}</em></span>`).join('')}</div></div>`;
 }
 function efTag(e){return e?`<span class="delta ${e.d>=.05?'up':e.d<=-.05?'down':'flat'}" style="margin-top:6px">${ic(e.d>=0?'arrow-up-right':'arrow-down-right')}Ritmo ${pct(e.a)} → ${pct(e.b)} · ${e.inc>=0?'+':''}${kbrl(e.inc)}</span>`:`<span class="delta wait" style="margin-top:6px">${ic('hourglass')}Aguardando dias de venda para medir</span>`}
@@ -2180,7 +1933,7 @@ function abrir(t,lojaId,consId){
  $('dLoja').innerHTML=ls.map(l=>`<option value="${l.id}">${esc(l.nome)}</option>`).join('');$('dLoja').value=lid||ls[0].id;
  fillCons(lid,consId||'');
  $('dTipo').value=t?(t.acao||GT[t.g].acao):'Push do time';
- $('dDia').min=isoDia(1);$('dDia').max=isoDia(DAYS);$('dDia').value=isoDia(Math.min(LASTR+1,DAYS));$('dDesc').value='';
+ $('dDia').min=isoDia(1);$('dDia').max=isoDia(DAYS);$('dDia').value=isoDia(Math.min(TODAY,DAYS));$('dDesc').value='';
  $('dCtx').innerHTML=t?`<b>Gatilho:</b> ${GT[t.g].nome} · ${esc(t.loja.nome)}<br><b>Meta da ação:</b> ${t.meta}`:'Ação avulsa, sem gatilho associado.';
  try{const u=window.PulsarUso&&PulsarUso.usuario();$('dAutor').value=(u&&u.nome)||$('dAutor').value||localStorage.getItem(KEY_AUTOR)||''}catch(e){}
  $('dlg').showModal();icons();
@@ -2242,28 +1995,30 @@ $('fLimpar').addEventListener('click',()=>{S.reg=S.praca=S.gvo=S.loja=S.cons='';
 let ultDia=null;
 // Filete de cada data = atingimento do dia no filtro atual (verde ≥ 100%, amarelo ≥ 90%, vermelho abaixo)
 let AGG_DIAS=null;
-// Um dia só: o filete mostra o atingimento real do dia (série completa), o dia escolhido fica marcado.
-function fillDias(ls){
- const DS=['D','S','T','Q','Q','S','S'],hj=LASTR+1;
- const dias=Array.from({length:DAYS},(_,i)=>{const d=i+1,w=new Date(ANO,MES,d).getDay();
-  let mt=0,rv=0;if(d<=LASTR)ls.forEach(l=>{mt+=l.meta[d-1]||0;rv+=(l._f.rec[d-1]||0)});
-  const r=mt>0?rv/mt:null,cl=r==null?'':r>=1?'r-ok':r>=.9?'r-mid':'r-no';
-  const tt=`${dd(d)}${r==null?(d===hj?' · hoje':d>hj?' · futuro':''):` · ${pct(r)} da meta do dia`}`;
-  return `<button type="button" class="dia ${d===REF?'on':''} ${w===0?'fds':''} ${d>hj?'fut':''} ${d===hj?'hj':''} ${cl}" data-dia="${d}" aria-pressed="${d===REF}" title="${tt}"><b>${pad(d)}</b><small>${d===hj?'hoje':DS[w]}</small></button>`});
- // mês já fechado: opção de ver o mês inteiro
- if(hj>DAYS)dias.push(`<button type="button" class="dia mes ${REF>DAYS?'on':''}" data-dia="${DAYS+1}" aria-pressed="${REF>DAYS}"><b>Mês</b><small>inteiro</small></button>`);
- $('fDias').innerHTML=dias.join('');
+function fillDias(a){
+ if(a)AGG_DIAS=a;a=AGG_DIAS;
+ const DS=['D','S','T','Q','Q','S','S'];
+ $('fDias').innerHTML=Array.from({length:LAST},(_,i)=>{const d=i+1,w=new Date(ANO,MES,d).getDay();
+  const mt=a?a.metaDays[d-1]:0,r=mt>0?a.days[d-1]/mt:null,cl=!a||r==null?'':r>=1?'r-ok':r>=.9?'r-mid':'r-no';
+  const tt=`${dd(d)}${r==null?'':` · ${pct(r)} da meta do dia`}`;
+  return `<button type="button" class="dia ${SEL.has(d)?'on':''} ${w===0?'fds':''} ${cl}" data-dia="${d}" aria-pressed="${SEL.has(d)}" title="${tt}"><b>${pad(d)}</b><small>${DS[w]}</small></button>`}).join('');
 }
+function setDias(novos){if(!novos.size)return;SEL=novos;recalc();render()}
 $('fDias').addEventListener('click',e=>{
- const b=e.target.closest('[data-dia]');if(!b)return;const d=+b.dataset.dia;if(d===REF)return;
- aplicarRef(d);recalc();calcBmMax();cabecalho();render();
+ const b=e.target.closest('[data-dia]');if(!b)return;const d=+b.dataset.dia,n=new Set(SEL);
+ if(e.shiftKey&&ultDia){const[a,z]=[Math.min(ultDia,d),Math.max(ultDia,d)];for(let x=a;x<=z;x++)n.add(x)}
+ else if(n.has(d))n.delete(d);else n.add(d);
+ ultDia=d;setDias(n);
+});
+document.querySelector('.datas .pres').addEventListener('click',e=>{
+ const p=e.target.closest('[data-pre]')?.dataset.pre;if(!p)return;
+ const r=(a,z)=>new Set(Array.from({length:z-a+1},(_,i)=>a+i));
+ setDias(p==='ontem'?r(LAST,LAST):p==='7'?r(Math.max(1,LAST-6),LAST):r(1,LAST));
 });
 function irFoco(id){if(S.foco!==id)S.acSel=null;S.foco=id;S.tab='lojas';render();requestAnimationFrame(()=>$('foco')?.scrollIntoView({behavior:'smooth',block:'start'}))}
 document.addEventListener('click',e=>{
- const t=e.target.closest('[data-tab],[data-reg],[data-foco],[data-del],[data-sort],[data-novo],[data-drill],[data-verc],[data-chart],[data-acsel],[data-pfil],[data-creg],[data-dec],[data-gvo],[data-uso],[data-usonome],[data-constodos],[data-constl]');if(!t)return;
+ const t=e.target.closest('[data-tab],[data-reg],[data-foco],[data-del],[data-sort],[data-novo],[data-drill],[data-verc],[data-chart],[data-acsel],[data-pfil],[data-creg],[data-dec],[data-gvo],[data-uso],[data-usonome]');if(!t)return;
  const d=t.dataset;
- if(d.constl){const l=lojaById(d.constl);S.reg=l.regional;S.praca=l.praca;S.gvo=l.gestor;S.loja=l.id;S.cons='';S.foco=l.id;fillFiltros();lembrarFiltro();render();$('view').scrollIntoView({behavior:'smooth',block:'start'});return}
- if(d.constodos){S.consTodos=true;render();return}
  if(d.uso){carregarUso(true).then(render);return}
  if(d.usonome!=null){S.usoNome=S.usoNome===d.usonome?'':d.usonome;render();return}
  if(d.dec!=null){const x=DEC[+d.dec];if(!x)return;const cm=comoDecisao(x);abrir({loja:x.loja,g:x.g,meta:x.meta.replace(/^Meta: /,''),acao:cm.tipo});
@@ -2286,28 +2041,11 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches('tr
 
 /* ================= Início ================= */
 function cabecalho(){
- if(CONF.ambiente==='desenvolvimento'){$('hAmb').hidden=false;if(!document.title.startsWith('[DEV]'))document.title='[DEV] '+document.title}
+ if(CONF.ambiente==='desenvolvimento'){$('hAmb').hidden=false;document.title='[DEV] '+document.title}
  const hoje=new Date(ANO,MES,Math.min(TODAY,DAYS));
  $('hData').textContent=`${SEMANA[hoje.getDay()][0].toUpperCase()+SEMANA[hoje.getDay()].slice(1)}, ${pad(hoje.getDate())} de ${MESES[MES]} de ${ANO} · vendas até ${dd(LAST)}`;
  $('hBase').textContent=`${lojas.length} lojas · atualizado em ${D.geradoEm.slice(8,10)}/${D.geradoEm.slice(5,7)} às ${D.geradoEm.slice(11,16)}`;
 }
-// Filtro de mês: data/meses.json lista os meses processados (um arquivo por mês). O painel abre no mês mais recente
-// (data/pulsar.json), com a visão de hoje e o resultado até ontem; os meses anteriores ficam para consulta.
-let MESES_DISP=[],MES_ATUAL='';
-async function trocarMes(arq){
- const j=await fetch('data/'+arq,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()});
- init(j);cabecalho();fillFiltros();S.foco=S.loja||null;render();sincronizar().then(render);
-}
-function fillMes(){
- if(MESES_DISP.length<2)return;
- $('fMesBox').hidden=false;
- $('fMes').innerHTML=MESES_DISP.map(m=>`<option value="${m.arquivo}">${esc(m.nome)}${m===MESES_DISP[MESES_DISP.length-1]?' (atual)':''}</option>`).join('');
- $('fMes').value=MES_ATUAL||MESES_DISP[MESES_DISP.length-1].arquivo;
-}
-$('fMeta').addEventListener('change',e=>{DESAFIO=e.target.value==='1';try{localStorage.setItem(KEY_DESAFIO,DESAFIO?'1':'0')}catch(_){}
- init(D);fillFiltros();S.foco=S.loja||null;render();toast(DESAFIO?'Meta Desafio: metas × 1,05':'Meta oficial')});
-$('fMes').addEventListener('change',e=>{MES_ATUAL=e.target.value;trocarMes(MES_ATUAL).catch(()=>toast('Não foi possível abrir esse mês',true))});
-fetch('data/meses.json',{cache:'no-store'}).then(r=>r.ok?r.json():[]).catch(()=>[]).then(l=>{MESES_DISP=Array.isArray(l)?l:[];fillMes()});
 fetch('Ciclo/ciclo_atual.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null).then(c=>{CICLO=c}).then(()=>fetch('data/pulsar.json',{cache:'no-store'})).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(j=>{
  init(j);cabecalho();filtroInicial();fillFiltros();
  // identificação de quem acessa (primeira visita) antes do primeiro registro de uso
